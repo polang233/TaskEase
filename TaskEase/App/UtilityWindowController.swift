@@ -15,7 +15,7 @@ enum UtilityWindowKind: String {
 
     var size: NSSize {
         switch self {
-        case .settings: NSSize(width: 560, height: 650)
+        case .settings: NSSize(width: 560, height: 700)
         case .help: NSSize(width: 680, height: 580)
         case .about: NSSize(width: 440, height: 440)
         case .license: NSSize(width: 680, height: 600)

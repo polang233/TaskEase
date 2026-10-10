@@ -23,5 +23,9 @@ enum Display {
     }
 
     static func rate(_ value: Double) -> String { bytes(UInt64(max(0, value))) + "/s" }
+    static func networkRate(_ value: Double?) -> String {
+        guard let value, value.isFinite, value >= 0 else { return "—" }
+        return bytes(UInt64(min(value, Double(Int64.max)))) + "/s"
+    }
     static func wakeups(_ value: Double) -> String { String(format: "%.1f/s", value) }
 }

@@ -97,6 +97,11 @@ struct ContentView: View {
                                 VStack(alignment: .trailing, spacing: 4) {
                                     Text(Display.percent(app.cpuPercent)).monospacedDigit()
                                     Text(Display.memory(app)).font(.caption).foregroundStyle(.secondary).monospacedDigit()
+                                    if model.preferences.showNetworkActivity {
+                                        Text("↓ " + Display.networkRate(app.network?.receiveRate) +
+                                             "  ↑ " + Display.networkRate(app.network?.sendRate))
+                                            .font(.caption2).foregroundStyle(.secondary).monospacedDigit()
+                                    }
                                 }
                             }
                         }.padding(.vertical, 6).tag(app.id)
@@ -107,7 +112,7 @@ struct ContentView: View {
     }
 
     @ViewBuilder private var emptyList: some View {
-        if model.applicationList == .configured && model.rules.isEmpty {
+        if model.applicationList == .configured && model.savedRuleCount == 0 {
             ContentUnavailableView {
                 Label("还没有后台规则", systemImage: "slider.horizontal.3")
             } description: {
@@ -132,6 +137,16 @@ struct ContentView: View {
     let model = AppModel(preview: true)
     model.setRule("example.browser", rule: AppRule(mode: .budget, cpuPercent: 20, delaySeconds: 3))
     model.setEnabled(true)
+    model.setApplicationList(.configured)
+    return ContentView(model: model)
+}
+
+#Preview("网络规则") {
+    let model = AppModel(preview: true)
+    var app = AppModel.exampleApps[1]
+    app.network = NetworkReading(receiveRate: 128 * 1024, sendRate: 24 * 1024, sampledProcesses: 2)
+    model.apply(MonitoringSnapshot(apps: [app], system: model.system, networkStatus: .available))
+    model.setNetworkRule(app.id, rule: NetworkRule(mode: .limit, scope: .always))
     model.setApplicationList(.configured)
     return ContentView(model: model)
 }

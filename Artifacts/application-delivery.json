@@ -1,5 +1,5 @@
 {
-  "recordedAt": "2026-10-11T01:08:04+08:00",
+  "recordedAt": "2026-10-11T02:15:29+08:00",
   "version": "1.1.0",
   "build": "2",
   "configuration": "Release",
@@ -16,10 +16,10 @@
   "controlSelfCheckPassed": true,
   "applicationInstanceCheckPassed": true,
   "automaticTests": {
-    "passed": 34,
+    "passed": 43,
     "skipped": 0,
     "failed": 0,
-    "total": 34
+    "total": 43
   },
   "uiValidation": "Passed",
   "licenseIdentifier": "GPL-3.0-only",
@@ -31,5 +31,7 @@
     "27.0.1"
   ],
   "compatibilityValidation": "Deployment availability checks passed; older systems pending runtime validation",
-  "foregroundRefreshOnly": true
+  "foregroundRefreshOnly": true,
+  "networkMonitoringAvailable": true,
+  "networkControlAvailable": false
 }

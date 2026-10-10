@@ -7,7 +7,10 @@ import Observation
 final class AppModel {
     private(set) var apps: [AppReading] = []
     private(set) var system = SystemReading()
+    private(set) var networkMonitorStatus: NetworkMonitorStatus = .disabled
     private(set) var rules: [String: AppRule] = [:]
+    private(set) var networkRules: [String: NetworkRule] = [:]
+    private(set) var networkRuleError: String?
     private(set) var preferences = AppPreferences()
     private(set) var enabled = false
     private(set) var applicationList: ApplicationList = .running
@@ -75,8 +78,10 @@ final class AppModel {
     var canEnable: Bool { configuredCount > 0 && !isShutdown }
     var hasScheduledRefresh: Bool { timer != nil }
 
+    var savedRuleCount: Int { Set(rules.keys).union(networkRules.keys).count }
+
     var configuredApps: [AppReading] {
-        rules.keys.map { id in
+        Set(rules.keys).union(networkRules.keys).map { id in
             apps.first { $0.id == id } ?? .offline(id: id, metadata: savedApplications[id])
         }.sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
     }
@@ -96,7 +101,7 @@ final class AppModel {
     var selectedApp: AppReading? { filteredApps.first { $0.id == selectedID } }
 
     func allowsRuleEditing(_ app: AppReading) -> Bool {
-        !isShutdown && !app.isSystemApp && !app.id.hasPrefix("com.apple.") && (app.canControl || rules[app.id] != nil)
+        !isShutdown && !app.isSystemApp && !app.id.hasPrefix("com.apple.") && (app.canControl || rules[app.id] != nil || networkRules[app.id] != nil)
     }
 
     func setApplicationList(_ list: ApplicationList) {
@@ -135,7 +140,10 @@ final class AppModel {
     }
 
     func resetRule(_ id: String) {
-        guard rules.removeValue(forKey: id) != nil else { return }
+        guard rules[id] != nil || networkRules[id] != nil else { return }
+        rules[id] = nil
+        networkRules[id] = nil
+        persistNetworkRules()
         savedApplications.removeValue(forKey: id)
         backgroundSince[id] = nil
         persistRules()
@@ -143,6 +151,39 @@ final class AppModel {
         ensureSelection()
         reconcile()
         refresh(force: true)
+    }
+
+    /// 网络规则独立保存。当前构建只准备配置，系统扩展就绪前不执行控制。
+    func setNetworkRule(_ id: String, rule: NetworkRule) {
+        let application = apps.first { $0.id == id } ?? configuredApps.first { $0.id == id }
+        guard let application, allowsRuleEditing(application) else { return }
+        networkRules[id] = rule.validated()
+        savedApplications[id] = SavedApplication(application)
+        persistNetworkRules()
+        persistRules()
+        ensureSelection()
+    }
+
+    func removeNetworkRule(_ id: String) {
+        networkRules[id] = nil
+        if rules[id] == nil { savedApplications[id] = nil }
+        persistNetworkRules()
+        persistRules()
+        ensureSelection()
+    }
+
+    func networkStatus(for id: String) -> NetworkRuleStatus {
+        NetworkPolicy.status(rule: networkRules[id] ?? NetworkRule(), enabled: false,
+                             controlAvailable: false, foreground: foregroundID == id, backgroundSeconds: 0)
+    }
+
+    private func persistNetworkRules() {
+        guard !preview else { return }
+        do {
+            let data = try JSONEncoder().encode(networkRules)
+            defaults.set(data, forKey: "networkRules.v1")
+            networkRuleError = nil
+        } catch { networkRuleError = "网络规则保存失败：\(error.localizedDescription)" }
     }
 
     func updatePreferences(_ update: (inout AppPreferences) -> Void) {
@@ -167,6 +208,13 @@ final class AppModel {
                 errorMessage = "保存的规则无法读取，已保留备份并关闭后台限制。"
             }
         }
+        if let data = defaults.data(forKey: "networkRules.v1") {
+            do { networkRules = try JSONDecoder().decode([String: NetworkRule].self, from: data).mapValues { $0.validated() } }
+            catch {
+                defaults.set(data, forKey: "networkRules.v1.invalid-backup")
+                networkRuleError = "网络规则无法读取，已保留备份。"
+            }
+        }
         if let data = defaults.data(forKey: "ruleApplications.v1") {
             savedApplications = (try? JSONDecoder().decode([String: SavedApplication].self, from: data)) ?? [:]
         }
@@ -174,7 +222,7 @@ final class AppModel {
             preferences = (try? JSONDecoder().decode(AppPreferences.self, from: data)) ?? AppPreferences()
         }
         var discoveredMetadata = false
-        for id in rules.keys where savedApplications[id] == nil {
+        for id in Set(rules.keys).union(networkRules.keys) where savedApplications[id] == nil {
             guard let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: id) else { continue }
             let bundle = Bundle(url: url)
             let name = bundle?.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String ??
@@ -239,9 +287,10 @@ final class AppModel {
         }
         let ids = display ? nil : Set(rules.filter { $0.value.isActive }.keys)
         let running = RunningApplication.capture(showSystemApps: display && preferences.showSystemApps, only: ids)
+        let includeNetwork = display && preferences.showNetworkActivity
         isRefreshing = true
         refreshTask = Task(priority: .utility) { [weak self, monitor] in
-            let snapshot = await monitor.sample(running, includeSystem: display)
+            let snapshot = await monitor.sample(running, includeSystem: display, includeNetwork: includeNetwork)
             guard !Task.isCancelled, let self, !self.sleeping, !self.isShutdown else { return }
             self.refreshTask = nil
             self.isRefreshing = false
@@ -271,6 +320,7 @@ final class AppModel {
             primaryIdentities = primaryIdentities.filter { liveIDs.contains($0.key) }
             apps = snapshot.apps
             if let whole = snapshot.system { system = whole }
+            networkMonitorStatus = snapshot.networkStatus
             sampledAt = Date()
             lastDisplaySample = NativeProcess.now
         } else {
@@ -279,6 +329,8 @@ final class AppModel {
             apps = apps.compactMap { old in
                 guard monitoredIDs.contains(old.id) else { return old }
                 guard var next = fresh[old.id] else { return nil }
+                next.network = old.network
+                next.processNetwork = old.processNetwork
                 next.cpuPercent = old.cpuPercent
                 next.memoryBytes = old.memoryBytes
                 next.readRate = old.readRate
@@ -293,7 +345,7 @@ final class AppModel {
             primaryIdentities = primaryIdentities.filter { !monitoredIDs.contains($0.key) || liveIDs.contains($0.key) }
         }
         var metadataChanged = false
-        for app in apps where rules[app.id] != nil {
+        for app in apps where rules[app.id] != nil || networkRules[app.id] != nil {
             let metadata = SavedApplication(app)
             if savedApplications[app.id] != metadata {
                 savedApplications[app.id] = metadata
@@ -365,14 +417,18 @@ final class AppModel {
         managementDisplayPaused = !preview && managementIsOpen && preferences.refreshOnlyInForeground && !displayIsVisible
         timer?.invalidate()
         timer = nil
+        if !preview && (!displayIsVisible || !preferences.showNetworkActivity) {
+            Task { await monitor.cancelNetworkSampling() }
+        }
         guard !preview, !sleeping, !isShutdown else { return }
         let waiting = apps.filter { $0.status == .waiting }.compactMap { app -> TimeInterval? in
             guard let began = backgroundSince[app.id], let rule = rules[app.id] else { return nil }
             return rule.delaySeconds - NativeProcess.seconds(since: began)
         }
-        let remainingDisplay = lastDisplaySample.map {
+        // 读取尚未返回时按正常显示间隔等待，避免因上次数据过期反复唤醒。
+        let remainingDisplay = refreshTask == nil ? (lastDisplaySample.map {
             max(0.05, preferences.refreshInterval.seconds - NativeProcess.seconds(since: $0))
-        } ?? preferences.refreshInterval.seconds
+        } ?? preferences.refreshInterval.seconds) : preferences.refreshInterval.seconds
         guard let interval = SamplingPolicy.nextInterval(displayVisible: displayIsVisible,
                                                          displayInterval: remainingDisplay,
                                                          controlMonitoring: controlMonitoringRequired,
@@ -474,7 +530,7 @@ final class AppModel {
         refreshTask?.cancel()
         refreshTask = nil
         events = nil
-        if !preview { controller.stop() }
+        if !preview { controller.stop(); Task { await monitor.cancelNetworkSampling() } }
         enabled = false
         for index in apps.indices where rules[apps[index].id]?.isActive == true { apps[index].status = .paused }
     }

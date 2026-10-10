@@ -25,6 +25,7 @@ def read_usage():
     if lib.proc_pid_rusage(args.pid, 4, buffer) != 0:
         raise OSError(ctypes.get_errno(), 'Process information unavailable')
     return {'cpu': sum(struct.unpack_from('QQ', buffer.raw, 16)),
+            'childCPU': sum(struct.unpack_from('QQ', buffer.raw, 96)),
             'packageIdleWakeups': struct.unpack_from('Q', buffer.raw, 32)[0],
             'interruptWakeups': struct.unpack_from('Q', buffer.raw, 40)[0],
             'physicalBytes': struct.unpack_from('Q', buffer.raw, 72)[0],
@@ -38,6 +39,8 @@ if before['startTime'] != after['startTime']:
     raise RuntimeError('Process changed during measurement')
 print(json.dumps({'pid': args.pid, 'seconds': args.seconds,
                   'cpuPercentOneCore': 100 * (after['cpu']-before['cpu'])/(end-start),
+                  'childCpuPercentOneCore': 100 * (after['childCPU']-before['childCPU'])/(end-start),
+                  'combinedCpuPercentOneCore': 100 * (after['cpu']+after['childCPU']-before['cpu']-before['childCPU'])/(end-start),
                   'physicalBytes': after['physicalBytes'],
                   'packageIdleWakeupsPerSecond': (after['packageIdleWakeups']-before['packageIdleWakeups'])/args.seconds,
                   'interruptWakeupsPerSecond': (after['interruptWakeups']-before['interruptWakeups'])/args.seconds}, indent=2))

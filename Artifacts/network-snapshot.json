@@ -1,0 +1,8 @@
+{
+  "applicationCount": 11,
+  "applicationsWithCounters": 7,
+  "applicationsWithRates": 7,
+  "firstSampleHasRates": false,
+  "networkAvailable": true,
+  "scope": "read_only_network_snapshot"
+}

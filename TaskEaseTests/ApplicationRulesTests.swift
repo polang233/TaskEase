@@ -95,6 +95,8 @@ struct ApplicationRulesTests {
         #expect(displayed.cpuPercent == before.cpuPercent)
         #expect(displayed.memoryBytes == before.memoryBytes)
         #expect(displayed.readRate == before.readRate)
+        #expect(displayed.network == before.network)
+        #expect(displayed.processNetwork == before.processNetwork)
         #expect(model.apps.contains { $0.id == "example.editor" })
         model.apply(MonitoringSnapshot(apps: [fresh], system: nil))
         #expect(model.apps.first?.cpuPercent == 88)

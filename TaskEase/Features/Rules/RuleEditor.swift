@@ -22,7 +22,7 @@ struct RuleEditor: View {
                         StatusLabel(status: app.status)
                     }
                     Spacer()
-                    if model.rules[app.id] != nil {
+                    if model.rules[app.id] != nil || model.networkRules[app.id] != nil {
                         Button("移除规则", systemImage: "trash", role: .destructive) { model.resetRule(app.id) }
                             .labelStyle(.iconOnly).buttonStyle(.borderless).help("移除规则")
                             .accessibilityIdentifier("remove-rule")
@@ -42,8 +42,20 @@ struct RuleEditor: View {
                     Label(app.isSystemApp ? "系统应用只用于观察。" : "该应用当前只支持占用观察。",
                           systemImage: "lock").font(.callout).foregroundStyle(.secondary)
                 }
+                Divider()
+                NetworkRuleEditor(model: model, app: app)
                 if app.isRunning {
                     Divider()
+                    if model.preferences.showNetworkActivity {
+                        VStack(alignment: .leading, spacing: 10) {
+                            Text("网络收发").font(.headline)
+                            readingRow("接收速度", value: Display.networkRate(app.network?.receiveRate))
+                            readingRow("发送速度", value: Display.networkRate(app.network?.sendRate))
+                            Text(app.network?.sampledProcesses == 0 ? "当前没有系统网络计数" : model.networkMonitorStatus.message)
+                                .font(.caption).foregroundStyle(.secondary)
+                        }.help("应用自有进程的系统网络计数。共享代理、系统代发与短连接可能无法完整归属；第一帧需要建立速度基线。")
+                        Divider()
+                    }
                     VStack(alignment: .leading, spacing: 10) {
                         Text("磁盘与唤醒").font(.headline)
                         readingRow("磁盘读取", value: Display.rate(app.readRate))
@@ -61,6 +73,13 @@ struct RuleEditor: View {
                                 Spacer()
                                 Text(Display.bytes(process.memoryBytes))
                             }.font(.caption).monospacedDigit()
+                            if model.preferences.showNetworkActivity {
+                                HStack {
+                                    Text("接收 " + Display.networkRate(app.processNetwork[process.identity]?.receiveRate))
+                                    Spacer()
+                                    Text("发送 " + Display.networkRate(app.processNetwork[process.identity]?.sendRate))
+                                }.font(.caption).foregroundStyle(.secondary).monospacedDigit()
+                            }
                         }
                     }.padding(.top, 8)
                 }.foregroundStyle(.secondary)

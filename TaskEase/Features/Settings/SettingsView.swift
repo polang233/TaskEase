@@ -20,6 +20,9 @@ struct SettingsView: View {
                 Toggle("管理窗口仅在前台刷新", isOn: Binding(get: { model.preferences.refreshOnlyInForeground },
                     set: { value in model.updatePreferences { $0.refreshOnlyInForeground = value } }))
                     .toggleStyle(.checkbox).accessibilityIdentifier("foreground-display-only")
+                Toggle("显示应用网络速度", isOn: Binding(get: { model.preferences.showNetworkActivity },
+                    set: { value in model.updatePreferences { $0.showNetworkActivity = value } }))
+                    .toggleStyle(.checkbox).accessibilityIdentifier("show-network-activity")
                 Toggle("显示系统应用", isOn: Binding(get: { model.preferences.showSystemApps },
                                                    set: { value in model.updatePreferences { $0.showSystemApps = value } }))
                     .toggleStyle(.checkbox)
@@ -27,7 +30,7 @@ struct SettingsView: View {
                     .font(.caption).foregroundStyle(.secondary)
             }
             Section("后台规则") {
-                LabeledContent("已保存", value: "\(model.rules.count) 条规则")
+                LabeledContent("已保存", value: "\(model.savedRuleCount) 个应用")
                 LabeledContent("可启用", value: "\(model.configuredCount) 条规则")
                 Button("管理后台规则") {
                     model.setApplicationList(.configured)
@@ -61,5 +64,5 @@ struct SettingsView: View {
 }
 
 #Preview("设置") {
-    SettingsView(model: AppModel(preview: true)).frame(width: 560, height: 650)
+    SettingsView(model: AppModel(preview: true)).frame(width: 560, height: 700)
 }

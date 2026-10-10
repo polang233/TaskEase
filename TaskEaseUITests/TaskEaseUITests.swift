@@ -176,4 +176,26 @@ final class TaskEaseUITests: XCTestCase {
         XCTAssertTrue(app.wait(for: .notRunning, timeout: 5))
     }
 
+    /// 验证网络配置进入已配置列表，同时明确显示待启用状态。
+    func testNetworkRuleDraftAndConfiguredList() throws {
+        let app = launchFixture()
+        defer { app.terminate() }
+        let window = app.windows["轻程"]
+        window.staticTexts["网页浏览器"].firstMatch.click()
+        let mode = window.popUpButtons["network-rule-mode"]
+        XCTAssertTrue(mode.waitForExistence(timeout: 5))
+        mode.click()
+        app.menuItems["限制速度"].click()
+        XCTAssertTrue(window.textFields["network-download-limit"].waitForExistence(timeout: 5))
+        XCTAssertTrue(window.staticTexts["待启用网络扩展"].exists)
+        XCTAssertFalse(window.switches["management-toggle"].isEnabled)
+        let scope = window.popUpButtons["network-rule-scope"]
+        scope.click()
+        app.menuItems["始终"].click()
+        window.descendants(matching: .any).matching(identifier: "已配置规则").firstMatch.click()
+        XCTAssertTrue(window.staticTexts["网页浏览器"].exists)
+        window.buttons["remove-network-rule"].click()
+        XCTAssertTrue(window.staticTexts["还没有后台规则"].waitForExistence(timeout: 5))
+    }
+
 }

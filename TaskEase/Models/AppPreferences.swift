@@ -25,12 +25,14 @@ struct AppPreferences: Codable, Equatable, Sendable {
     var refreshInterval: DisplayRefreshInterval = .two
     var theme: ThemeMode = .system
     var refreshOnlyInForeground = true
+    var showNetworkActivity = true
 }
 
 // 新增偏好使用默认值，读取已有配置时保留原有外观和刷新间隔。
 extension AppPreferences {
     init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
+        showNetworkActivity = try values.decodeIfPresent(Bool.self, forKey: .showNetworkActivity) ?? true
         showSystemApps = try values.decodeIfPresent(Bool.self, forKey: .showSystemApps) ?? false
         refreshInterval = try values.decodeIfPresent(DisplayRefreshInterval.self, forKey: .refreshInterval) ?? .two
         theme = try values.decodeIfPresent(ThemeMode.self, forKey: .theme) ?? .system

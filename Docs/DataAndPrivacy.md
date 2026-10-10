@@ -2,7 +2,7 @@
 
 ## 本地数据
 
-轻程的规则和显示设置由 UserDefaults 保存，控制归属日志单独保存在 Application Support。当前没有使用统计上报。
+轻程的 CPU 规则、网络规则和显示设置由 UserDefaults 保存，控制归属日志单独保存在 Application Support。当前没有使用统计上报。
 
 | 数据 | 位置 |
 | --- | --- |

@@ -36,17 +36,48 @@ struct RunningApplication: Sendable {
 struct MonitoringSnapshot: Sendable {
     let apps: [AppReading]
     let system: SystemReading?
+    var networkStatus: NetworkMonitorStatus = .disabled
 }
 
 /// 串行持有采样基线和路径缓存，扫描工作在主 actor 之外执行。
 actor ProcessMonitor {
     private var displaySampler = ProcessSampler()
     private var controlSampler = ProcessSampler()
+    private let networkMonitor = NetworkMonitor()
+    private var networkSampler = NetworkRateSampler()
 
-    func sample(_ applications: [RunningApplication], includeSystem: Bool) -> MonitoringSnapshot {
-        // 显示与控制各用一份基线，慢速显示刷新仍能覆盖完整时间区间。
-        if includeSystem { return displaySampler.sample(applications, includeSystem: true) }
-        return controlSampler.sample(applications, includeSystem: false)
+    func sample(_ applications: [RunningApplication], includeSystem: Bool, includeNetwork: Bool = false) async -> MonitoringSnapshot {
+        // 显示与控制各用一份基线，网络快照只为可见数据面板读取。
+        guard includeSystem else { return controlSampler.sample(applications, includeSystem: false) }
+        let snapshot = displaySampler.sample(applications, includeSystem: true)
+        guard includeNetwork else {
+            networkSampler.reset()
+            return snapshot
+        }
+        let identities = Dictionary(uniqueKeysWithValues: snapshot.apps.flatMap { $0.samples }.map { ($0.identity.pid, $0.identity) })
+        guard let counters = await networkMonitor.sample(pids: Set(identities.keys)) else {
+            networkSampler.reset()
+            return MonitoringSnapshot(apps: snapshot.apps, system: snapshot.system,
+                networkStatus: .unavailable("暂时无法读取网络统计"))
+        }
+        // nettop 输出仅用 PID 标识，完成后再次验证启动时间，排除读取期间的 PID 复用。
+        let verified = counters.filter { pid, _ in
+            identities[pid].map { NativeProcess.identity(pid) == $0 } == true
+        }
+        let readings = networkSampler.sample(snapshot.apps, counters: verified, now: NativeProcess.now)
+        var apps = snapshot.apps
+        for index in apps.indices {
+            apps[index].network = readings.applications[apps[index].id]
+            apps[index].processNetwork = readings.processes.filter { identity, _ in
+                apps[index].samples.contains { $0.identity == identity }
+            }
+        }
+        return MonitoringSnapshot(apps: apps, system: snapshot.system, networkStatus: .available)
+    }
+
+    func cancelNetworkSampling() async {
+        await networkMonitor.cancel()
+        networkSampler.reset()
     }
 
 }

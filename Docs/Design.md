@@ -21,6 +21,8 @@ AppModel 在 MainActor 上持有规则、显示设置、前台状态和窗口状
 | Features/Settings、Help、About | 显示设置、使用帮助、关于信息与许可证查看 |
 | Models | 应用读数、规则、偏好、进程身份和控制消息 |
 | Services/Storage | 偏好域与本地应用数据清理 |
+| Services/Networking | 网络快照进程、CSV 边界解析与速度基线 |
+| Features/Networking | 网络规则配置与权限状态 |
 | Services/Monitoring | 采样 actor、计数差分和采样周期策略 |
 | Services/ProcessControl | libproc、Mach、Darwin 桥接，控制与恢复 |
 | Shared | 视图组件、图标缓存与数值格式 |
@@ -50,6 +52,10 @@ RunningApplication 在 MainActor 上把 NSRunningApplication 转换为 Sendable 
 SamplingPolicy 分别考虑显示间隔、2 秒控制检查和后台等待期限。下一次检查取最早期限，慢速显示更新不会让控制计划的 3 秒失联期限到期。没有显示或执行需求时，不设置周期定时器。
 
 NSWorkspace 应用激活、隐藏、启动、退出、睡眠和唤醒在 macOS 26 起使用类型化消息。窗口可见性在 macOS 27 起使用类型化消息，观察回调按声明的 actor 执行。较早系统使用公开通知，并向主 actor 传递回调与应用标识。睡眠前结束控制进程，唤醒后重新采样。
+
+## 网络采样与规则
+
+ProcessMonitor 协调 NetworkMonitor actor，只在显示刷新需要时读取系统网络计数；完成后按完整身份核对成员。NetworkRateSampler 持有独立基线。networkRules.v1 保存网络配置，规则列表按 CPU 与网络配置并集展示。网络执行能力与配置状态分别表示，系统扩展未启用时不会显示规则已生效。详细数据流、取消路径及控制方案见 [网络设计](Networking.md)。
 
 ## CPU 控制与恢复
 

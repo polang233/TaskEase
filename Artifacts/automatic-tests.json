@@ -1,14 +1,14 @@
 {
-  "recordedAt": "2026-10-11T01:23:42+08:00",
+  "recordedAt": "2026-10-11T01:56:13+08:00",
   "version": "1.1.0",
   "schemeName": "TaskEase",
   "counts": {
     "expectedFailures": 0,
     "failed": 0,
     "notRun": 0,
-    "passed": 34,
+    "passed": 43,
     "skipped": 0,
-    "total": 34
+    "total": 43
   },
   "results": [
     {
@@ -112,6 +112,46 @@
       "state": "Passed"
     },
     {
+      "identifier": "NetworkingTests/CSVUsesHeaderAndLastPIDSeparator()",
+      "targetName": "TaskEaseTests",
+      "state": "Passed"
+    },
+    {
+      "identifier": "NetworkingTests/ratesAggregateMembersAndResetForReusedPIDs()",
+      "targetName": "TaskEaseTests",
+      "state": "Passed"
+    },
+    {
+      "identifier": "NetworkingTests/networkPermissionsAndScopeDetermineStatus()",
+      "targetName": "TaskEaseTests",
+      "state": "Passed"
+    },
+    {
+      "identifier": "NetworkingTests/networkRulesRemainEditableOfflineAndSeparateFromCPU()",
+      "targetName": "TaskEaseTests",
+      "state": "Passed"
+    },
+    {
+      "identifier": "NetworkingTests/removingNetworkRulePreservesCPURule()",
+      "targetName": "TaskEaseTests",
+      "state": "Passed"
+    },
+    {
+      "identifier": "NetworkingTests/bandwidthCreditIsSharedAndIdleBurstIsBounded()",
+      "targetName": "TaskEaseTests",
+      "state": "Passed"
+    },
+    {
+      "identifier": "NetworkingTests/nativeSnapshotReaderRunsAndFinishes()",
+      "targetName": "TaskEaseTests",
+      "state": "Passed"
+    },
+    {
+      "identifier": "NetworkingTests/networkRuleValidationAndPersistenceRoundTrip()",
+      "targetName": "TaskEaseTests",
+      "state": "Passed"
+    },
+    {
       "identifier": "TaskEaseTests/foregroundAlwaysRestores()",
       "targetName": "TaskEaseTests",
       "state": "Passed"
@@ -178,6 +218,11 @@
     },
     {
       "identifier": "TaskEaseUITests/testEraseDataConfirmationAndQuit()",
+      "targetName": "TaskEaseUITests",
+      "state": "Passed"
+    },
+    {
+      "identifier": "TaskEaseUITests/testNetworkRuleDraftAndConfiguredList()",
       "targetName": "TaskEaseUITests",
       "state": "Passed"
     }

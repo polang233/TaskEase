@@ -23,6 +23,8 @@ struct AppReading: Identifiable, Sendable {
     var status: RuleStatus = .unmanaged
     var wakeupRate: Double = 0
     var isRunning = true
+    var network: NetworkReading?
+    var processNetwork: [ProcessIdentity: NetworkReading] = [:]
 
     var isSystemApp: Bool {
         ApplicationScope.isSystem(id: id, roots: bundlePaths)
