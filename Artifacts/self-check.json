@@ -1,14 +1,14 @@
 {
-  "baseline_cpu_percent" : 99.607704240311193,
+  "baseline_cpu_percent" : 100.43217839892318,
   "cpu_basis" : "one_core",
   "gentle_applied" : true,
   "gentle_restored" : true,
   "group_restored" : true,
   "lease_timeout_restored" : true,
-  "limited_cpu_percent" : 21.057432375030228,
+  "limited_cpu_percent" : 20.457263682037162,
   "passed" : true,
-  "restored_cpu_percent" : 100.07384683398936,
+  "restored_cpu_percent" : 100.03001686338895,
   "scope" : "owned_test_child_only",
-  "two_process_group_cpu_percent" : 20.154551574073412,
+  "two_process_group_cpu_percent" : 19.59673563467906,
   "worker_crash_restored" : true
 }

@@ -1,0 +1,19 @@
+{
+  "configuration": "Release",
+  "architectures": [
+    "x86_64",
+    "arm64"
+  ],
+  "primaryIcon": "AppIcon",
+  "applicationExecutableCount": 1,
+  "codesignVerified": true,
+  "menuIconPoints": [
+    18,
+    18
+  ],
+  "singleInstanceIntegrationPassed": true,
+  "runningInstanceCount": 1,
+  "dockPolicyRegularWithWindow": true,
+  "uiTestsPassed": 3,
+  "unitTestsPassed": 14
+}

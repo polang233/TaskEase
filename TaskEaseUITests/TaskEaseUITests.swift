@@ -1,4 +1,5 @@
 import XCTest
+import AppKit
 
 @MainActor
 final class TaskEaseUITests: XCTestCase {
@@ -29,6 +30,41 @@ final class TaskEaseUITests: XCTestCase {
         window.staticTexts["Finder"].firstMatch.click()
         XCTAssertTrue(window.staticTexts["系统应用只用于观察。"].waitForExistence(timeout: 5))
         app.terminate()
+    }
+
+    func testCloseAndReopenManagementKeepsSameApplication() throws {
+        let app = XCUIApplication()
+        app.launchArguments = ["--instance-test-scope", UUID().uuidString]
+        app.launch()
+        defer { app.terminate() }
+        app.activate()
+        XCTAssertTrue(app.windows["轻程"].waitForExistence(timeout: 10))
+        var runner = Bundle(for: Self.self).bundleURL
+        while runner.pathExtension != "app" && runner.path != "/" { runner.deleteLastPathComponent() }
+        let applicationURL = runner.deletingLastPathComponent().appendingPathComponent("TaskEase.app")
+        let running = NSRunningApplication.runningApplications(withBundleIdentifier: "com.github.polang233.TaskEase")
+            .first { $0.bundleURL?.path == applicationURL.path }
+        XCTAssertNotNil(running)
+        let originalPID = running?.processIdentifier
+        app.typeKey("w", modifierFlags: .command)
+        let deadline = Date().addingTimeInterval(3)
+        while running?.activationPolicy != .accessory && Date() < deadline {
+            _ = RunLoop.current.run(mode: .default, before: Date().addingTimeInterval(0.05))
+        }
+        XCTAssertEqual(running?.activationPolicy, .accessory)
+        XCTAssertFalse(running?.isTerminated ?? true)
+        let configuration = NSWorkspace.OpenConfiguration()
+        configuration.createsNewApplicationInstance = false
+        let reopened = expectation(description: "Reopen the same application")
+        NSWorkspace.shared.openApplication(at: applicationURL, configuration: configuration) { _, _ in
+            reopened.fulfill()
+        }
+        wait(for: [reopened], timeout: 10)
+        XCTAssertEqual(running?.processIdentifier, originalPID)
+        XCTAssertEqual(running?.activationPolicy, .regular)
+        app.activate()
+        XCTAssertTrue(app.windows["轻程"].waitForExistence(timeout: 5))
+        XCTAssertEqual(app.windows.matching(identifier: "轻程").count, 1)
     }
 
     func testPauseAutomaticManagementAndRestore() throws {

@@ -1,28 +1,48 @@
 {
-  "recordedAt": "2026-10-10T10:19:05+08:00",
   "activeTestPlanName": "TaskEase",
   "counts": {
     "expectedFailures": 0,
     "failed": 0,
     "notRun": 0,
-    "passed": 11,
+    "passed": 17,
     "skipped": 0,
-    "total": 11
+    "total": 17
   },
   "results": [
     {
-      "displayName": "testManagementWindowSearchAndReadOnlyApp()",
+      "displayName": "menuBarImageHasARealPointSize()",
       "errorMessages": [],
-      "identifier": "TaskEaseUITests/testManagementWindowSearchAndReadOnlyApp()",
+      "identifier": "ApplicationLifecycleTests/menuBarImageHasARealPointSize()",
       "state": "Passed",
-      "targetName": "TaskEaseUITests"
+      "targetName": "TaskEaseTests"
     },
     {
-      "displayName": "testPauseAutomaticManagementAndRestore()",
+      "displayName": "oneLockOwnerAndReacquireAfterClose()",
       "errorMessages": [],
-      "identifier": "TaskEaseUITests/testPauseAutomaticManagementAndRestore()",
+      "identifier": "ApplicationLifecycleTests/oneLockOwnerAndReacquireAfterClose()",
       "state": "Passed",
-      "targetName": "TaskEaseUITests"
+      "targetName": "TaskEaseTests"
+    },
+    {
+      "displayName": "separateValidationScopesCanRunIndependently()",
+      "errorMessages": [],
+      "identifier": "ApplicationLifecycleTests/separateValidationScopesCanRunIndependently()",
+      "state": "Passed",
+      "targetName": "TaskEaseTests"
+    },
+    {
+      "displayName": "previewAndTestLaunchesHaveNoStatusItem()",
+      "errorMessages": [],
+      "identifier": "ApplicationLifecycleTests/previewAndTestLaunchesHaveNoStatusItem()",
+      "state": "Passed",
+      "targetName": "TaskEaseTests"
+    },
+    {
+      "displayName": "managementWindowReusesItsWindowAndChangesDockPolicy()",
+      "errorMessages": [],
+      "identifier": "ApplicationLifecycleTests/managementWindowReusesItsWindowAndChangesDockPolicy()",
+      "state": "Passed",
+      "targetName": "TaskEaseTests"
     },
     {
       "displayName": "foregroundAlwaysRestores()",
@@ -86,12 +106,34 @@
       "identifier": "TaskEaseTests/inactiveRuleStaysUnmanaged()",
       "state": "Passed",
       "targetName": "TaskEaseTests"
+    },
+    {
+      "displayName": "testManagementWindowSearchAndReadOnlyApp()",
+      "errorMessages": [],
+      "identifier": "TaskEaseUITests/testManagementWindowSearchAndReadOnlyApp()",
+      "state": "Passed",
+      "targetName": "TaskEaseUITests"
+    },
+    {
+      "displayName": "testCloseAndReopenManagementKeepsSameApplication()",
+      "errorMessages": [],
+      "identifier": "TaskEaseUITests/testCloseAndReopenManagementKeepsSameApplication()",
+      "state": "Passed",
+      "targetName": "TaskEaseUITests"
+    },
+    {
+      "displayName": "testPauseAutomaticManagementAndRestore()",
+      "errorMessages": [],
+      "identifier": "TaskEaseUITests/testPauseAutomaticManagementAndRestore()",
+      "state": "Passed",
+      "targetName": "TaskEaseUITests"
     }
   ],
   "schemeName": "TaskEase",
-  "summary": "11 tests: 11 passed, 0 failed, 0 skipped, 0 expected failures, 0 not run",
-  "totalResults": 11,
+  "summary": "17 tests: 17 passed, 0 failed, 0 skipped, 0 expected failures, 0 not run",
+  "totalResults": 17,
   "truncated": false,
+  "recordedAt": "2026-10-10T17:22:29+08:00",
   "environment": {
     "chip": "Apple M5",
     "macOS": "27.0.1",

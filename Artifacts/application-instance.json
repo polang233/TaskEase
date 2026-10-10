@@ -1,0 +1,8 @@
+{
+  "scope": "isolated_application_fixture",
+  "passed": true,
+  "concurrentDuplicateCount": 4,
+  "instanceCountAfterDuplicates": 1,
+  "differentAppCopiesShareOneInstance": true,
+  "restartAfterCrash": true
+}

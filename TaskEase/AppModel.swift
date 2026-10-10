@@ -12,13 +12,14 @@ final class AppModel {
     var selectedID: String?
     var errorMessage: String?
     var sampledAt = Date()
+    private(set) var managementIsOpen = false
     private(set) var foregroundID: String?
     private var backgroundSince: [String: UInt64] = [:]
     private let monitor = ProcessMonitor()
     private let controller = WorkerController()
     private var timer: Timer?
     private var observers: [NSObjectProtocol] = []
-    private var managementWindow: NSWindow?
+    private var managementWindow: ManagementWindowController?
     private var sleeping = false
     let preview: Bool
 
@@ -171,25 +172,18 @@ final class AppModel {
     }
 
     func showManagement() {
-        if let window = managementWindow {
-            window.makeKeyAndOrderFront(nil); NSApp.activate(ignoringOtherApps: true); refresh(); return
-        }
-        let view = ContentView(model: self)
-        let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 940, height: 650),
-                              styleMask: [.titled, .closable, .miniaturizable, .resizable],
-                              backing: .buffered, defer: false)
-        window.title = "轻程"; window.minSize = NSSize(width: 760, height: 520)
-        window.contentViewController = NSHostingController(rootView: view)
-        window.isReleasedWhenClosed = false
-        window.center()
-        managementWindow = window
-        window.makeKeyAndOrderFront(nil); NSApp.activate(ignoringOtherApps: true); refresh()
+        if managementWindow == nil { managementWindow = ManagementWindowController(model: self) }
+        managementIsOpen = true
+        managementWindow?.present()
+        refresh()
     }
+    func closeManagement() { managementWindow?.close() }
+    func managementDidClose() { managementIsOpen = false; refresh() }
     func shutdown() {
         timer?.invalidate(); timer = nil
         for observer in observers { NSWorkspace.shared.notificationCenter.removeObserver(observer) }
         observers.removeAll()
-        controller.stop()
+        if !preview { controller.stop() }
     }
     static var exampleApps: [AppReading] {
         [

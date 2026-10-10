@@ -2,7 +2,11 @@
 
 ## 启动与查看
 
-在 Xcode 中选择 TaskEase / My Mac，按 Command-R；也可双击项目 build/TaskEase.app 中的本机 Debug 构建。启动后点击菜单栏的叶片图标，再点击“应用管理”。应用以菜单栏形式运行。
+双击项目 `build/TaskEase.app` 启动本机 Release 构建。管理窗口会自动打开，菜单栏显示双叶图标。开发时可在 Xcode 中选择 TaskEase / My Mac，按 Command-R。
+
+同一用户正常运行一个实例。再次双击应用或启动另一份应用副本，会打开当前实例的管理窗口。打开和最小化窗口时可通过 Dock 切换；关闭管理窗口会继续后台管理，再点击菜单栏“应用管理”可恢复原窗口。
+
+Command-1 打开管理窗口，Command-W 关闭管理窗口。要结束后台管理，从菜单面板点击“退出”或按 Command-Q。
 
 应用列表显示真实采样的 CPU 和物理内存合计。选择应用后查看进程详情和磁盘活动。CPU 100% 约等于一个核心满载。顶部 GPU 是整机驱动估计值，不能当作某个应用的 GPU 占比。
 
@@ -26,10 +30,11 @@ CPU 预算按应用自有进程的合计控制，默认是单核的 20%。该模
 
 ## 开发验证
 
-应用可执行文件提供三个开发模式：
+应用可执行文件提供以下开发模式：
 
 - --self-test：只对自建限时负载进程执行 CPU 预算、温和调度和恢复检查。
 - --snapshot：读取真实应用和整机状态，输出 JSON，不加载规则或控制进程。
-- --show-management：正常运行并立即打开管理窗口。
+- --show-management：打开正常应用的管理窗口。
+- --instance-test-scope UUID：使用独立实例锁和测试数据验证启动行为。
 
 通过 Scripts/run-self-check.sh 传入 Xcode 构建的 TaskEase.app/Contents/MacOS/TaskEase，可重新执行进程控制自检。Scripts/measure-overhead.py 只读测量指定 PID 的 CPU 和物理占用。

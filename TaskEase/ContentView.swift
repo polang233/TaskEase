@@ -15,6 +15,14 @@ enum Display {
     static func rate(_ value: Double) -> String { bytes(UInt64(max(0, value))) + "/s" }
 }
 
+struct BrandMark: View {
+    var size: CGFloat = 28
+    var body: some View {
+        Image("TaskEaseMark").resizable().scaledToFit()
+            .frame(width: size, height: size).accessibilityHidden(true)
+    }
+}
+
 struct AppIcon: View {
     let app: AppReading
     var size: CGFloat = 32
@@ -64,10 +72,10 @@ struct ContentView: View {
     var body: some View {
         VStack(spacing: 0) {
             HStack(spacing: 10) {
-                Image(systemName: "leaf.fill").font(.title2).foregroundStyle(.green)
+                BrandMark(size: 30)
                 VStack(alignment: .leading, spacing: 2) {
                     Text("轻程").font(.title2.weight(.semibold))
-                    Text("TaskEase").font(.caption).foregroundStyle(.secondary)
+                    Text("TaskEase · \(AppVersion.short)").font(.caption).foregroundStyle(.secondary)
                 }
                 Spacer()
                 Text("\(model.managedCount) 个应用正在管理").font(.callout).foregroundStyle(.secondary)
@@ -232,7 +240,10 @@ struct MenuPanel: View {
     var body: some View {
         VStack(spacing: 0) {
             HStack {
-                Label("轻程", systemImage: "leaf.fill").font(.headline)
+                HStack(spacing: 8) {
+                    BrandMark(size: 22)
+                    Text("轻程").font(.headline)
+                }
                 Spacer()
                 Toggle("自动管理", isOn: Binding(get: { model.enabled }, set: { model.setEnabled($0) }))
                     .toggleStyle(.switch).controlSize(.small)

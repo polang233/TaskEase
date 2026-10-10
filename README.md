@@ -14,11 +14,15 @@ CPU 百分比按单核计算，100% 约等于一个核满载。CPU 预算是平�
 
 ## 运行
 
-用 Xcode 打开 `TaskEase.xcodeproj`，选择 TaskEase / My Mac，按 Command-R。应用启动后位于菜单栏，点击叶片图标进入“应用管理”。所有应用默认不管理，需主动设置规则。
+双击 `build/TaskEase.app` 启动本机 Release 应用。启动会打开管理窗口，并在菜单栏显示双叶图标。管理窗口打开或最小化时保留 Dock 入口，关闭窗口后继续菜单栏管理。重复启动会打开已有实例的窗口。
 
-如果本机已有 `build/TaskEase.app`，也可双击启动。
+在项目根目录执行以下命令生成应用包：
 
-build 下的应用是本机 Debug 构建，已验证签名，未做分发公证；该目录不纳入 Git。
+```sh
+sh Scripts/build-app.sh
+```
+
+所有应用默认不管理，需主动设置规则。应用包采用本机签名，供本机使用；分发到其他电脑需要单独完成签名与公证。`build/` 为本机产物目录。
 
 ## 开发
 
@@ -37,6 +41,7 @@ build 下的应用是本机 Debug 构建，已验证签名，未做分发公证�
 | `Docs/` | 需求、设计、使用与验证说明 |
 | `Scripts/` | 进程控制自检与只读开销测量 |
 | `Artifacts/` | 验证摘要与界面预览 |
+| `Branding/` | 图形源文件、图标预览与制作说明 |
 
 ## 验证
 
@@ -54,5 +59,6 @@ sh Scripts/run-self-check.sh /path/to/TaskEase.app/Contents/MacOS/TaskEase
 - [设计与恢复机制](Docs/Design.md)
 - [验证方法与结果](Docs/Validation.md)
 - [使用说明](Docs/Usage.md)
+- [图标设计与资源](Branding/README.md)
 
-首版已实现。构建、11 项自动测试和自建进程控制自检通过。以 Validation.md 中记录的实际检查和已知限制为准。
+Release 构建、17 项自动测试、跨应用副本的单实例检查和进程控制自检通过。实际记录与边界见 [验证文档](Docs/Validation.md)。

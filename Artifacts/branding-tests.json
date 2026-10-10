@@ -1,0 +1,29 @@
+{
+  "recordedAt": "2026-10-10T11:43:05+08:00",
+  "scope": "branding_ui_regression",
+  "counts": {
+    "expectedFailures": 0,
+    "failed": 0,
+    "notRun": 0,
+    "passed": 2,
+    "skipped": 0,
+    "total": 2
+  },
+  "results": [
+    {
+      "displayName": "testManagementWindowSearchAndReadOnlyApp()",
+      "errorMessages": [],
+      "identifier": "TaskEaseUITests/testManagementWindowSearchAndReadOnlyApp()",
+      "state": "Passed",
+      "targetName": "TaskEaseUITests"
+    },
+    {
+      "displayName": "testPauseAutomaticManagementAndRestore()",
+      "errorMessages": [],
+      "identifier": "TaskEaseUITests/testPauseAutomaticManagementAndRestore()",
+      "state": "Passed",
+      "targetName": "TaskEaseUITests"
+    }
+  ],
+  "summary": "2 tests: 2 passed, 0 failed, 0 skipped, 0 expected failures, 0 not run"
+}
