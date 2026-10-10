@@ -1,14 +1,14 @@
 {
-  "recordedAt": "2026-10-10T23:19:00+08:00",
+  "recordedAt": "2026-10-11T01:04:56+08:00",
   "version": "1.1.0",
   "schemeName": "TaskEase",
   "counts": {
     "expectedFailures": 0,
     "failed": 0,
     "notRun": 0,
-    "passed": 32,
+    "passed": 34,
     "skipped": 0,
-    "total": 32
+    "total": 34
   },
   "uiTestPrecondition": "Unlocked macOS desktop; normal application closed",
   "results": [
@@ -99,6 +99,16 @@
     },
     {
       "identifier": "ApplicationRulesTests/preferencesAndExistingRuleFormatRoundTrip()",
+      "targetName": "TaskEaseTests",
+      "state": "Passed"
+    },
+    {
+      "identifier": "ApplicationRulesTests/foregroundDisplayStopsPollingButKeepsControlDeadlines()",
+      "targetName": "TaskEaseTests",
+      "state": "Passed"
+    },
+    {
+      "identifier": "ApplicationRulesTests/existingDisplayPreferencesKeepTheirValues()",
       "targetName": "TaskEaseTests",
       "state": "Passed"
     },

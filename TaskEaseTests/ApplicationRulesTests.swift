@@ -127,4 +127,36 @@ struct ApplicationRulesTests {
         #expect(try StoredRules.decode(StoredRules.encode(rules)) == rules)
         #expect(AppRule(delaySeconds: 900).validated().delaySeconds == 300)
     }
+    @Test func foregroundDisplayStopsPollingButKeepsControlDeadlines() {
+        let paused = SamplingPolicy.shouldRefreshDisplay(managementVisible: true, menuVisible: false,
+                                                        isForeground: false, onlyInForeground: true)
+        #expect(!paused)
+        #expect(SamplingPolicy.nextInterval(displayVisible: paused, displayInterval: 1,
+                                           controlMonitoring: false, waitingSeconds: []) == nil)
+        #expect(SamplingPolicy.nextInterval(displayVisible: paused, displayInterval: 1,
+                                           controlMonitoring: true, waitingSeconds: []) == 2)
+        #expect(SamplingPolicy.nextInterval(displayVisible: paused, displayInterval: 1,
+                                           controlMonitoring: true, waitingSeconds: [0.2]) == 0.2)
+        #expect(SamplingPolicy.shouldRefreshDisplay(managementVisible: true, menuVisible: false,
+                                                   isForeground: true, onlyInForeground: true))
+        #expect(SamplingPolicy.shouldRefreshDisplay(managementVisible: true, menuVisible: false,
+                                                   isForeground: false, onlyInForeground: false))
+        #expect(SamplingPolicy.shouldRefreshDisplay(managementVisible: false, menuVisible: true,
+                                                   isForeground: false, onlyInForeground: true))
+        #expect(!SamplingPolicy.shouldRefreshDisplay(managementVisible: false, menuVisible: false,
+                                                    isForeground: true, onlyInForeground: false))
+    }
+
+    @Test func existingDisplayPreferencesKeepTheirValues() throws {
+        let legacy = Data(#"{"showSystemApps":true,"refreshInterval":5,"theme":"dark"}"#.utf8)
+        let preferences = try JSONDecoder().decode(AppPreferences.self, from: legacy)
+        #expect(preferences.showSystemApps)
+        #expect(preferences.refreshInterval == .five)
+        #expect(preferences.theme == .dark)
+        #expect(preferences.refreshOnlyInForeground)
+        var changed = preferences
+        changed.refreshOnlyInForeground = false
+        #expect(try JSONDecoder().decode(AppPreferences.self, from: JSONEncoder().encode(changed)) == changed)
+    }
+
 }

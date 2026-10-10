@@ -208,9 +208,13 @@ final class AppModel {
     }
 
     private var displayIsVisible: Bool {
-        (menuWindow?.isVisible == true && menuWindow?.occlusionState.contains(.visible) == true) ||
-        (managementIsOpen && managementWindow?.window?.isMiniaturized == false &&
-         managementWindow?.window?.occlusionState.contains(.visible) == true)
+        SamplingPolicy.shouldRefreshDisplay(
+            managementVisible: managementIsOpen && managementWindow?.window?.isMiniaturized == false &&
+                managementWindow?.window?.occlusionState.contains(.visible) == true,
+            menuVisible: menuWindow?.isVisible == true && menuWindow?.occlusionState.contains(.visible) == true,
+            isForeground: NSWorkspace.shared.frontmostApplication?.bundleIdentifier == Bundle.main.bundleIdentifier,
+            onlyInForeground: preferences.refreshOnlyInForeground
+        )
     }
 
     private var controlMonitoringRequired: Bool {
@@ -240,7 +244,8 @@ final class AppModel {
             guard !Task.isCancelled, let self, !self.sleeping, !self.isShutdown else { return }
             self.refreshTask = nil
             self.isRefreshing = false
-            self.apply(snapshot, updateDisplay: display)
+            // 扫描期间可能已切到后台，合并结果前再次确认显示需求。
+            self.apply(snapshot, updateDisplay: display && self.displayIsVisible)
             self.reconcile()
             if let force = self.pendingRefresh {
                 self.pendingRefresh = nil
@@ -308,11 +313,17 @@ final class AppModel {
     }
 
     private func focusChanged() {
-        guard !sleeping, !isShutdown, displayIsVisible || (enabled && canEnable) else { return }
+        guard !sleeping, !isShutdown else { return }
+        guard displayIsVisible || (enabled && canEnable) else {
+            // 后台且无控制需求时，只撤销显示定时器，不遍历应用进程状态。
+            scheduleRefresh()
+            return
+        }
         updateFocus()
         // 使用缓存计划立即恢复前台应用，再进行异步扫描。
         reconcile()
-        refresh(force: enabled && canEnable)
+        // 切走时 reconcile 移除显示定时器；切回时强制更新可见数据。
+        refresh(force: true)
     }
 
     private func membershipChanged(_ id: String?) {

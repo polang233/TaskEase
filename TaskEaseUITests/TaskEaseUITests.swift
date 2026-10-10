@@ -81,6 +81,13 @@ final class TaskEaseUITests: XCTestCase {
         let dark = settings.descendants(matching: .any).matching(identifier: "深色").firstMatch
         XCTAssertTrue(dark.waitForExistence(timeout: 5))
         dark.click()
+        let foregroundOnly = settings.checkBoxes["foreground-display-only"]
+        XCTAssertTrue(foregroundOnly.waitForExistence(timeout: 5))
+        XCTAssertEqual((foregroundOnly.value as? NSNumber)?.intValue, 1)
+        foregroundOnly.click()
+        XCTAssertEqual((foregroundOnly.value as? NSNumber)?.intValue, 0)
+        foregroundOnly.click()
+        XCTAssertEqual((foregroundOnly.value as? NSNumber)?.intValue, 1)
         let refresh = settings.popUpButtons["display-refresh-interval"]
         XCTAssertTrue(refresh.waitForExistence(timeout: 5))
         refresh.click()

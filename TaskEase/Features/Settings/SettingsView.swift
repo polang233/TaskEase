@@ -17,10 +17,13 @@ struct SettingsView: View {
                                                        set: { interval in model.updatePreferences { $0.refreshInterval = interval } })) {
                     ForEach(DisplayRefreshInterval.allCases, id: \.self) { Text($0.title).tag($0) }
                 }.accessibilityIdentifier("display-refresh-interval")
+                Toggle("管理窗口仅在前台刷新", isOn: Binding(get: { model.preferences.refreshOnlyInForeground },
+                    set: { value in model.updatePreferences { $0.refreshOnlyInForeground = value } }))
+                    .toggleStyle(.checkbox).accessibilityIdentifier("foreground-display-only")
                 Toggle("显示系统应用", isOn: Binding(get: { model.preferences.showSystemApps },
                                                    set: { value in model.updatePreferences { $0.showSystemApps = value } }))
                     .toggleStyle(.checkbox)
-                Text("数据面板不可见时按需采样。刷新间隔只影响显示更新。")
+                Text("切到后台时暂停管理窗口刷新；打开菜单栏面板时更新数据。后台规则继续执行。")
                     .font(.caption).foregroundStyle(.secondary)
             }
             Section("后台规则") {

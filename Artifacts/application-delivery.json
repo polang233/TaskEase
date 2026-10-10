@@ -1,5 +1,5 @@
 {
-  "recordedAt": "2026-10-10T23:26:06+08:00",
+  "recordedAt": "2026-10-11T01:08:04+08:00",
   "version": "1.1.0",
   "build": "2",
   "configuration": "Release",
@@ -16,19 +16,20 @@
   "controlSelfCheckPassed": true,
   "applicationInstanceCheckPassed": true,
   "automaticTests": {
-    "passed": 32,
+    "passed": 34,
     "skipped": 0,
     "failed": 0,
-    "total": 32
+    "total": 34
   },
   "uiValidation": "Passed",
   "licenseIdentifier": "GPL-3.0-only",
   "licenseTextMatchesRepository": true,
   "licenseSHA256": "fb981668c18a279e285fc4d83fba1e836cc84dd4daa73c9697d3cfd2d8aca6e0",
   "limiterWorkers": 0,
-  "activeRuleCount": 1,
+  "activeRuleCount": 0,
   "runtimeValidatedSystems": [
     "27.0.1"
   ],
-  "compatibilityValidation": "Deployment availability checks passed; older systems pending runtime validation"
+  "compatibilityValidation": "Deployment availability checks passed; older systems pending runtime validation",
+  "foregroundRefreshOnly": true
 }

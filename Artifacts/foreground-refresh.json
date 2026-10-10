@@ -1,0 +1,20 @@
+{
+  "recordedAt": "2026-10-11T01:08:04+08:00",
+  "version": "1.1.0",
+  "configuration": "Release",
+  "conditions": {
+    "managementWindowOpened": true,
+    "applicationHidden": false,
+    "applicationActive": false,
+    "foregroundRefreshOnly": true,
+    "displayRefreshSeconds": 1,
+    "rulesEnabled": false,
+    "limiterWorkers": 0,
+    "measuredSoonAfterLaunch": true
+  },
+  "seconds": 25,
+  "cpuPercentOneCore": 0.008401568401856541,
+  "physicalBytes": 38093904,
+  "packageIdleWakeupsPerSecond": 0.16,
+  "interruptWakeupsPerSecond": 0.44
+}
