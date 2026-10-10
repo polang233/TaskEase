@@ -1,43 +1,48 @@
-//
-//  TaskEaseUITests.swift
-//  TaskEaseUITests
-//
-//  Created by Polang on 2026/10/10.
-//
-
 import XCTest
 
+@MainActor
 final class TaskEaseUITests: XCTestCase {
+    override func setUpWithError() throws { continueAfterFailure = false }
 
-    override func setUpWithError() throws {
-        // Put setup code here. This method is called before the invocation of each test method in the class.
-
-        // In UI tests it is usually best to stop immediately when a failure occurs.
-        continueAfterFailure = false
-
-        // In UI tests it’s important to set the initial state - such as interface orientation - required for your tests before they run. The setUp method is a good place to do this.
-    }
-
-    override func tearDownWithError() throws {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
-    }
-
-    @MainActor
-    func testExample() throws {
-        // UI tests must launch the application that they test.
+    func testManagementWindowSearchAndReadOnlyApp() throws {
         let app = XCUIApplication()
+        app.launchArguments = ["--ui-testing"]
         app.launch()
-
-        // Use XCTAssert and related functions to verify your tests produce the correct results.
-        // XCUIAutomation Documentation
-        // https://developer.apple.com/documentation/xcuiautomation
+        app.activate()
+        let window = app.windows["轻程"]
+        XCTAssertTrue(window.waitForExistence(timeout: 10))
+        let search = app.textFields["app-search"]
+        XCTAssertTrue(search.waitForExistence(timeout: 5))
+        search.click()
+        search.typeText("Finder")
+        let queryCommitted = NSPredicate(format: "value == %@", "Finder")
+        expectation(for: queryCommitted, evaluatedWith: search)
+        waitForExpectations(timeout: 5)
+        if !window.staticTexts["Finder"].waitForExistence(timeout: 5) {
+            let tree = XCTAttachment(string: window.debugDescription)
+            tree.lifetime = .keepAlways; add(tree)
+            let screenshot = XCTAttachment(screenshot: window.screenshot())
+            screenshot.lifetime = .keepAlways; add(screenshot)
+            XCTFail("Finder search result missing. Search value: \(String(describing: search.value))\n\(window.debugDescription)")
+            return
+        }
+        window.staticTexts["Finder"].firstMatch.click()
+        XCTAssertTrue(window.staticTexts["系统应用只用于观察。"].waitForExistence(timeout: 5))
+        app.terminate()
     }
 
-    @MainActor
-    func testLaunchPerformance() throws {
-        // This measures how long it takes to launch your application.
-        measure(metrics: [XCTApplicationLaunchMetric()]) {
-            XCUIApplication().launch()
-        }
+    func testPauseAutomaticManagementAndRestore() throws {
+        let app = XCUIApplication()
+        app.launchArguments = ["--ui-testing"]
+        app.launch()
+        app.activate()
+        let window = app.windows["轻程"]
+        XCTAssertTrue(window.waitForExistence(timeout: 10))
+        let control = window.switches["management-toggle"]
+        XCTAssertTrue(control.waitForExistence(timeout: 5))
+        control.click()
+        control.click()
+        XCTAssertTrue(window.staticTexts["轻程"].exists)
+        app.terminate()
     }
 }

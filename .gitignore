@@ -1,0 +1,10 @@
+.DS_Store
+build/
+DerivedData/
+*.xcuserstate
+*.profraw
+xcuserdata/
+Artifacts/*.xcresult/
+Artifacts/local/
+__pycache__/
+*.py[cod]

@@ -1,0 +1,100 @@
+{
+  "recordedAt": "2026-10-10T10:19:05+08:00",
+  "activeTestPlanName": "TaskEase",
+  "counts": {
+    "expectedFailures": 0,
+    "failed": 0,
+    "notRun": 0,
+    "passed": 11,
+    "skipped": 0,
+    "total": 11
+  },
+  "results": [
+    {
+      "displayName": "testManagementWindowSearchAndReadOnlyApp()",
+      "errorMessages": [],
+      "identifier": "TaskEaseUITests/testManagementWindowSearchAndReadOnlyApp()",
+      "state": "Passed",
+      "targetName": "TaskEaseUITests"
+    },
+    {
+      "displayName": "testPauseAutomaticManagementAndRestore()",
+      "errorMessages": [],
+      "identifier": "TaskEaseUITests/testPauseAutomaticManagementAndRestore()",
+      "state": "Passed",
+      "targetName": "TaskEaseUITests"
+    },
+    {
+      "displayName": "foregroundAlwaysRestores()",
+      "errorMessages": [],
+      "identifier": "TaskEaseTests/foregroundAlwaysRestores()",
+      "state": "Passed",
+      "targetName": "TaskEaseTests"
+    },
+    {
+      "displayName": "backgroundGraceAndRapidReturn()",
+      "errorMessages": [],
+      "identifier": "TaskEaseTests/backgroundGraceAndRapidReturn()",
+      "state": "Passed",
+      "targetName": "TaskEaseTests"
+    },
+    {
+      "displayName": "disabledAndProtectedAppsNeverControl()",
+      "errorMessages": [],
+      "identifier": "TaskEaseTests/disabledAndProtectedAppsNeverControl()",
+      "state": "Passed",
+      "targetName": "TaskEaseTests"
+    },
+    {
+      "displayName": "hiddenApplicationCanBecomeBackground()",
+      "errorMessages": [],
+      "identifier": "TaskEaseTests/hiddenApplicationCanBecomeBackground()",
+      "state": "Passed",
+      "targetName": "TaskEaseTests"
+    },
+    {
+      "displayName": "aReusedPIDIsADifferentProcess()",
+      "errorMessages": [],
+      "identifier": "TaskEaseTests/aReusedPIDIsADifferentProcess()",
+      "state": "Passed",
+      "targetName": "TaskEaseTests"
+    },
+    {
+      "displayName": "budgetTracksAggregateCPUAndRepaysOvershoot()",
+      "errorMessages": [],
+      "identifier": "TaskEaseTests/budgetTracksAggregateCPUAndRepaysOvershoot()",
+      "state": "Passed",
+      "targetName": "TaskEaseTests"
+    },
+    {
+      "displayName": "idleTimeDoesNotAccumulateAnUnlimitedBurst()",
+      "errorMessages": [],
+      "identifier": "TaskEaseTests/idleTimeDoesNotAccumulateAnUnlimitedBurst()",
+      "state": "Passed",
+      "targetName": "TaskEaseTests"
+    },
+    {
+      "displayName": "storedRulesClampValuesAndRejectCorruption()",
+      "errorMessages": [],
+      "identifier": "TaskEaseTests/storedRulesClampValuesAndRejectCorruption()",
+      "state": "Passed",
+      "targetName": "TaskEaseTests"
+    },
+    {
+      "displayName": "inactiveRuleStaysUnmanaged()",
+      "errorMessages": [],
+      "identifier": "TaskEaseTests/inactiveRuleStaysUnmanaged()",
+      "state": "Passed",
+      "targetName": "TaskEaseTests"
+    }
+  ],
+  "schemeName": "TaskEase",
+  "summary": "11 tests: 11 passed, 0 failed, 0 skipped, 0 expected failures, 0 not run",
+  "totalResults": 11,
+  "truncated": false,
+  "environment": {
+    "chip": "Apple M5",
+    "macOS": "27.0.1",
+    "xcode": "27.0"
+  }
+}

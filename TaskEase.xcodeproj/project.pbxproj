@@ -6,6 +6,10 @@
 	objectVersion = 110;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		3EB9A452307975EE00A6841C /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 3EB9A451307975EE00A6841C /* README.md */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		3EA52C8630797367001D88AA /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -27,6 +31,11 @@
 		3EA52C7830797367001D88AA /* TaskEase.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TaskEase.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		3EA52C8530797367001D88AA /* TaskEaseTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TaskEaseTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		3EA52C8F30797367001D88AA /* TaskEaseUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TaskEaseUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		3EB9A451307975EE00A6841C /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+		3EB9A454307975F000A6841C /* Requirements.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = Requirements.md; sourceTree = "<group>"; };
+		3EB9A455307975F500A6841C /* Design.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = Design.md; sourceTree = "<group>"; };
+		3EB9A456307975F700A6841C /* Validation.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = Validation.md; sourceTree = "<group>"; };
+		3EB9A4673079D93A00A6841C /* Usage.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = Usage.md; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -72,7 +81,9 @@
 				3EA52C7A30797367001D88AA /* TaskEase */,
 				3EA52C8830797367001D88AA /* TaskEaseTests */,
 				3EA52C9230797367001D88AA /* TaskEaseUITests */,
+				3EB9A451307975EE00A6841C /* README.md */,
 				3EA52C7930797367001D88AA /* Products */,
+				3EB9A453307975F000A6841C /* Docs */,
 			);
 			sourceTree = "<group>";
 		};
@@ -84,6 +95,17 @@
 				3EA52C8F30797367001D88AA /* TaskEaseUITests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		3EB9A453307975F000A6841C /* Docs */ = {
+			isa = PBXGroup;
+			children = (
+				3EB9A454307975F000A6841C /* Requirements.md */,
+				3EB9A455307975F500A6841C /* Design.md */,
+				3EB9A456307975F700A6841C /* Validation.md */,
+				3EB9A4673079D93A00A6841C /* Usage.md */,
+			);
+			path = Docs;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -197,6 +219,7 @@
 		3EA52C7630797367001D88AA /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			files = (
+				3EB9A452307975EE00A6841C /* README.md in Resources */,
 			);
 		};
 		3EA52C8330797367001D88AA /* Resources */ = {
@@ -369,23 +392,33 @@
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
-				ENABLE_APP_SANDBOX = YES;
+				ENABLE_APP_SANDBOX = NO;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "轻程";
+				INFOPLIST_KEY_LSUIElement = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MARKETING_VERSION = 1.0;
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-framework",
+					IOKit,
+					"-lproc",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.github.polang233.TaskEase;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
-				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "TaskEase/TaskEase-Bridging-Header.h";
+				SWIFT_STRICT_CONCURRENCY = complete;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
 			};
@@ -399,23 +432,33 @@
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
-				ENABLE_APP_SANDBOX = YES;
+				ENABLE_APP_SANDBOX = NO;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "轻程";
+				INFOPLIST_KEY_LSUIElement = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MARKETING_VERSION = 1.0;
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-framework",
+					IOKit,
+					"-lproc",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.github.polang233.TaskEase;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
-				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "TaskEase/TaskEase-Bridging-Header.h";
+				SWIFT_STRICT_CONCURRENCY = complete;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
 			};
@@ -428,7 +471,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 27.0;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.github.polang233.TaskEaseTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -448,7 +491,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 27.0;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.github.polang233.TaskEaseTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -467,6 +510,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.github.polang233.TaskEaseUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -485,6 +529,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.github.polang233.TaskEaseUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";

@@ -1,0 +1,300 @@
+import Foundation
+import Darwin
+
+private final class WorkerGroup {
+    var config: ControlGroup
+    var previous: [ProcessIdentity: UInt64] = [:]
+    var lastWall = NativeProcess.now
+    var credit = BudgetCredit()
+    init(_ config: ControlGroup) { self.config = config }
+}
+
+enum NativeWorker {
+    static func run(testing: Bool = false) {
+        te_install_worker_signals()
+        guard let workerID = NativeProcess.identity(getpid()),
+              let controllerID = NativeProcess.identity(getppid()) else { return }
+        do { try FileManager.default.createDirectory(at: Recovery.directory, withIntermediateDirectories: true) }
+        catch { return }
+        let lockURL = Recovery.directory.appendingPathComponent(testing ? "test-worker.lock" : "worker.lock")
+        let lock = open(lockURL.path, O_CREAT | O_RDWR | O_CLOEXEC, 0o600)
+        guard lock >= 0, flock(lock, LOCK_EX | LOCK_NB) == 0 else {
+            if lock >= 0 { close(lock) }
+            emit(WorkerEvent(kind: "error", message: "已有控制进程正在恢复，请稍后重试。"))
+            return
+        }
+        defer { flock(lock, LOCK_UN); close(lock) }
+        // A previous dead worker's record is recovered before accepting a plan.
+        _ = Recovery.restore(testing: testing)
+        var journal = RecoveryRecord(worker: workerID, controller: controllerID)
+        var groups: [String: WorkerGroup] = [:]
+        var lowered: [ProcessIdentity: ControlTarget] = [:]
+        var maySuspend: [ProcessIdentity: ControlTarget] = [:]
+        var stopped: Set<ProcessIdentity> = []
+        var excluded: Set<ProcessIdentity> = []
+        var savedBackground: Set<ProcessIdentity> = []
+        var savedSuspension: Set<ProcessIdentity> = []
+        var hasSavedOwnership = false
+        var lastMessage = NativeProcess.now
+        var input = Data()
+        var closing = false
+        var failed = false
+        let ownBundle = Bundle.main.bundleURL.resolvingSymlinksInPath().path
+        let inputFD = STDIN_FILENO
+        let oldFlags = fcntl(inputFD, F_GETFL)
+        _ = fcntl(inputFD, F_SETFL, oldFlags | O_NONBLOCK)
+
+        func saveOwnership() throws {
+            let backgroundKeys = Set(lowered.keys), suspensionKeys = Set(maySuspend.keys)
+            guard !hasSavedOwnership || backgroundKeys != savedBackground || suspensionKeys != savedSuspension else { return }
+            journal.background = Array(lowered.values)
+            journal.suspension = Array(maySuspend.values)
+            try Recovery.save(journal, testing: testing)
+            savedBackground = backgroundKeys; savedSuspension = suspensionKeys; hasSavedOwnership = true
+        }
+        func valid(_ target: ControlTarget) -> Bool {
+            guard target.identity != workerID, target.identity != controllerID,
+                  NativeProcess.matches(target) else { return false }
+            if target.bundlePath == ownBundle {
+                return testing && NativeProcess.sample(target.identity.pid)?.parentPID == controllerID.pid
+            }
+            return true
+        }
+        func release(_ target: ControlTarget) {
+            if stopped.contains(target.identity) {
+                _ = NativeProcess.signal(target, number: SIGCONT)
+                stopped.remove(target.identity)
+            }
+            maySuspend.removeValue(forKey: target.identity)
+            if lowered.removeValue(forKey: target.identity) != nil {
+                _ = NativeProcess.background(target, enabled: false)
+            }
+            excluded.remove(target.identity)
+        }
+        func apply(_ message: ControlMessage) throws {
+            lastMessage = NativeProcess.now
+            if message.shutdown { closing = true; return }
+            guard message.groups.count <= 128 else { throw WorkerFailure.invalidPlan }
+            var desired: [String: ControlGroup] = [:]
+            for group in message.groups {
+                guard group.mode != .off, group.cpuPercent.isFinite,
+                      group.cpuPercent >= 5, group.cpuPercent <= 200,
+                      group.targets.count <= 256 else { throw WorkerFailure.invalidPlan }
+                let targets = group.targets.filter(valid)
+                if !targets.isEmpty {
+                    desired[group.bundleID] = ControlGroup(bundleID: group.bundleID, mode: group.mode,
+                                                          cpuPercent: group.cpuPercent, targets: targets)
+                }
+            }
+            let keep = Set(desired.values.flatMap { $0.targets.map(\.identity) })
+            for target in Array(lowered.values) + Array(maySuspend.values) where !keep.contains(target.identity) {
+                release(target)
+            }
+            for (id, group) in Array(groups) where desired[id] == nil {
+                for target in group.config.targets { release(target) }
+                groups.removeValue(forKey: id)
+            }
+            for (id, config) in desired {
+                if let group = groups[id], group.config.mode == config.mode,
+                   group.config.cpuPercent == config.cpuPercent {
+                    group.config = config
+                } else {
+                    if let old = groups[id] { for target in old.config.targets { release(target) } }
+                    groups[id] = WorkerGroup(config)
+                }
+            }
+            try saveOwnership()
+        }
+
+        emit(WorkerEvent(kind: "ready", message: "控制进程已就绪"))
+        defer {
+            // Use the persisted ownership record as well, including a stop
+            // committed just before an unexpected failure.
+            _ = Recovery.restore(testing: testing, force: true)
+            emit(WorkerEvent(kind: "restored", message: "已解除本工具的限制"))
+        }
+        while !closing && !failed && te_worker_should_exit() == 0 {
+            if NativeProcess.seconds(since: lastMessage) > 3 || !NativeProcess.isAlive(controllerID) { break }
+            var descriptor = pollfd(fd: inputFD, events: Int16(POLLIN | POLLHUP), revents: 0)
+            let result = poll(&descriptor, 1, groups.values.contains { $0.config.mode == .budget } ? 50 : 150)
+            if result > 0 {
+                var bytes = [UInt8](repeating: 0, count: 16384)
+                while true {
+                    let count = read(inputFD, &bytes, bytes.count)
+                    if count > 0 {
+                        input.append(contentsOf: bytes.prefix(count))
+                        if input.count > 1_048_576 { failed = true; break }
+                    } else {
+                        if count == 0 { closing = true }
+                        break
+                    }
+                }
+                while let newline = input.firstIndex(of: 10) {
+                    let line = Data(input[..<newline])
+                    input.removeSubrange(...newline)
+                    do { try apply(JSONDecoder().decode(ControlMessage.self, from: line)) }
+                    catch {
+                        emit(WorkerEvent(kind: "error", message: "控制计划无法应用，已恢复限制。"))
+                        failed = true; break
+                    }
+                }
+            }
+            if closing || failed { break }
+            let now = NativeProcess.now
+            for group in groups.values {
+                var current: [ProcessIdentity: UInt64] = [:]
+                var members: [ControlTarget] = []
+                var used: UInt64 = 0
+                for target in group.config.targets {
+                    guard valid(target), let sample = NativeProcess.sample(target.identity.pid),
+                          sample.identity == target.identity else { release(target); continue }
+                    if excluded.contains(target.identity) { continue }
+                    // BSD SSTOP is 4. Never take over an externally stopped process.
+                    if sample.status == 4 && !stopped.contains(target.identity) {
+                        excluded.insert(target.identity); continue
+                    }
+                    if group.config.mode == .gentle {
+                        if lowered[target.identity] == nil && te_get_background(target.identity.pid) == 0 {
+                            lowered[target.identity] = target
+                            do { try saveOwnership() } catch { failed = true; break }
+                            if !NativeProcess.background(target, enabled: true) {
+                                lowered.removeValue(forKey: target.identity)
+                                emit(WorkerEvent(kind: "error", message: "部分进程不允许后台调度，请检查该应用规则。"))
+                            }
+                        }
+                    } else {
+                        members.append(target)
+                        current[target.identity] = sample.cpuTicks
+                        if let before = group.previous[target.identity], sample.cpuTicks >= before {
+                            used += sample.cpuTicks - before
+                        }
+                    }
+                }
+                if group.config.mode == .budget {
+                    let elapsed = now >= group.lastWall ? now - group.lastWall : 0
+                    let fraction = group.config.cpuPercent / 100
+                    let shouldStop = group.credit.update(elapsedTicks: elapsed, usedTicks: used,
+                                                        fraction: fraction,
+                                                        burstTicks: NativeProcess.ticksPerSecond * 0.1 * fraction)
+                    group.previous = current; group.lastWall = now
+                    for target in members {
+                        if shouldStop && !stopped.contains(target.identity) {
+                            if maySuspend[target.identity] == nil {
+                                maySuspend[target.identity] = target
+                                do { try saveOwnership() } catch { failed = true; break }
+                            }
+                            if NativeProcess.signal(target, number: SIGSTOP) {
+                                stopped.insert(target.identity)
+                            } else if NativeProcess.identity(target.identity.pid) == target.identity {
+                                emit(WorkerEvent(kind: "error", message: "该应用不允许进程暂停，已解除限制。"))
+                                failed = true; break
+                            }
+                        } else if !shouldStop && stopped.contains(target.identity) {
+                            _ = NativeProcess.signal(target, number: SIGCONT)
+                            stopped.remove(target.identity)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private enum WorkerFailure: Error { case invalidPlan }
+    private static func emit(_ event: WorkerEvent) {
+        guard var data = try? JSONEncoder().encode(event) else { return }
+        data.append(10)
+        try? FileHandle.standardOutput.write(contentsOf: data)
+    }
+}
+
+@MainActor
+final class WorkerController {
+    private var process: Process?
+    private var input: FileHandle?
+    private var output: FileHandle?
+    private var outputData = Data()
+    private var stopping = false
+    private var generation = 0
+    private let testing: Bool
+    init(testing: Bool = false) { self.testing = testing }
+    var onError: ((String) -> Void)?
+    var helperPID: Int32? { process?.isRunning == true ? process?.processIdentifier : nil }
+
+    func update(_ groups: [ControlGroup]) {
+        guard !groups.isEmpty else { stop(); return }
+        if process?.isRunning != true {
+            _ = Recovery.restore(testing: testing)
+            guard let executable = Bundle.main.executableURL else { return }
+            generation += 1
+            let currentGeneration = generation
+            let child = Process()
+            let incoming = Pipe(), outgoing = Pipe()
+            child.executableURL = executable
+            child.arguments = [testing ? "--self-test-worker" : "--limiter-worker"]
+            child.standardInput = incoming; child.standardOutput = outgoing
+            child.standardError = FileHandle.nullDevice
+            child.terminationHandler = { [weak self] _ in
+                Task { @MainActor in self?.ended(generation: currentGeneration) }
+            }
+            outgoing.fileHandleForReading.readabilityHandler = { [weak self] handle in
+                let data = handle.availableData
+                if !data.isEmpty { Task { @MainActor in self?.receive(data, generation: currentGeneration) } }
+            }
+            do {
+                try child.run()
+                process = child; input = incoming.fileHandleForWriting
+                output = outgoing.fileHandleForReading
+            } catch {
+                outgoing.fileHandleForReading.readabilityHandler = nil
+                onError?("控制进程无法启动：\(error.localizedDescription)")
+                return
+            }
+        }
+        send(ControlMessage(groups: groups))
+    }
+    private func receive(_ data: Data, generation expected: Int) {
+        guard generation == expected else { return }
+        outputData.append(data)
+        while let newline = outputData.firstIndex(of: 10) {
+            let line = Data(outputData[..<newline])
+            outputData.removeSubrange(...newline)
+            if let event = try? JSONDecoder().decode(WorkerEvent.self, from: line), event.kind == "error" {
+                onError?(event.message)
+            }
+        }
+    }
+    private func send(_ message: ControlMessage) {
+        guard var data = try? JSONEncoder().encode(message) else { return }
+        data.append(10)
+        do { try input?.write(contentsOf: data) }
+        catch {
+            onError?("控制连接中断，正在恢复进程。")
+            if !stopping { stop() }
+        }
+    }
+    private func ended(generation expected: Int) {
+        guard generation == expected, process != nil else { return }
+        output?.readabilityHandler = nil
+        input = nil; output = nil; process = nil; outputData.removeAll()
+        _ = Recovery.restore(testing: testing)
+        if !stopping { onError?("控制进程已结束，限制已恢复。重新启用自动管理可重试。") }
+    }
+    func stop() {
+        guard !stopping else { return }
+        guard let child = process else { _ = Recovery.restore(testing: testing); return }
+        stopping = true
+        send(ControlMessage(groups: [], shutdown: true))
+        try? input?.close()
+        output?.readabilityHandler = nil
+        let deadline = Date().addingTimeInterval(1)
+        while child.isRunning && Date() < deadline { usleep(10_000) }
+        if child.isRunning { child.terminate() }
+        let finalDeadline = Date().addingTimeInterval(0.5)
+        while child.isRunning && Date() < finalDeadline { usleep(10_000) }
+        if child.isRunning { kill(child.processIdentifier, SIGKILL) }
+        _ = Recovery.restore(testing: testing)
+        process = nil; input = nil; output = nil; outputData.removeAll()
+        generation += 1
+        stopping = false
+    }
+}

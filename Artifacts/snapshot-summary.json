@@ -1,0 +1,10 @@
+{
+  "appCount": 44,
+  "gpuDriverPercent": 28,
+  "scope": "read_only_snapshot",
+  "systemCPU": 9.618874773139746,
+  "thermal": "正常",
+  "readableAppCount": 43,
+  "groupedAppCount": 10,
+  "note": "Summary only; application names omitted."
+}
