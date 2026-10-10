@@ -1,6 +1,7 @@
 import AppKit
 import SwiftUI
 
+/// 复用管理窗口，处理激活、最小化恢复与关闭后的 Dock 状态。
 @MainActor
 final class ManagementWindowController: NSWindowController, NSWindowDelegate {
     private weak var model: AppModel?

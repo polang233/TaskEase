@@ -1,6 +1,7 @@
 import SwiftUI
 import AppKit
 
+/// 界面共用的品牌标记，尺寸以逻辑点计。
 struct BrandMark: View {
     var size: CGFloat = 28
 
@@ -54,21 +55,34 @@ struct StatusLabel: View {
     }
 }
 
+/// 总开关的无规则提示仅在点击时展示，保持主界面紧凑。
 struct BackgroundControlToggle: View {
     @Bindable var model: AppModel
+    @State private var showHint = false
 
     var body: some View {
-        VStack(alignment: .trailing, spacing: 5) {
-            Toggle("启用后台限制", isOn: Binding(get: { model.enabled }, set: { model.setEnabled($0) }))
-                .toggleStyle(.switch)
-                .disabled(!model.canEnable)
-                .accessibilityIdentifier("management-toggle")
-                .help(model.canEnable ? "统一启用或暂停已配置的后台规则。" : "先为一个应用开启后台限制。")
-            if !model.canEnable {
-                Text("先为应用设置后台规则").font(.caption).foregroundStyle(.secondary)
+        Toggle("启用后台限制", isOn: Binding(get: { model.enabled }, set: { model.setEnabled($0) }))
+            .toggleStyle(.switch)
+            .disabled(!model.canEnable)
+            .accessibilityIdentifier("management-toggle")
+            .overlay {
+                if !model.canEnable {
+                    Button { showHint = true } label: {
+                        Color.clear.contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("启用后台限制的配置提示")
+                    .accessibilityIdentifier("management-unavailable")
+                }
+            }
+            .popover(isPresented: $showHint, arrowEdge: .bottom) {
+                Text("先为应用设置后台规则")
+                    .font(.callout).padding(16)
                     .accessibilityIdentifier("configure-rules-hint")
             }
-        }
+            .onChange(of: model.canEnable) { _, ready in
+                if ready { showHint = false }
+            }
     }
 }
 

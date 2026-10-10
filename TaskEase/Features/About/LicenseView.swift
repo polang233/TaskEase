@@ -1,6 +1,7 @@
 import SwiftUI
 import Foundation
 
+/// 读取随包许可证，提供可滚动、可选择的完整文本。
 struct LicenseView: View {
     private let licenseText: String = {
         guard let url = Bundle.main.url(forResource: "LICENSE", withExtension: "txt"),

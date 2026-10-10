@@ -1,6 +1,7 @@
 import Foundation
 import Darwin
 
+/// 保存控制归属日志，在控制器失联或应用重启后恢复进程。
 enum Recovery {
     static var directory: URL {
         FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]

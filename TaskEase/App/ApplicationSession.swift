@@ -2,6 +2,7 @@ import Foundation
 import AppKit
 import Darwin
 
+/// 区分正常运行、测试和预览，隔离实例锁与界面入口。
 enum LaunchContext: Equatable, Sendable {
     case application
     case validation(UUID)
@@ -47,7 +48,10 @@ enum LaunchContext: Equatable, Sendable {
     }
     var coordinationDirectory: URL? {
         switch self {
-        case .application: return Recovery.directory
+        case .application:
+            // 协调锁由系统临时目录管理，应用数据清理不会替换正在持有的锁文件。
+            return FileManager.default.temporaryDirectory
+                .appendingPathComponent("com.github.polang233.TaskEase.session", isDirectory: true)
         case .validation(let scope):
             return FileManager.default.temporaryDirectory
                 .appendingPathComponent("TaskEase.Validation.\(scope.uuidString)", isDirectory: true)
@@ -56,7 +60,7 @@ enum LaunchContext: Equatable, Sendable {
     }
 }
 
-// The lock file keeps one stable inode. Never replace or unlink it while locked.
+/// 文件锁保持稳定 inode，持锁期间不替换或删除它。
 final class ProcessFileLock {
     private let descriptor: Int32
 
@@ -83,6 +87,7 @@ private struct ApplicationOwner: Codable {
     let ready: Bool
 }
 
+/// 取得同用户实例锁，将重复启动请求转发给已经就绪的实例。
 @MainActor
 final class ApplicationSession: NSObject {
     static let shared = ApplicationSession(context: .current)
@@ -97,7 +102,7 @@ final class ApplicationSession: NSObject {
 
     init(context: LaunchContext) { self.context = context; super.init() }
 
-    // False means the existing application received this launch request.
+    /// 返回 false 表示本次启动已交给已有实例处理。
     func claim() throws -> Bool {
         guard let directory = context.coordinationDirectory else { return true }
         if lease != nil { return true }

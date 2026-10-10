@@ -1,6 +1,6 @@
 import Foundation
 
-// Raw values are part of rules.v1 and stay stable when display names change.
+// 原始值用于 rules.v1 存储，界面名称调整时保持序列化格式稳定。
 enum ControlMode: String, Codable, CaseIterable, Hashable, Sendable {
     case off, gentle, budget
 
@@ -13,12 +13,14 @@ enum ControlMode: String, Codable, CaseIterable, Hashable, Sendable {
     }
 }
 
+/// 一个应用的后台限制模式、CPU 上限和生效等待时间。
 struct AppRule: Codable, Equatable, Sendable {
     var mode: ControlMode = .off
     var cpuPercent: Double = 20
     var delaySeconds: Double = 3
     var isActive: Bool { mode != .off }
 
+    /// 将磁盘或界面输入规范到有效范围，处理非有限数值。
     func validated() -> AppRule {
         AppRule(mode: mode,
                 cpuPercent: cpuPercent.isFinite ? min(200, max(5, cpuPercent)) : 20,
@@ -43,8 +45,7 @@ enum RuleStatus: Equatable, Sendable {
     }
 }
 
-/// One shared allowance covers every owned process of an application.
-/// Negative credit pauses the group; idle credit is capped to prevent an unlimited burst.
+/// 应用自有进程共享 CPU 额度；负额度触发暂停，空闲额度有上限。
 struct BudgetCredit: Sendable {
     private(set) var credit: Double = 0
 

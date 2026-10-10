@@ -20,6 +20,7 @@ AppModel 在 MainActor 上持有规则、显示设置、前台状态和窗口状
 | Features/MenuBar | 菜单栏面板 |
 | Features/Settings、Help、About | 显示设置、使用帮助、关于信息与许可证查看 |
 | Models | 应用读数、规则、偏好、进程身份和控制消息 |
+| Services/Storage | 偏好域与本地应用数据清理 |
 | Services/Monitoring | 采样 actor、计数差分和采样周期策略 |
 | Services/ProcessControl | libproc、Mach、Darwin 桥接，控制与恢复 |
 | Shared | 视图组件、图标缓存与数值格式 |
@@ -48,7 +49,7 @@ RunningApplication 在 MainActor 上把 NSRunningApplication 转换为 Sendable 
 
 SamplingPolicy 分别考虑显示间隔、2 秒控制检查和后台等待期限。下一次检查取最早期限，慢速显示更新不会让控制计划的 3 秒失联期限到期。没有显示或执行需求时，不设置周期定时器。
 
-NSWorkspace 应用激活、隐藏、启动、退出、睡眠和唤醒使用类型化消息。窗口可见性使用 macOS 27 的类型化消息，观察回调按声明的 actor 执行。睡眠前结束控制进程，唤醒后重新采样。
+NSWorkspace 应用激活、隐藏、启动、退出、睡眠和唤醒在 macOS 26 起使用类型化消息。窗口可见性在 macOS 27 起使用类型化消息，观察回调按声明的 actor 执行。较早系统使用公开通知，并向主 actor 传递回调与应用标识。睡眠前结束控制进程，唤醒后重新采样。
 
 ## CPU 控制与恢复
 
@@ -60,9 +61,13 @@ CPU 累计时间和墙钟使用相同 Mach 时间单位。CPU 上限以单核时
 
 已有暂停的进程不接管。恢复时按 UID、PID 和启动时间确认归属，路径变化会阻止新增限制，但不妨碍解除之前施加的暂停。控制进程异常结束后，主应用按恢复记录补偿；重启时恢复已经失联的旧记录。
 
+## 数据清理
+
+AppDataStore 仅持有本应用偏好域和明确归属的目录。AppModel 先停止事件与刷新、等待 WorkerController 恢复并结束工作进程，再执行清理和退出。清理前关闭管理窗口位置的自动保存，防止退出时重新写入配置。文件删除失败时报告错误，偏好域留待成功后移除。
+
 ## 单实例与窗口
 
-ApplicationSession 在规则模型创建前取得同用户实例锁。重复启动通知当前实例恢复管理窗口，然后退出新进程。文件描述符采用 close-on-exec，锁随进程结束释放。
+ApplicationSession 在规则模型创建前取得系统用户临时目录中的实例锁。重复启动通知当前实例恢复管理窗口，然后退出新进程。文件描述符采用 close-on-exec，锁随进程结束释放。
 
 管理、设置、帮助、关于和许可证窗口各自复用同一 NSWindow。有打开或最小化的应用窗口时采用 regular activation policy，关闭全部窗口后采用 accessory policy。菜单面板的可见状态单独参与采样决策。
 

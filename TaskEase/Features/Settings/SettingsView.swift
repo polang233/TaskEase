@@ -1,7 +1,10 @@
 import SwiftUI
 
+/// 显示偏好、规则入口与数据清理操作。
 struct SettingsView: View {
     @Bindable var model: AppModel
+    @State private var confirmErase = false
+    @State private var eraseError: String?
 
     var body: some View {
         Form {
@@ -28,6 +31,10 @@ struct SettingsView: View {
                     model.showManagement()
                 }.accessibilityIdentifier("open-configured-rules")
             }
+            Section("应用数据") {
+                Button("清除数据并退出…", role: .destructive) { confirmErase = true }
+                    .accessibilityIdentifier("erase-app-data")
+            }
             Section("帮助与信息") {
                 HStack(spacing: 16) {
                     Button("使用帮助") { model.showUtility(.help) }
@@ -38,9 +45,18 @@ struct SettingsView: View {
         .formStyle(.grouped)
         .padding(12)
         .preferredColorScheme(model.preferences.theme.colorScheme)
+        .alert("清除数据并退出？", isPresented: $confirmErase) {
+            Button("取消", role: .cancel) { }
+            Button("清除并退出", role: .destructive) { eraseError = model.eraseDataAndQuit() }
+        } message: {
+            Text("将删除后台规则、显示设置及本地应用数据，并解除正在执行的限制。退出后可在访达中将轻程移到废纸篓。")
+        }
+        .alert("数据清理未完成", isPresented: Binding(get: { eraseError != nil }, set: { if !$0 { eraseError = nil } })) {
+            Button("好", role: .cancel) { eraseError = nil }
+        } message: { Text(eraseError ?? "") }
     }
 }
 
 #Preview("设置") {
-    SettingsView(model: AppModel(preview: true)).frame(width: 560, height: 510)
+    SettingsView(model: AppModel(preview: true)).frame(width: 560, height: 650)
 }

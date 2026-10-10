@@ -1,5 +1,6 @@
 import Foundation
 
+/// 纯规则计算，统一确定应用当前状态和是否需要进程控制。
 enum Policy {
     static func status(rule: AppRule, enabled: Bool, controllable: Bool,
                        isForeground: Bool, isHidden: Bool, backgroundSeconds: Double) -> RuleStatus {

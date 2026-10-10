@@ -1,5 +1,6 @@
 import SwiftUI
 
+/// 管理窗口，展示运行中的应用、已配置规则与当前选中的规则编辑器。
 struct ContentView: View {
     @Bindable var model: AppModel
 
@@ -42,13 +43,7 @@ struct ContentView: View {
                     }
                 }.frame(minWidth: 360, idealWidth: 440, maxWidth: .infinity, maxHeight: .infinity)
             }
-            Divider()
-            HStack {
-                Text("应用 CPU 100% 约等于一个核心满载")
-                    .help("应用占用合计包含其自有辅助进程。")
-                Spacer()
-                Text("显示每 \(model.preferences.refreshInterval.rawValue) 秒更新").monospacedDigit()
-            }.font(.caption).foregroundStyle(.secondary).padding(.horizontal, 20).padding(.vertical, 10)
+
         }
         .frame(minWidth: 840, minHeight: 580)
         .preferredColorScheme(model.preferences.theme.colorScheme)

@@ -8,7 +8,7 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/version-1.1.0-30BBA9" alt="版本 1.1.0">
-  <img src="https://img.shields.io/badge/macOS-27%2B-24292f?logo=apple" alt="macOS 27 及以上">
+  <img src="https://img.shields.io/badge/macOS-14%2B-24292f?logo=apple" alt="macOS 14 及以上">
   <img src="https://img.shields.io/badge/platform-Apple%20Silicon-24292f" alt="Apple Silicon">
   <img src="https://img.shields.io/badge/Swift-6-F05138?logo=swift&logoColor=white" alt="Swift 6">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-GPL--3.0-30BBA9" alt="GPL-3.0 许可证"></a>
@@ -55,13 +55,13 @@ CPU 限制会短暂暂停整个受控进程，可能影响声音和连接心跳�
 3. 设置等待时间与 CPU 使用上限，再打开顶部的“启用后台限制”。
 4. 在“已配置规则”中集中修改、暂停或移除配置。
 
-没有有效规则时，总开关置灰。应用默认保持原样，已有规则按 bundle identifier 保存并重新匹配。
+没有有效规则时，总开关置灰，点击可查看配置提示。应用默认保持原样，已有规则按 bundle identifier 保存并重新匹配。
 
 管理窗口打开或最小化时保留 Dock 入口。关闭全部应用窗口后，轻程继续在菜单栏运行；重复启动恢复已有实例。设置支持跟随系统、浅色与深色外观，以及 1、2、5、10 秒显示刷新间隔。
 
 ## 开发
 
-需要 Apple Silicon Mac、macOS 27 及以上和 Xcode 27。工程使用 Swift 6、SwiftUI、AppKit 和 Observation。
+需要 Apple Silicon Mac、macOS 14 及以上和 Xcode 27。工程使用 Swift 6、SwiftUI、AppKit 和 Observation。
 
 用 Xcode 打开 `TaskEase.xcodeproj`，选择 **TaskEase / My Mac**。按 Command-R 开发运行，按 Command-U 运行自动测试。
 
@@ -91,6 +91,7 @@ TaskEase/
   Services/
     Monitoring/              异步采样与采样周期
     ProcessControl/          原生控制、独立控制进程与恢复
+    Storage/                 本地应用数据管理
   Shared/                    共用视图与数值格式
   Resources/                 图标、图片资源与许可证
   Validation/                只读快照与自建负载自检
@@ -112,9 +113,11 @@ Artifacts/                  验证摘要和界面预览
 - [x] 深浅颜色模式切换与跟随系统。
 - [x] 设置、帮助、关于信息和窗口生命周期。
 - [x] 可配置的显示刷新间隔。
+- [x] 清除本地配置与应用数据后退出。
 - [x] 采样移出主线程，按窗口可见性和后台规则状态采样。
-- [x] Apple Silicon、macOS 27 与 Swift 6 开发目标。
+- [x] Apple Silicon、macOS 14 及以上与 Swift 6 开发目标。
 - [ ] 多语言支持、String Catalog 和语言切换。
+- [ ] 用户自愿开启的使用统计与 GitHub 汇总徽章。
 - [ ] 更多系统指标、历史趋势和自定义显示。
 - [ ] CPU、GPU 传感器温度读数及机型验证。
 - [ ] 针对支持应用研究后台帧率和视频处理节奏适配。
@@ -131,6 +134,7 @@ Artifacts/                  验证摘要和界面预览
 - [设计与恢复机制](Docs/Design.md)
 - [使用说明](Docs/Usage.md)
 - [验证方法与结果](Docs/Validation.md)
+- [数据位置与使用统计方案](Docs/DataAndPrivacy.md)
 - [图标设计与资源](Branding/README.md)
 
 本项目采用 [GNU GPLv3](LICENSE)，SPDX 标识为 `GPL-3.0-only`。

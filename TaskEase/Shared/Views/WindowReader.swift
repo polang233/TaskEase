@@ -1,7 +1,7 @@
 import SwiftUI
 import AppKit
 
-/// Observe the hosting window instead of treating the view's lifetime as visibility.
+/// 跟踪真实宿主窗口，避免用视图生命周期误判菜单面板可见性。
 struct WindowReader: NSViewRepresentable {
     let onWindowChange: @MainActor (NSWindow?) -> Void
 

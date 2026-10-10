@@ -1,17 +1,27 @@
 {
-  "recordedAt": "2026-10-10T20:31:32+08:00",
+  "recordedAt": "2026-10-10T23:19:00+08:00",
   "version": "1.1.0",
   "schemeName": "TaskEase",
   "counts": {
     "expectedFailures": 0,
     "failed": 0,
     "notRun": 0,
-    "passed": 29,
+    "passed": 32,
     "skipped": 0,
-    "total": 29
+    "total": 32
   },
-  "uiTestPrecondition": "Unlocked macOS desktop",
+  "uiTestPrecondition": "Unlocked macOS desktop; normal application closed",
   "results": [
+    {
+      "identifier": "AppDataStoreTests/eraseRemovesOwnedDataAndPreservesAdjacentData()",
+      "targetName": "TaskEaseTests",
+      "state": "Passed"
+    },
+    {
+      "identifier": "AppDataStoreTests/directoryFailureIsReportedBeforePreferencesAreRemoved()",
+      "targetName": "TaskEaseTests",
+      "state": "Passed"
+    },
     {
       "identifier": "ApplicationLifecycleTests/menuBarImageHasARealPointSize()",
       "targetName": "TaskEaseTests",
@@ -154,6 +164,11 @@
     },
     {
       "identifier": "TaskEaseUITests/testCloseAndReopenManagementKeepsSameApplication()",
+      "targetName": "TaskEaseUITests",
+      "state": "Passed"
+    },
+    {
+      "identifier": "TaskEaseUITests/testEraseDataConfirmationAndQuit()",
       "targetName": "TaskEaseUITests",
       "state": "Passed"
     }

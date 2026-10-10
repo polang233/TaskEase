@@ -1,6 +1,7 @@
 import SwiftUI
 import AppKit
 
+/// 菜单栏速览，按宿主窗口的实际可见性请求数据更新。
 struct MenuPanel: View {
     @Bindable var model: AppModel
 

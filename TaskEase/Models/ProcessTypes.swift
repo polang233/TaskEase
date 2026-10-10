@@ -1,6 +1,6 @@
 import Foundation
 
-/// PID alone can be reused. Every control operation also checks the user and start time.
+/// PID 可能被复用，控制时同时验证所属用户和启动时间。
 struct ProcessIdentity: Hashable, Codable, Sendable {
     let pid: Int32
     let uid: UInt32
@@ -8,6 +8,7 @@ struct ProcessIdentity: Hashable, Codable, Sendable {
     let startMicroseconds: UInt64
 }
 
+/// 一次原生采样的累计计数，通过相邻快照计算占用。
 struct ProcessSample: Sendable {
     let identity: ProcessIdentity
     let parentPID: Int32
@@ -19,6 +20,7 @@ struct ProcessSample: Sendable {
     let wakeups: UInt64
 }
 
+/// 可控制成员的完整身份与路径，作为控制边界的验证依据。
 struct ControlTarget: Hashable, Codable, Sendable {
     let identity: ProcessIdentity
     let executablePath: String
@@ -43,6 +45,7 @@ struct WorkerEvent: Codable, Sendable {
     var processCount: Int = 0
 }
 
+/// 工作进程施加的暂停与后台优先级归属，用于异常恢复。
 struct RecoveryRecord: Codable, Sendable {
     let worker: ProcessIdentity
     let controller: ProcessIdentity

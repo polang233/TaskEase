@@ -1,5 +1,6 @@
 import SwiftUI
 
+/// 应用内使用说明，解释资源指标与后台规则的操作流程。
 struct HelpView: View {
     var body: some View {
         ScrollView {

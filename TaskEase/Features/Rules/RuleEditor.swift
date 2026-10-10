@@ -1,5 +1,6 @@
 import SwiftUI
 
+/// 编辑单个应用的后台规则，所有变更通过 AppModel 保存与执行。
 struct RuleEditor: View {
     @Bindable var model: AppModel
     let app: AppReading

@@ -2,6 +2,7 @@ import Foundation
 import AppKit
 import Darwin
 
+/// 封装原生进程读取与控制，每次写操作验证进程身份及归属。
 enum NativeProcess {
     static let ticksPerSecond = te_ticks_per_second()
     static var now: UInt64 { te_now() }
@@ -32,6 +33,7 @@ enum NativeProcess {
         let count = te_list_pids(&buffer, Int32(buffer.count * MemoryLayout<Int32>.stride))
         return count > 0 ? Array(buffer.prefix(Int(count))) : []
     }
+    /// 控制前核对 UID、启动时间、可执行路径和应用 bundle 归属。
     static func matches(_ target: ControlTarget) -> Bool {
         guard target.identity.pid > 1, target.identity.uid == geteuid(),
               let current = identity(target.identity.pid), current == target.identity,
@@ -45,6 +47,7 @@ enum NativeProcess {
         return te_set_background(target.identity.pid, target.identity.startSeconds,
                                  target.identity.startMicroseconds, enabled ? 1 : 0) == 0
     }
+    /// 新增控制验证完整路径；恢复只核对身份，让路径变化后的成员也能恢复。
     @discardableResult static func signal(_ target: ControlTarget, number: Int32) -> Bool {
         guard number == SIGCONT ? identity(target.identity.pid) == target.identity : matches(target) else { return false }
         return te_signal_process(target.identity.pid, target.identity.startSeconds,

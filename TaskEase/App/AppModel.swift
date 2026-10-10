@@ -2,6 +2,7 @@ import AppKit
 import Foundation
 import Observation
 
+/// 集中维护规则、界面与前后台状态，协调异步采样和控制进程。
 @MainActor @Observable
 final class AppModel {
     private(set) var apps: [AppReading] = []
@@ -70,7 +71,7 @@ final class AppModel {
     var configuredCount: Int { rules.values.filter(\.isActive).count }
     var managedCount: Int { apps.filter { Policy.shouldControl($0.status) }.count }
     var helperPID: Int32? { controller.helperPID }
-    var canEnable: Bool { configuredCount > 0 }
+    var canEnable: Bool { configuredCount > 0 && !isShutdown }
     var hasScheduledRefresh: Bool { timer != nil }
 
     var configuredApps: [AppReading] {
@@ -94,7 +95,7 @@ final class AppModel {
     var selectedApp: AppReading? { filteredApps.first { $0.id == selectedID } }
 
     func allowsRuleEditing(_ app: AppReading) -> Bool {
-        !app.isSystemApp && !app.id.hasPrefix("com.apple.") && (app.canControl || rules[app.id] != nil)
+        !isShutdown && !app.isSystemApp && !app.id.hasPrefix("com.apple.") && (app.canControl || rules[app.id] != nil)
     }
 
     func setApplicationList(_ list: ApplicationList) {
@@ -112,7 +113,7 @@ final class AppModel {
         guard !value || canEnable else { return }
         enabled = value
         errorMessage = nil
-        // Enabling while an app is already in the background starts a fresh grace period.
+        // 总开关开启时重新计时，给已经位于后台的应用完整等待期。
         if value { backgroundSince.removeAll() }
         if !preview { defaults.set(value, forKey: "managementEnabled") }
         reconcile()
@@ -156,6 +157,7 @@ final class AppModel {
         refresh(force: true)
     }
 
+    /// 读取旧规则与独立显示元数据；损坏数据保留备份供恢复。
     private func loadStoredState() {
         if let data = defaults.data(forKey: "rules.v1") {
             do { rules = try StoredRules.decode(data) }
@@ -181,7 +183,7 @@ final class AppModel {
             discoveredMetadata = true
         }
         if discoveredMetadata { persistRules() }
-        // Preserve existing enabled rules; an empty rule set always starts with the switch off.
+        // 读取已有启用状态；没有有效规则时总开关保持关闭。
         enabled = errorMessage == nil && canEnable &&
             (defaults.object(forKey: "managementEnabled") == nil || defaults.bool(forKey: "managementEnabled"))
     }
@@ -217,8 +219,7 @@ final class AppModel {
         }
     }
 
-    /// Capture AppKit values on MainActor, then scan libproc on the monitor actor.
-    /// Requests arriving during a scan are coalesced into one follow-up refresh.
+    /// 在主 actor 上捕获应用列表，在采样 actor 中扫描进程；合并扫描期间的新请求。
     func refresh(force: Bool = false) {
         guard !preview, !sleeping, !isShutdown,
               displayIsVisible || (enabled && canEnable) else { return }
@@ -248,6 +249,7 @@ final class AppModel {
         }
     }
 
+    /// 合并采样结果，检测应用重启并按刷新用途维护数值与进程成员。
     func apply(_ snapshot: MonitoringSnapshot, updateDisplay: Bool = true) {
         for reading in snapshot.apps {
             let current = Set(reading.samples.filter { reading.primaryPIDs.contains($0.identity.pid) }.map(\.identity))
@@ -266,8 +268,7 @@ final class AppModel {
             sampledAt = Date()
             lastDisplaySample = NativeProcess.now
         } else {
-            // Control refreshes update membership and policy without replacing the
-            // visible metrics or the display sampler's independent baseline.
+            // 控制刷新只更新成员与执行状态，显示数值仍按独立刷新间隔更新。
             let fresh = Dictionary(uniqueKeysWithValues: snapshot.apps.map { ($0.id, $0) })
             apps = apps.compactMap { old in
                 guard monitoredIDs.contains(old.id) else { return old }
@@ -309,7 +310,7 @@ final class AppModel {
     private func focusChanged() {
         guard !sleeping, !isShutdown, displayIsVisible || (enabled && canEnable) else { return }
         updateFocus()
-        // The cached plan restores the newly foreground app before any asynchronous scan.
+        // 使用缓存计划立即恢复前台应用，再进行异步扫描。
         reconcile()
         refresh(force: enabled && canEnable)
     }
@@ -321,6 +322,7 @@ final class AppModel {
         }
     }
 
+    /// 根据前台焦点与等待时间生成控制计划，只交给一个工作进程执行。
     private func reconcile() {
         guard !isShutdown else { return }
         let now = NativeProcess.now
@@ -345,6 +347,7 @@ final class AppModel {
         scheduleRefresh()
     }
 
+    /// 每次只安排一个最早期限；没有显示或控制需求时停用定时器。
     private func scheduleRefresh() {
         timer?.invalidate()
         timer = nil
@@ -436,7 +439,21 @@ final class AppModel {
         if displayIsVisible || (enabled && canEnable) { refresh(force: true) }
     }
 
-    func shutdown() {
+    /// 停止事件与异步刷新，恢复进程后再清理数据，防止退出阶段重新写入配置。
+    func eraseDataAndQuit() -> String? {
+        // 清理后关闭窗口时不再自动保存窗口位置。
+        managementWindow?.window?.setFrameAutosaveName("")
+        stopActivity()
+        do {
+            if !preview { try AppDataStore.current.erase() }
+            NSApp.terminate(nil)
+            return nil
+        } catch {
+            return error.localizedDescription
+        }
+    }
+
+    private func stopActivity() {
         isShutdown = true
         timer?.invalidate()
         timer = nil
@@ -444,6 +461,13 @@ final class AppModel {
         refreshTask = nil
         events = nil
         if !preview { controller.stop() }
+        enabled = false
+        for index in apps.indices where rules[apps[index].id]?.isActive == true { apps[index].status = .paused }
+    }
+
+    /// 正常退出释放窗口与控制器；可重复调用。
+    func shutdown() {
+        stopActivity()
         managementWindow?.close()
         managementWindow?.window?.contentViewController = nil
         managementWindow = nil

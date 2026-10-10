@@ -1,5 +1,6 @@
 import Foundation
 
+/// 统一格式化资源指标，无法读取的数据以占位符展示。
 @MainActor
 enum Display {
     private static let memoryFormatter: ByteCountFormatter = {

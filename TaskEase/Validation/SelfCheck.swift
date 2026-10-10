@@ -1,6 +1,7 @@
 import Foundation
 import Darwin
 
+/// 命令行只读快照与自建负载自检，验证真实控制和恢复流程。
 @MainActor
 enum SelfCheck {
     static func snapshot() {

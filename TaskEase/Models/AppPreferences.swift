@@ -19,6 +19,7 @@ enum ThemeMode: String, Codable, CaseIterable, Sendable {
     }
 }
 
+/// 保存系统应用筛选、刷新间隔与外观偏好。
 struct AppPreferences: Codable, Equatable, Sendable {
     var showSystemApps = false
     var refreshInterval: DisplayRefreshInterval = .two

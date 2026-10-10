@@ -1,14 +1,14 @@
 {
-  "baseline_cpu_percent" : 99.360881914974868,
-  "cpu_basis" : "one_core",
-  "gentle_applied" : true,
-  "gentle_restored" : true,
-  "group_restored" : true,
-  "lease_timeout_restored" : true,
-  "limited_cpu_percent" : 20.774255714281789,
-  "passed" : true,
-  "restored_cpu_percent" : 99.973781957302251,
-  "scope" : "owned_test_child_only",
-  "two_process_group_cpu_percent" : 20.159098133273488,
-  "worker_crash_restored" : true
+  "baseline_cpu_percent": 99.8154712373975,
+  "cpu_basis": "one_core",
+  "gentle_applied": true,
+  "gentle_restored": true,
+  "group_restored": true,
+  "lease_timeout_restored": true,
+  "limited_cpu_percent": 20.960913654469692,
+  "passed": true,
+  "restored_cpu_percent": 97.60003620337875,
+  "scope": "owned_test_child_only",
+  "two_process_group_cpu_percent": 17.32508414036887,
+  "worker_crash_restored": true
 }

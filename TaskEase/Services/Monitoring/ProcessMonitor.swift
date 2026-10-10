@@ -2,7 +2,7 @@ import AppKit
 import Foundation
 import Darwin
 
-/// Copy workspace objects into values before sampling away from the main actor.
+/// 在主 actor 上复制 AppKit 应用信息，再传递给采样 actor。
 struct RunningApplication: Sendable {
     let id: String
     let name: String
@@ -38,22 +38,20 @@ struct MonitoringSnapshot: Sendable {
     let system: SystemReading?
 }
 
-/// The actor owns the sampler's previous counters and path cache. No UI callback
-/// performs the libproc scan, and overlapping refresh requests cannot race its state.
+/// 串行持有采样基线和路径缓存，扫描工作在主 actor 之外执行。
 actor ProcessMonitor {
     private var displaySampler = ProcessSampler()
     private var controlSampler = ProcessSampler()
 
     func sample(_ applications: [RunningApplication], includeSystem: Bool) -> MonitoringSnapshot {
-        // Separate baselines keep infrequent display samples complete while controls
-        // refresh only their selected process groups.
+        // 显示与控制各用一份基线，慢速显示刷新仍能覆盖完整时间区间。
         if includeSystem { return displaySampler.sample(applications, includeSystem: true) }
         return controlSampler.sample(applications, includeSystem: false)
     }
 
 }
 
-/// Value state also allows the command-line self-check to sample synchronously.
+/// 采样状态为值类型，同样供命令行自检同步调用。
 struct ProcessSampler {
     private var previous: [ProcessIdentity: ProcessSample] = [:]
     private var previousWall: UInt64?
@@ -75,7 +73,7 @@ struct ProcessSampler {
             reset()
             return MonitoringSnapshot(apps: [], system: nil)
         }
-        // A long idle gap starts a fresh baseline; CPU stays unavailable until the next sample.
+        // 长时间空闲后重建基线，下一次采样前 CPU 暂无可比较数值。
         if let previousWall, NativeProcess.seconds(since: previousWall) > 20 { reset() }
         if pathCacheTime == 0 || NativeProcess.seconds(since: pathCacheTime) >= 30 {
             paths.removeAll()
@@ -97,7 +95,7 @@ struct ProcessSampler {
         var comparable: Set<String> = []
         for pid in NativeProcess.pids() {
             guard let identity = NativeProcess.identity(pid), identity.uid == geteuid() else { continue }
-            // Recheck known members on every sample; a process can exec a new image.
+            // 已知成员重新核对可执行路径，避免 exec 换程序后继续沿用旧归属。
             let executablePath = previous[identity] == nil ? paths[identity] ?? NativeProcess.path(pid) : NativeProcess.path(pid)
             guard let executable = executablePath else { continue }
             nextPaths[identity] = executable
@@ -148,7 +146,7 @@ struct ProcessSampler {
             }
             previousCPU = ticks
         }
-        // The driver statistic is a whole-device estimate. Read it only for visible UI.
+        // GPU 驱动数据表示整机估计值，只为可见数据面板读取。
         if lastGPUTime == 0 || Double(now &- lastGPUTime) / NativeProcess.ticksPerSecond >= 4 {
             let raw = te_gpu_percent()
             cachedGPU = raw >= 0 ? raw : nil

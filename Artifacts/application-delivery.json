@@ -1,12 +1,12 @@
 {
-  "recordedAt": "2026-10-10T20:41:23+08:00",
+  "recordedAt": "2026-10-10T23:26:06+08:00",
   "version": "1.1.0",
   "build": "2",
   "configuration": "Release",
   "architectures": [
     "arm64"
   ],
-  "minimumSystemVersion": "27.0",
+  "minimumSystemVersion": "14.0",
   "swiftVersion": "6.0",
   "strictConcurrency": "complete",
   "signatureVerified": true,
@@ -16,15 +16,19 @@
   "controlSelfCheckPassed": true,
   "applicationInstanceCheckPassed": true,
   "automaticTests": {
-    "passed": 29,
+    "passed": 32,
     "skipped": 0,
     "failed": 0,
-    "total": 29
+    "total": 32
   },
   "uiValidation": "Passed",
   "licenseIdentifier": "GPL-3.0-only",
   "licenseTextMatchesRepository": true,
   "licenseSHA256": "fb981668c18a279e285fc4d83fba1e836cc84dd4daa73c9697d3cfd2d8aca6e0",
-  "limiterWorkers": 1,
-  "activeRuleCount": 1
+  "limiterWorkers": 0,
+  "activeRuleCount": 1,
+  "runtimeValidatedSystems": [
+    "27.0.1"
+  ],
+  "compatibilityValidation": "Deployment availability checks passed; older systems pending runtime validation"
 }

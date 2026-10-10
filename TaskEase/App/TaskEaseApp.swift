@@ -2,6 +2,7 @@ import SwiftUI
 import AppKit
 import Darwin
 
+/// 处理应用启动、重复打开与退出时的进程恢复。
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate {
     lazy var model = AppModel(preview: LaunchContext.current.usesFixtures)

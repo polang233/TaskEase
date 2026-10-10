@@ -1,5 +1,6 @@
 import AppKit
 
+/// 加载 18 点模板图标，让系统适配菜单栏颜色与 Retina 缩放。
 @MainActor
 enum MenuBarIcon {
     static let image: NSImage = {

@@ -15,7 +15,7 @@ enum UtilityWindowKind: String {
 
     var size: NSSize {
         switch self {
-        case .settings: NSSize(width: 560, height: 510)
+        case .settings: NSSize(width: 560, height: 650)
         case .help: NSSize(width: 680, height: 580)
         case .about: NSSize(width: 440, height: 440)
         case .license: NSSize(width: 680, height: 600)
@@ -23,6 +23,7 @@ enum UtilityWindowKind: String {
     }
 }
 
+/// 按用途复用设置、帮助、关于和许可证窗口。
 @MainActor
 final class UtilityWindowController: NSWindowController, NSWindowDelegate {
     private weak var model: AppModel?

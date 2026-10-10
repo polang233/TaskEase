@@ -2,7 +2,7 @@
 
 本目录保存 2026-10-10 在本机完成的验证摘要。环境为 M5 MacBook Air、macOS 27.0.1、Xcode 27.0。
 
-- automatic-tests.json：本轮 25 项单元与窗口生命周期测试和 4 项界面测试全部通过的实际结果。
+- automatic-tests.json：本轮 27 项单元、数据清理与窗口生命周期测试和 5 项界面测试全部通过的实际结果。
 - branding-tests.json：图标更新后的 2 项界面回归测试。
 - application-instance.json：不同应用副本并发启动及崩溃重开的隔离检查。
 - application-delivery.json：Release 包、随包许可证、运行实例、Dock 状态和自动测试的交付检查。

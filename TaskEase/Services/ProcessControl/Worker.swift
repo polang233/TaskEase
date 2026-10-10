@@ -1,6 +1,7 @@
 import Foundation
 import Darwin
 
+/// 保存一个应用进程组的采样基线与共享 CPU 额度。
 private final class WorkerGroup {
     var config: ControlGroup
     var previous: [ProcessIdentity: UInt64] = [:]
@@ -9,6 +10,7 @@ private final class WorkerGroup {
     init(_ config: ControlGroup) { self.config = config }
 }
 
+/// 独立执行控制计划，失联、关闭或解析失败时恢复本工具施加的状态。
 enum NativeWorker {
     static func run(testing: Bool = false) {
         te_install_worker_signals()
@@ -24,7 +26,7 @@ enum NativeWorker {
             return
         }
         defer { flock(lock, LOCK_UN); close(lock) }
-        // A previous dead worker's record is recovered before accepting a plan.
+        // 接收新计划前先恢复已经失联的旧工作进程记录。
         _ = Recovery.restore(testing: testing)
         var journal = RecoveryRecord(worker: workerID, controller: controllerID)
         var groups: [String: WorkerGroup] = [:]
@@ -108,8 +110,7 @@ enum NativeWorker {
 
         emit(WorkerEvent(kind: "ready", message: "控制进程已就绪"))
         defer {
-            // Use the persisted ownership record as well, including a stop
-            // committed just before an unexpected failure.
+            // 以持久归属记录恢复，包含异常发生前已记录的暂停。
             _ = Recovery.restore(testing: testing, force: true)
             emit(WorkerEvent(kind: "restored", message: "已解除本工具的限制"))
         }
@@ -149,7 +150,7 @@ enum NativeWorker {
                     guard valid(target), let sample = NativeProcess.sample(target.identity.pid),
                           sample.identity == target.identity else { release(target); continue }
                     if excluded.contains(target.identity) { continue }
-                    // BSD SSTOP is 4. Never take over an externally stopped process.
+                    // BSD 暂停状态 SSTOP 为 4；跳过已经由其他工具暂停的进程。
                     if sample.status == 4 && !stopped.contains(target.identity) {
                         excluded.insert(target.identity); continue
                     }
@@ -207,6 +208,7 @@ enum NativeWorker {
     }
 }
 
+/// 负责工作进程的启动、心跳传输、结束等待和主应用补偿恢复。
 @MainActor
 final class WorkerController {
     private var process: Process?
@@ -220,6 +222,7 @@ final class WorkerController {
     var onError: ((String) -> Void)?
     var helperPID: Int32? { process?.isRunning == true ? process?.processIdentifier : nil }
 
+    /// 有控制需求才启动工作进程；空计划立即停止并恢复。
     func update(_ groups: [ControlGroup]) {
         guard !groups.isEmpty else { stop(); return }
         if process?.isRunning != true {
@@ -279,6 +282,7 @@ final class WorkerController {
         _ = Recovery.restore(testing: testing)
         if !stopping { onError?("控制进程已结束，限制已恢复。重新开启后台限制可重试。") }
     }
+    /// 请求正常恢复，必要时结束工作进程，再处理归属日志。
     func stop() {
         guard !stopping else { return }
         guard let child = process else { _ = Recovery.restore(testing: testing); return }
@@ -292,6 +296,8 @@ final class WorkerController {
         let finalDeadline = Date().addingTimeInterval(0.5)
         while child.isRunning && Date() < finalDeadline { usleep(10_000) }
         if child.isRunning { kill(child.processIdentifier, SIGKILL) }
+        // 等待工作进程完全退出后恢复日志，数据清理才能安全移除该目录。
+        child.waitUntilExit()
         _ = Recovery.restore(testing: testing)
         process = nil; input = nil; output = nil; outputData.removeAll()
         generation += 1

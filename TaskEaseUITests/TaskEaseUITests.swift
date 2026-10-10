@@ -45,7 +45,9 @@ final class TaskEaseUITests: XCTestCase {
         let global = window.switches["management-toggle"]
         XCTAssertTrue(global.waitForExistence(timeout: 5))
         XCTAssertFalse(global.isEnabled)
-        XCTAssertTrue(window.staticTexts["先为应用设置后台规则"].exists)
+        XCTAssertFalse(window.staticTexts["先为应用设置后台规则"].exists)
+        window.buttons["management-unavailable"].click()
+        XCTAssertTrue(app.staticTexts["先为应用设置后台规则"].waitForExistence(timeout: 5))
         window.staticTexts["网页浏览器"].firstMatch.click()
         let rule = window.switches["app-rule-toggle"]
         XCTAssertTrue(rule.waitForExistence(timeout: 5))
@@ -83,7 +85,7 @@ final class TaskEaseUITests: XCTestCase {
         XCTAssertTrue(refresh.waitForExistence(timeout: 5))
         refresh.click()
         app.menuItems["10 秒"].click()
-        XCTAssertTrue(window.staticTexts["显示每 10 秒更新"].waitForExistence(timeout: 5))
+        XCTAssertEqual(refresh.value as? String, "10 秒")
         let image = XCTAttachment(screenshot: settings.screenshot())
         image.name = "SettingsDark"
         image.lifetime = .keepAlways
@@ -104,14 +106,14 @@ final class TaskEaseUITests: XCTestCase {
             add(tree)
         }
         XCTAssertTrue(content.contains("Free Software Foundation"))
-        app.typeKey("w", modifierFlags: .command)
+        license.buttons[XCUIIdentifierCloseWindow].click()
         about.buttons["使用帮助"].click()
         let help = app.windows["轻程帮助"]
         XCTAssertTrue(help.waitForExistence(timeout: 5))
         XCTAssertTrue(help.staticTexts["让后台应用少占资源"].exists)
-        app.typeKey("w", modifierFlags: .command)
-        app.typeKey("w", modifierFlags: .command)
-        app.typeKey("w", modifierFlags: .command)
+        help.buttons[XCUIIdentifierCloseWindow].click()
+        about.buttons[XCUIIdentifierCloseWindow].click()
+        settings.buttons[XCUIIdentifierCloseWindow].click()
         XCTAssertTrue(window.exists)
     }
 
@@ -129,7 +131,7 @@ final class TaskEaseUITests: XCTestCase {
             .first { $0.bundleURL?.path == applicationURL.path }
         XCTAssertNotNil(running)
         let originalPID = running?.processIdentifier
-        app.typeKey("w", modifierFlags: .command)
+        app.windows["轻程"].buttons[XCUIIdentifierCloseWindow].click()
         let deadline = Date().addingTimeInterval(3)
         while running?.activationPolicy != .accessory && Date() < deadline {
             _ = RunLoop.current.run(mode: .default, before: Date().addingTimeInterval(0.05))
@@ -151,4 +153,20 @@ final class TaskEaseUITests: XCTestCase {
         XCTAssertTrue(app.windows["轻程"].waitForExistence(timeout: 5))
         XCTAssertEqual(app.windows.matching(identifier: "轻程").count, 1)
     }
+    /// 使用无持久数据的界面夹具验证取消与退出，保留本机用户配置。
+    func testEraseDataConfirmationAndQuit() throws {
+        let app = launchFixture()
+        defer { if app.state != .notRunning { app.terminate() } }
+        app.windows["轻程"].buttons["open-settings"].click()
+        let settings = app.windows["轻程设置"]
+        XCTAssertTrue(settings.waitForExistence(timeout: 5))
+        settings.buttons["erase-app-data"].click()
+        XCTAssertTrue(settings.sheets.buttons["取消"].waitForExistence(timeout: 5))
+        settings.sheets.buttons["取消"].click()
+        XCTAssertTrue(settings.exists)
+        settings.buttons["erase-app-data"].click()
+        settings.sheets.buttons["清除并退出"].click()
+        XCTAssertTrue(app.wait(for: .notRunning, timeout: 5))
+    }
+
 }

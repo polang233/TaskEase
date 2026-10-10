@@ -6,6 +6,7 @@ struct SystemReading: Sendable {
     var thermalLabel: String = "正常"
 }
 
+/// 应用与自有辅助进程的合计占用，兼容未运行的已配置应用。
 struct AppReading: Identifiable, Sendable {
     let id: String
     let name: String
@@ -42,7 +43,7 @@ enum ApplicationScope {
     }
 }
 
-/// Display metadata is separate from rules.v1, so existing control settings remain readable.
+/// 名称和路径单独保存，应用退出后仍可展示和编辑规则。
 struct SavedApplication: Codable, Equatable, Sendable {
     let name: String
     let bundlePaths: [String]

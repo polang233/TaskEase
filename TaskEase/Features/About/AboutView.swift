@@ -1,6 +1,7 @@
 import SwiftUI
 import AppKit
 
+/// 显示版本、版权与许可信息，提供帮助和许可证入口。
 struct AboutView: View {
     @Bindable var model: AppModel
 
@@ -12,7 +13,7 @@ struct AboutView: View {
             Text("版本 \(AppVersion.short) · 构建 \(AppVersion.build)").font(.callout).foregroundStyle(.secondary)
             Text("查看应用占用，按前后台状态限制 CPU 资源。")
                 .font(.callout).multilineTextAlignment(.center)
-            Text("Apple Silicon · macOS 27+").font(.caption).foregroundStyle(.secondary)
+            Text("Apple Silicon · macOS 14+").font(.caption).foregroundStyle(.secondary)
             Text("本软件按 GNU GPLv3 分发，无任何担保。你可以依照许可证修改和再分发。")
                 .font(.caption).foregroundStyle(.secondary).multilineTextAlignment(.center)
             Divider().padding(.vertical, 4)
