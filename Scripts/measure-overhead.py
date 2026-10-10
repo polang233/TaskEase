@@ -2,7 +2,7 @@
 
 Usage: python3 Scripts/measure-overhead.py PID --seconds 20
 100 percent means one CPU core. CPU and wall time share Mach units.
-The two uint64 CPU fields follow the UUID in the public rusage_info_v4 ABI.
+Offsets follow the public rusage_info_v4 ABI in the macOS 27 SDK.
 """
 import argparse
 import ctypes
@@ -24,12 +24,20 @@ def read_usage():
     buffer = ctypes.create_string_buffer(1024)
     if lib.proc_pid_rusage(args.pid, 4, buffer) != 0:
         raise OSError(ctypes.get_errno(), 'Process information unavailable')
-    return sum(struct.unpack_from('QQ', buffer.raw, 16)), struct.unpack_from('Q', buffer.raw, 72)[0]
-before, _ = read_usage()
+    return {'cpu': sum(struct.unpack_from('QQ', buffer.raw, 16)),
+            'packageIdleWakeups': struct.unpack_from('Q', buffer.raw, 32)[0],
+            'interruptWakeups': struct.unpack_from('Q', buffer.raw, 40)[0],
+            'physicalBytes': struct.unpack_from('Q', buffer.raw, 72)[0],
+            'startTime': struct.unpack_from('Q', buffer.raw, 80)[0]}
+before = read_usage()
 start = lib.mach_absolute_time()
 time.sleep(args.seconds)
-after, memory = read_usage()
+after = read_usage()
 end = lib.mach_absolute_time()
+if before['startTime'] != after['startTime']:
+    raise RuntimeError('Process changed during measurement')
 print(json.dumps({'pid': args.pid, 'seconds': args.seconds,
-                  'cpuPercentOneCore': 100 * (after-before)/(end-start),
-                  'physicalBytes': memory}, indent=2))
+                  'cpuPercentOneCore': 100 * (after['cpu']-before['cpu'])/(end-start),
+                  'physicalBytes': after['physicalBytes'],
+                  'packageIdleWakeupsPerSecond': (after['packageIdleWakeups']-before['packageIdleWakeups'])/args.seconds,
+                  'interruptWakeupsPerSecond': (after['interruptWakeups']-before['interruptWakeups'])/args.seconds}, indent=2))

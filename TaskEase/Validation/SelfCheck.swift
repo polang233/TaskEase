@@ -4,10 +4,13 @@ import Darwin
 @MainActor
 enum SelfCheck {
     static func snapshot() {
-        let monitor = ProcessMonitor()
-        _ = monitor.sample()
+        var monitor = ProcessSampler()
+        let running = RunningApplication.capture(showSystemApps: true)
+        _ = monitor.sample(running, includeSystem: true)
         usleep(500_000)
-        let (apps, system) = monitor.sample()
+        let snapshot = monitor.sample(running, includeSystem: true)
+        let apps = snapshot.apps
+        let system = snapshot.system ?? SystemReading()
         let rows: [[String: Any]] = apps.map { app in
             ["id": app.id, "name": app.name, "cpuPercent": app.cpuPercent ?? 0,
              "memoryBytes": app.memoryBytes, "processCount": app.targets.count,

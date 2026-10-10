@@ -1,19 +1,25 @@
 {
+  "recordedAt": "2026-10-10T19:50:38+08:00",
+  "version": "1.1.0",
+  "build": "2",
   "configuration": "Release",
   "architectures": [
-    "x86_64",
     "arm64"
   ],
-  "primaryIcon": "AppIcon",
-  "applicationExecutableCount": 1,
-  "codesignVerified": true,
-  "menuIconPoints": [
-    18,
-    18
-  ],
-  "singleInstanceIntegrationPassed": true,
-  "runningInstanceCount": 1,
-  "dockPolicyRegularWithWindow": true,
-  "uiTestsPassed": 3,
-  "unitTestsPassed": 14
+  "minimumSystemVersion": "27.0",
+  "swiftVersion": "6.0",
+  "strictConcurrency": "complete",
+  "signatureVerified": true,
+  "licenseIncluded": true,
+  "normalInstances": 1,
+  "dockPolicy": "regular",
+  "controlSelfCheckPassed": true,
+  "applicationInstanceCheckPassed": true,
+  "automaticTests": {
+    "passed": 25,
+    "skipped": 4,
+    "failed": 0,
+    "total": 29
+  },
+  "uiValidation": "Pending unlocked desktop"
 }

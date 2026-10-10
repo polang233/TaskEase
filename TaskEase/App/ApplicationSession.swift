@@ -139,7 +139,7 @@ final class ApplicationSession: NSObject {
               owner.ready, owner.identity.uid == geteuid(), NativeProcess.isAlive(owner.identity),
               let running = NSRunningApplication(processIdentifier: owner.identity.pid),
               running.bundleIdentifier == Bundle.main.bundleIdentifier else { return false }
-        running.activate(options: [.activateIgnoringOtherApps])
+        running.activate(options: [])
         DistributedNotificationCenter.default().postNotificationName(
             notificationName, object: String(owner.identity.pid), userInfo: nil, deliverImmediately: true)
         return true

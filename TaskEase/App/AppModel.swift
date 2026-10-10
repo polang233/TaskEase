@@ -1,0 +1,468 @@
+import AppKit
+import Foundation
+import Observation
+
+@MainActor @Observable
+final class AppModel {
+    private(set) var apps: [AppReading] = []
+    private(set) var system = SystemReading()
+    private(set) var rules: [String: AppRule] = [:]
+    private(set) var preferences = AppPreferences()
+    private(set) var enabled = false
+    private(set) var applicationList: ApplicationList = .running
+    var search = ""
+    var selectedID: String?
+    var errorMessage: String?
+    private(set) var sampledAt = Date()
+    private(set) var isRefreshing = false
+    private(set) var managementIsOpen = false
+    private(set) var foregroundID: String?
+    let preview: Bool
+
+    @ObservationIgnored private var savedApplications: [String: SavedApplication] = [:]
+    @ObservationIgnored private var backgroundSince: [String: UInt64] = [:]
+    @ObservationIgnored private var primaryIdentities: [String: Set<ProcessIdentity>] = [:]
+    @ObservationIgnored private var lastDisplaySample: UInt64?
+    @ObservationIgnored private let monitor = ProcessMonitor()
+    @ObservationIgnored private let controller = WorkerController()
+    @ObservationIgnored private let defaults = UserDefaults.standard
+    @ObservationIgnored private var timer: Timer?
+    @ObservationIgnored private var refreshTask: Task<Void, Never>?
+    @ObservationIgnored private var pendingRefresh: Bool?
+    @ObservationIgnored private var events: WorkspaceEvents?
+    @ObservationIgnored private var managementWindow: ManagementWindowController?
+    @ObservationIgnored private var utilityWindows: [UtilityWindowKind: UtilityWindowController] = [:]
+    @ObservationIgnored private var openUtilities: Set<UtilityWindowKind> = []
+    @ObservationIgnored private weak var menuWindow: NSWindow?
+    @ObservationIgnored private var sleeping = false
+    @ObservationIgnored private var isShutdown = false
+
+    init(preview: Bool = false) {
+        self.preview = preview
+        if preview {
+            apps = Self.exampleApps
+            system = SystemReading(cpuPercent: 18, gpuPercent: 24, thermalLabel: "正常")
+            foregroundID = "example.editor"
+            selectedID = apps.first?.id
+            return
+        }
+        _ = Recovery.restore()
+        loadStoredState()
+        controller.onError = { [weak self] message in
+            guard let self else { return }
+            self.errorMessage = message
+            self.enabled = false
+            self.defaults.set(false, forKey: "managementEnabled")
+            self.controller.stop()
+            self.reconcile()
+        }
+        events = WorkspaceEvents(
+            onFocus: { [weak self] in self?.focusChanged() },
+            onMembership: { [weak self] id in self?.membershipChanged(id) },
+            onSleep: { [weak self] in self?.prepareForSleep() },
+            onWake: { [weak self] in self?.wake() },
+            onVisibility: { [weak self] in self?.displayVisibilityChanged() }
+        )
+        foregroundID = NSWorkspace.shared.frontmostApplication?.bundleIdentifier
+        if enabled && configuredCount > 0 { refresh(force: true) }
+    }
+
+    var configuredCount: Int { rules.values.filter(\.isActive).count }
+    var managedCount: Int { apps.filter { Policy.shouldControl($0.status) }.count }
+    var helperPID: Int32? { controller.helperPID }
+    var canEnable: Bool { configuredCount > 0 }
+    var hasScheduledRefresh: Bool { timer != nil }
+
+    var configuredApps: [AppReading] {
+        rules.keys.map { id in
+            apps.first { $0.id == id } ?? .offline(id: id, metadata: savedApplications[id])
+        }.sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
+    }
+
+    var visibleRunningApps: [AppReading] {
+        apps.filter { preferences.showSystemApps || !$0.isSystemApp }
+    }
+
+    var filteredApps: [AppReading] {
+        let query = search.trimmingCharacters(in: .whitespacesAndNewlines)
+        let source = applicationList == .running ? visibleRunningApps : configuredApps
+        return source.filter {
+            query.isEmpty || $0.name.localizedCaseInsensitiveContains(query) || $0.id.localizedCaseInsensitiveContains(query)
+        }
+    }
+
+    var selectedApp: AppReading? { filteredApps.first { $0.id == selectedID } }
+
+    func allowsRuleEditing(_ app: AppReading) -> Bool {
+        !app.isSystemApp && !app.id.hasPrefix("com.apple.") && (app.canControl || rules[app.id] != nil)
+    }
+
+    func setApplicationList(_ list: ApplicationList) {
+        applicationList = list
+        search = ""
+        ensureSelection()
+        if list == .running { refresh(force: true) }
+    }
+
+    func ensureSelection() {
+        if !filteredApps.contains(where: { $0.id == selectedID }) { selectedID = filteredApps.first?.id }
+    }
+
+    func setEnabled(_ value: Bool) {
+        guard !value || canEnable else { return }
+        enabled = value
+        errorMessage = nil
+        // Enabling while an app is already in the background starts a fresh grace period.
+        if value { backgroundSince.removeAll() }
+        if !preview { defaults.set(value, forKey: "managementEnabled") }
+        reconcile()
+        refresh(force: true)
+    }
+
+    func setRule(_ id: String, rule: AppRule) {
+        let application = apps.first { $0.id == id } ?? configuredApps.first { $0.id == id }
+        guard let application, allowsRuleEditing(application) else { return }
+        let validated = rule.validated()
+        if rules[id]?.isActive != true && validated.isActive { backgroundSince[id] = nil }
+        rules[id] = validated
+        savedApplications[id] = SavedApplication(application)
+        persistRules()
+        normalizeEnablement()
+        reconcile()
+        refresh(force: true)
+    }
+
+    func resetRule(_ id: String) {
+        guard rules.removeValue(forKey: id) != nil else { return }
+        savedApplications.removeValue(forKey: id)
+        backgroundSince[id] = nil
+        persistRules()
+        normalizeEnablement()
+        ensureSelection()
+        reconcile()
+        refresh(force: true)
+    }
+
+    func updatePreferences(_ update: (inout AppPreferences) -> Void) {
+        var changed = preferences
+        update(&changed)
+        guard changed != preferences else { return }
+        preferences = changed
+        if !preview, let data = try? JSONEncoder().encode(changed) {
+            defaults.set(data, forKey: "preferences.v1")
+        }
+        ensureSelection()
+        scheduleRefresh()
+        refresh(force: true)
+    }
+
+    private func loadStoredState() {
+        if let data = defaults.data(forKey: "rules.v1") {
+            do { rules = try StoredRules.decode(data) }
+            catch {
+                defaults.set(data, forKey: "rules.v1.invalid-backup")
+                errorMessage = "保存的规则无法读取，已保留备份并关闭后台限制。"
+            }
+        }
+        if let data = defaults.data(forKey: "ruleApplications.v1") {
+            savedApplications = (try? JSONDecoder().decode([String: SavedApplication].self, from: data)) ?? [:]
+        }
+        if let data = defaults.data(forKey: "preferences.v1") {
+            preferences = (try? JSONDecoder().decode(AppPreferences.self, from: data)) ?? AppPreferences()
+        }
+        var discoveredMetadata = false
+        for id in rules.keys where savedApplications[id] == nil {
+            guard let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: id) else { continue }
+            let bundle = Bundle(url: url)
+            let name = bundle?.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String ??
+                url.deletingPathExtension().lastPathComponent
+            savedApplications[id] = SavedApplication(name: name,
+                                                      bundlePaths: [url.resolvingSymlinksInPath().path])
+            discoveredMetadata = true
+        }
+        if discoveredMetadata { persistRules() }
+        // Preserve existing enabled rules; an empty rule set always starts with the switch off.
+        enabled = errorMessage == nil && canEnable &&
+            (defaults.object(forKey: "managementEnabled") == nil || defaults.bool(forKey: "managementEnabled"))
+    }
+
+    private func persistRules() {
+        guard !preview else { return }
+        do {
+            let ruleData = try StoredRules.encode(rules)
+            let metadata = try JSONEncoder().encode(savedApplications)
+            defaults.set(ruleData, forKey: "rules.v1")
+            defaults.set(metadata, forKey: "ruleApplications.v1")
+        } catch {
+            errorMessage = "规则保存失败：\(error.localizedDescription)"
+        }
+    }
+
+    private func normalizeEnablement() {
+        if !canEnable && enabled {
+            enabled = false
+            if !preview { defaults.set(false, forKey: "managementEnabled") }
+        }
+    }
+
+    private var displayIsVisible: Bool {
+        (menuWindow?.isVisible == true && menuWindow?.occlusionState.contains(.visible) == true) ||
+        (managementIsOpen && managementWindow?.window?.isMiniaturized == false &&
+         managementWindow?.window?.occlusionState.contains(.visible) == true)
+    }
+
+    private var controlMonitoringRequired: Bool {
+        enabled && apps.contains {
+            rules[$0.id]?.isActive == true && ($0.id != foregroundID || $0.isHidden)
+        }
+    }
+
+    /// Capture AppKit values on MainActor, then scan libproc on the monitor actor.
+    /// Requests arriving during a scan are coalesced into one follow-up refresh.
+    func refresh(force: Bool = false) {
+        guard !preview, !sleeping, !isShutdown,
+              displayIsVisible || (enabled && canEnable) else { return }
+        let displayDue = lastDisplaySample.map {
+            NativeProcess.seconds(since: $0) >= preferences.refreshInterval.seconds
+        } ?? true
+        let display = displayIsVisible && (force || displayDue)
+        guard display || controlMonitoringRequired || (force && enabled && canEnable) else { return }
+        guard refreshTask == nil else {
+            pendingRefresh = (pendingRefresh ?? false) || force
+            return
+        }
+        let ids = display ? nil : Set(rules.filter { $0.value.isActive }.keys)
+        let running = RunningApplication.capture(showSystemApps: display && preferences.showSystemApps, only: ids)
+        isRefreshing = true
+        refreshTask = Task(priority: .utility) { [weak self, monitor] in
+            let snapshot = await monitor.sample(running, includeSystem: display)
+            guard !Task.isCancelled, let self, !self.sleeping, !self.isShutdown else { return }
+            self.refreshTask = nil
+            self.isRefreshing = false
+            self.apply(snapshot, updateDisplay: display)
+            self.reconcile()
+            if let force = self.pendingRefresh {
+                self.pendingRefresh = nil
+                self.refresh(force: force)
+            }
+        }
+    }
+
+    func apply(_ snapshot: MonitoringSnapshot, updateDisplay: Bool = true) {
+        for reading in snapshot.apps {
+            let current = Set(reading.samples.filter { reading.primaryPIDs.contains($0.identity.pid) }.map(\.identity))
+            if let before = primaryIdentities[reading.id], !before.isEmpty && before.isDisjoint(with: current) {
+                backgroundSince[reading.id] = nil
+            }
+            primaryIdentities[reading.id] = current
+        }
+        let liveIDs = Set(snapshot.apps.map(\.id))
+        let monitoredIDs = Set(rules.filter { $0.value.isActive }.keys)
+        if updateDisplay {
+            backgroundSince = backgroundSince.filter { liveIDs.contains($0.key) }
+            primaryIdentities = primaryIdentities.filter { liveIDs.contains($0.key) }
+            apps = snapshot.apps
+            if let whole = snapshot.system { system = whole }
+            sampledAt = Date()
+            lastDisplaySample = NativeProcess.now
+        } else {
+            // Control refreshes update membership and policy without replacing the
+            // visible metrics or the display sampler's independent baseline.
+            let fresh = Dictionary(uniqueKeysWithValues: snapshot.apps.map { ($0.id, $0) })
+            apps = apps.compactMap { old in
+                guard monitoredIDs.contains(old.id) else { return old }
+                guard var next = fresh[old.id] else { return nil }
+                next.cpuPercent = old.cpuPercent
+                next.memoryBytes = old.memoryBytes
+                next.readRate = old.readRate
+                next.writeRate = old.writeRate
+                next.wakeupRate = old.wakeupRate
+                next.samples = old.samples
+                return next
+            }
+            let displayedIDs = Set(apps.map(\.id))
+            apps.append(contentsOf: snapshot.apps.filter { !displayedIDs.contains($0.id) })
+            backgroundSince = backgroundSince.filter { !monitoredIDs.contains($0.key) || liveIDs.contains($0.key) }
+            primaryIdentities = primaryIdentities.filter { !monitoredIDs.contains($0.key) || liveIDs.contains($0.key) }
+        }
+        var metadataChanged = false
+        for app in apps where rules[app.id] != nil {
+            let metadata = SavedApplication(app)
+            if savedApplications[app.id] != metadata {
+                savedApplications[app.id] = metadata
+                metadataChanged = true
+            }
+        }
+        if metadataChanged { persistRules() }
+        ensureSelection()
+        updateFocus()
+    }
+
+    private func updateFocus() {
+        if !preview { foregroundID = NSWorkspace.shared.frontmostApplication?.bundleIdentifier }
+        for index in apps.indices where !preview {
+            apps[index].isHidden = NSRunningApplication.runningApplications(withBundleIdentifier: apps[index].id)
+                .allSatisfy(\.isHidden)
+        }
+    }
+
+    private func focusChanged() {
+        guard !sleeping, !isShutdown, displayIsVisible || (enabled && canEnable) else { return }
+        updateFocus()
+        // The cached plan restores the newly foreground app before any asynchronous scan.
+        reconcile()
+        refresh(force: enabled && canEnable)
+    }
+
+    private func membershipChanged(_ id: String?) {
+        guard id != Bundle.main.bundleIdentifier else { return }
+        if displayIsVisible || (enabled && id.flatMap { rules[$0]?.isActive } == true) {
+            refresh(force: true)
+        }
+    }
+
+    private func reconcile() {
+        guard !isShutdown else { return }
+        let now = NativeProcess.now
+        var plan: [ControlGroup] = []
+        for index in apps.indices {
+            let id = apps[index].id
+            let rule = (rules[id] ?? AppRule()).validated()
+            let front = foregroundID == id && !apps[index].isHidden
+            if front || !rule.isActive { backgroundSince[id] = nil }
+            else if backgroundSince[id] == nil { backgroundSince[id] = now }
+            let seconds = backgroundSince[id].map { NativeProcess.seconds(since: $0) } ?? 0
+            let status = Policy.status(rule: rule, enabled: enabled,
+                                       controllable: apps[index].canControl && (preview || !apps[index].targets.isEmpty),
+                                       isForeground: front, isHidden: apps[index].isHidden, backgroundSeconds: seconds)
+            apps[index].status = status
+            if Policy.shouldControl(status), !apps[index].targets.isEmpty {
+                plan.append(ControlGroup(bundleID: id, mode: rule.mode, cpuPercent: rule.cpuPercent,
+                                         targets: apps[index].targets))
+            }
+        }
+        if !preview && !sleeping { controller.update(plan) }
+        scheduleRefresh()
+    }
+
+    private func scheduleRefresh() {
+        timer?.invalidate()
+        timer = nil
+        guard !preview, !sleeping, !isShutdown else { return }
+        let waiting = apps.filter { $0.status == .waiting }.compactMap { app -> TimeInterval? in
+            guard let began = backgroundSince[app.id], let rule = rules[app.id] else { return nil }
+            return rule.delaySeconds - NativeProcess.seconds(since: began)
+        }
+        let remainingDisplay = lastDisplaySample.map {
+            max(0.05, preferences.refreshInterval.seconds - NativeProcess.seconds(since: $0))
+        } ?? preferences.refreshInterval.seconds
+        guard let interval = SamplingPolicy.nextInterval(displayVisible: displayIsVisible,
+                                                         displayInterval: remainingDisplay,
+                                                         controlMonitoring: controlMonitoringRequired,
+                                                         waitingSeconds: waiting) else { return }
+        let next = Timer(timeInterval: interval, repeats: false) { [weak self] _ in
+            Task { @MainActor in
+                guard let self else { return }
+                self.reconcile()
+                self.refresh()
+            }
+        }
+        next.tolerance = min(0.2, interval * 0.1)
+        RunLoop.main.add(next, forMode: .common)
+        timer = next
+    }
+
+    private func displayVisibilityChanged() {
+        guard !isShutdown else { return }
+        scheduleRefresh()
+        if displayIsVisible { refresh(force: true) }
+    }
+
+    func trackMenuWindow(_ window: NSWindow?) {
+        menuWindow = window
+        if window?.isVisible == true { refresh(force: true) }
+        scheduleRefresh()
+    }
+
+    func showManagement() {
+        if managementWindow == nil { managementWindow = ManagementWindowController(model: self) }
+        managementIsOpen = true
+        managementWindow?.present()
+        refresh(force: true)
+        scheduleRefresh()
+    }
+
+    func closeManagement() { managementWindow?.close() }
+
+    func managementDidClose() {
+        managementIsOpen = false
+        updateActivationPolicy()
+        scheduleRefresh()
+    }
+
+    func showUtility(_ kind: UtilityWindowKind) {
+        if utilityWindows[kind] == nil { utilityWindows[kind] = UtilityWindowController(kind: kind, model: self) }
+        openUtilities.insert(kind)
+        utilityWindows[kind]?.present()
+    }
+
+    func utilityDidClose(_ kind: UtilityWindowKind) {
+        openUtilities.remove(kind)
+        updateActivationPolicy()
+    }
+
+    func closeUtility(_ kind: UtilityWindowKind) { utilityWindows[kind]?.close() }
+
+    private func updateActivationPolicy() {
+        NSApp.setActivationPolicy(managementIsOpen || !openUtilities.isEmpty ? .regular : .accessory)
+    }
+
+    private func prepareForSleep() {
+        sleeping = true
+        timer?.invalidate()
+        timer = nil
+        refreshTask?.cancel()
+        refreshTask = nil
+        pendingRefresh = nil
+        isRefreshing = false
+        controller.stop()
+        backgroundSince.removeAll()
+    }
+
+    private func wake() {
+        sleeping = false
+        updateFocus()
+        reconcile()
+        if displayIsVisible || (enabled && canEnable) { refresh(force: true) }
+    }
+
+    func shutdown() {
+        isShutdown = true
+        timer?.invalidate()
+        timer = nil
+        refreshTask?.cancel()
+        refreshTask = nil
+        events = nil
+        if !preview { controller.stop() }
+        managementWindow?.close()
+        managementWindow?.window?.contentViewController = nil
+        managementWindow = nil
+        for controller in utilityWindows.values {
+            controller.close()
+            controller.window?.contentViewController = nil
+        }
+        utilityWindows.removeAll()
+    }
+
+    static var exampleApps: [AppReading] {
+        [
+            AppReading(id: "example.editor", name: "代码编辑器", bundlePaths: [], primaryPIDs: [], targets: [], samples: [],
+                       cpuPercent: 12.8, memoryBytes: 712_000_000, readRate: 0, writeRate: 0, canControl: true, isHidden: false),
+            AppReading(id: "example.browser", name: "网页浏览器", bundlePaths: [], primaryPIDs: [], targets: [], samples: [],
+                       cpuPercent: 36.2, memoryBytes: 1_480_000_000, readRate: 1024, writeRate: 8192, canControl: true, isHidden: false,
+                       wakeupRate: 18.4),
+            AppReading(id: "com.apple.finder", name: "Finder", bundlePaths: [], primaryPIDs: [], targets: [], samples: [],
+                       cpuPercent: 0.8, memoryBytes: 98_000_000, readRate: 0, writeRate: 0, canControl: false, isHidden: false)
+        ]
+    }
+}

@@ -1,64 +1,136 @@
-# TaskEase · 轻程
+<p align="center">
+  <img src="Branding/AppIcon-preview.png" width="120" alt="TaskEase 应用图标">
+</p>
 
-TaskEase 是原生 macOS 菜单栏工具，用于查看应用占用，并按前后台状态管理选定应用的 CPU 资源。
+<h1 align="center">TaskEase · 轻程</h1>
 
-## 首版功能
+<p align="center">查看应用占用，按前后台状态限制 CPU 资源。</p>
 
-- 显示应用及其自有辅助进程的 CPU、物理内存和磁盘活动。
-- 显示整机 CPU、GPU 驱动估计值和系统热状态。
-- 为应用设置不管理、温和后台调度或 CPU 预算。
-- 后台等待默认 3 秒后应用规则，回到前台立即恢复。
-- 暂停全部自动管理、恢复进程、退出时清理控制状态。
+<p align="center">
+  <img src="https://img.shields.io/badge/version-1.1.0-30BBA9" alt="版本 1.1.0">
+  <img src="https://img.shields.io/badge/macOS-27%2B-24292f?logo=apple" alt="macOS 27 及以上">
+  <img src="https://img.shields.io/badge/platform-Apple%20Silicon-24292f" alt="Apple Silicon">
+  <img src="https://img.shields.io/badge/Swift-6-F05138?logo=swift&logoColor=white" alt="Swift 6">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-30BBA9" alt="MIT 许可证"></a>
+</p>
 
-CPU 百分比按单核计算，100% 约等于一个核满载。CPU 预算是平均额度，不能代替精确帧率或 GPU 配额。GPU 数据来自驱动统计，只代表整机，缺失时显示不可用。
+<p align="center">
+  <a href="#功能">功能</a> ·
+  <a href="#开始使用">开始使用</a> ·
+  <a href="#开发">开发</a> ·
+  <a href="#更新计划">更新计划</a> ·
+  <a href="Docs/Usage.md">使用说明</a>
+</p>
 
-## 运行
+![应用管理与后台规则](Artifacts/management-preview.png)
 
-双击 `build/TaskEase.app` 启动本机 Release 应用。启动会打开管理窗口，并在菜单栏显示双叶图标。管理窗口打开或最小化时保留 Dock 入口，关闭窗口后继续菜单栏管理。重复启动会打开已有实例的窗口。
+界面示例使用预览数据。
 
-在项目根目录执行以下命令生成应用包：
+<details>
+<summary>菜单栏与设置</summary>
+
+<table><tr><td><img src="Artifacts/menu-preview.png" width="420" alt="菜单栏"></td><td><img src="Artifacts/settings-preview.png" width="420" alt="显示与外观设置"></td></tr></table>
+
+</details>
+
+## 功能
+
+| 功能 | 内容 |
+| --- | --- |
+| 应用占用 | 合计应用及其自有辅助进程的 CPU、物理内存、磁盘活动和中断唤醒 |
+| 系统概览 | 整机 CPU、GPU 驱动利用率估计值和系统热状态 |
+| 后台限制 | 离开前台后等待指定秒数，再限制平均 CPU 使用，回到前台恢复 |
+| 规则列表 | 单独查看已配置规则，应用退出后仍可编辑 |
+| 应用筛选 | 默认展示用户应用，可开启系统应用显示 |
+| 设置与窗口 | 深浅外观、显示刷新间隔、帮助、关于信息、单实例与 Dock 窗口入口 |
+
+CPU 使用上限按单核计算，100% 约等于一个核心满载，并由应用自有进程共享。高级选项可改为仅降低后台优先级。GPU 数值代表整机；热状态表示发热对系统运行的影响程度。
+
+CPU 限制会短暂暂停整个受控进程，可能影响声音和连接心跳。具体效果需要按应用验证。精确帧率、独立 GPU 配额和网络限速属于单独的能力研究，当前控制范围见 [需求文档](Docs/Requirements.md)。
+
+## 开始使用
+
+1. 双击本机生成的 `build/TaskEase.app`。
+2. 在“运行中的应用”中选择应用，打开“限制后台资源”。
+3. 设置等待时间与 CPU 使用上限，再打开顶部的“启用后台限制”。
+4. 在“已配置规则”中集中修改、暂停或移除配置。
+
+没有有效规则时，总开关置灰。应用默认保持原样，已有规则按 bundle identifier 保存并重新匹配。
+
+管理窗口打开或最小化时保留 Dock 入口。关闭全部应用窗口后，轻程继续在菜单栏运行；重复启动恢复已有实例。设置支持跟随系统、浅色与深色外观，以及 1、2、5、10 秒显示刷新间隔。
+
+## 开发
+
+需要 Apple Silicon Mac、macOS 27 及以上和 Xcode 27。工程使用 Swift 6、SwiftUI、AppKit 和 Observation。
+
+用 Xcode 打开 `TaskEase.xcodeproj`，选择 **TaskEase / My Mac**。按 Command-R 开发运行，按 Command-U 运行自动测试。
+
+在项目根目录生成本机 Release 应用：
 
 ```sh
 sh Scripts/build-app.sh
 ```
 
-所有应用默认不管理，需主动设置规则。应用包采用本机签名，供本机使用；分发到其他电脑需要单独完成签名与公证。`build/` 为本机产物目录。
+输出为 `build/TaskEase.app`。应用包采用本机签名，跨电脑分发需要完成相应的签名与公证。构建产物保存在 Git 忽略的 `build/` 目录。
 
-## 开发
+应用以当前用户身份读取和控制进程，应用目标关闭 App Sandbox。只有正在执行后台规则时才启动同用户控制进程，退出、失联和异常终止有恢复机制。
 
-用 Xcode 27 打开 TaskEase.xcodeproj，选择 TaskEase / My Mac。最低目标为 macOS 14。应用以当前用户身份运行，不安装管理员服务。进程控制使用独立同用户恢复进程；只有正在管理后台应用时才启动。
+## 项目结构
 
-应用目标采用非沙箱配置，便于读取和管理同用户进程。系统保护进程和共享系统服务只用于观察。
-
-## 目录
-
-| 路径 | 内容 |
-| --- | --- |
-| `TaskEase/` | 原生界面、规则、采样与进程控制 |
-| `TaskEase.xcodeproj/` | Xcode 工程与目标配置 |
-| `TaskEaseTests/` | 策略、预算与配置单元测试 |
-| `TaskEaseUITests/` | 管理窗口与交互测试 |
-| `Docs/` | 需求、设计、使用与验证说明 |
-| `Scripts/` | 进程控制自检与只读开销测量 |
-| `Artifacts/` | 验证摘要与界面预览 |
-| `Branding/` | 图形源文件、图标预览与制作说明 |
-
-## 验证
-
-在 Xcode 中按 Command-U 运行测试。进程控制自检需传入已构建应用的可执行文件路径，在项目根目录执行：
-
-```sh
-sh Scripts/run-self-check.sh /path/to/TaskEase.app/Contents/MacOS/TaskEase
+```text
+TaskEase/
+  App/                       应用入口、状态与窗口生命周期
+  Features/
+    Applications/            应用列表与管理窗口
+    Rules/                   规则编辑与执行策略
+    MenuBar/                 菜单栏面板
+    Settings/                显示与外观设置
+    Help/                    使用帮助
+    About/                   关于信息
+  Models/                    规则、进程身份与采样数据
+  Services/
+    Monitoring/              异步采样与采样周期
+    ProcessControl/          原生控制、独立控制进程与恢复
+  Shared/                    共用视图与数值格式
+  Resources/                 图标与图片资源
+  Validation/                只读快照与自建负载自检
+TaskEaseTests/               单元与窗口生命周期测试
+TaskEaseUITests/             界面交互测试
+Docs/                       需求、设计、使用和验证文档
+Scripts/                    构建、自检与只读开销测量
+Branding/                   Logo 源文件与制作说明
+Artifacts/                  验证摘要和界面预览
 ```
 
-自检只控制自己创建的限时负载进程。CPU 预算、异常恢复和实际测量边界见 [验证文档](Docs/Validation.md)。
+目录与 Xcode 项目导航保持同步。模块职责和数据流见 [设计文档](Docs/Design.md)。
 
-## 文档
+## 更新计划
+
+- [x] 应用列表与已配置规则列表。
+- [x] 后台等待时间、CPU 使用上限与全局启用开关。
+- [x] 系统应用默认隐藏及显示切换。
+- [x] 深浅颜色模式切换与跟随系统。
+- [x] 设置、帮助、关于信息和窗口生命周期。
+- [x] 可配置的显示刷新间隔。
+- [x] 采样移出主线程，按窗口可见性和后台规则状态采样。
+- [x] Apple Silicon、macOS 27 与 Swift 6 开发目标。
+- [ ] 多语言支持、String Catalog 和语言切换。
+- [ ] 更多系统指标、历史趋势和自定义显示。
+- [ ] CPU、GPU 传感器温度读数及机型验证。
+- [ ] 针对支持应用研究后台帧率和视频处理节奏适配。
+- [ ] 实际应用的耗电、温度和限制效果对比。
+- [ ] 发布签名、公证与可下载的安装包。
+
+## 验证与贡献
+
+进程控制自检只使用自己创建的限时负载进程。可复跑的命令、测量结果和使用边界见 [验证文档](Docs/Validation.md)。
+
+修改规则或进程控制时，请覆盖前台恢复、应用重启和异常退出场景。提交性能问题时，记录系统版本、芯片、应用前后台状态和采样结果，避免仅凭机身温度判断占用来源。
 
 - [需求与验收条件](Docs/Requirements.md)
 - [设计与恢复机制](Docs/Design.md)
-- [验证方法与结果](Docs/Validation.md)
 - [使用说明](Docs/Usage.md)
+- [验证方法与结果](Docs/Validation.md)
 - [图标设计与资源](Branding/README.md)
 
-Release 构建、17 项自动测试、跨应用副本的单实例检查和进程控制自检通过。实际记录与边界见 [验证文档](Docs/Validation.md)。
+本项目采用 [MIT 许可证](LICENSE)。

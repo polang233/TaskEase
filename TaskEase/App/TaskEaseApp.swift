@@ -64,14 +64,24 @@ struct TaskEaseApp: App {
             Image(nsImage: MenuBarIcon.image).accessibilityLabel("轻程")
         }.menuBarExtraStyle(.window)
             .commands {
+                CommandGroup(replacing: .appInfo) {
+                    Button("关于轻程") { delegate.model.showUtility(.about) }
+                }
                 CommandGroup(after: .appInfo) {
                     Button("应用管理") { delegate.model.showManagement() }
                         .keyboardShortcut("1", modifiers: .command)
                 }
+                CommandGroup(replacing: .appSettings) {
+                    Button("设置…") { delegate.model.showUtility(.settings) }
+                        .keyboardShortcut(",", modifiers: .command)
+                }
                 CommandGroup(after: .windowList) {
-                    Button("关闭管理窗口") { delegate.model.closeManagement() }
+                    Button("关闭窗口") { NSApp.keyWindow?.performClose(nil) }
                         .keyboardShortcut("w", modifiers: .command)
-                        .disabled(!delegate.model.managementIsOpen)
+                }
+                CommandGroup(replacing: .help) {
+                    Button("轻程帮助") { delegate.model.showUtility(.help) }
+                        .keyboardShortcut("?", modifiers: .command)
                 }
             }
     }

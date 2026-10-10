@@ -50,10 +50,10 @@ func write(_ input: CGImage, size: Int, padding: CGFloat, path: String) throws {
     print(path)
 }
 
-try write(image, size: 1024, padding: 0, path: "TaskEase/AppIcon.icon/Assets/Leaves.png")
+try write(image, size: 1024, padding: 0, path: "TaskEase/Resources/AppIcon.icon/Assets/Leaves.png")
 try write(cropped, size: 512, padding: 0.04,
-          path: "TaskEase/Assets.xcassets/TaskEaseMark.imageset/Mark.png")
+          path: "TaskEase/Resources/Assets.xcassets/TaskEaseMark.imageset/Mark.png")
 try write(cropped, size: 18, padding: 0.04,
-          path: "TaskEase/Assets.xcassets/TaskEaseMenu.imageset/Menu.png")
+          path: "TaskEase/Resources/Assets.xcassets/TaskEaseMenu.imageset/Menu.png")
 try write(cropped, size: 36, padding: 0.04,
-          path: "TaskEase/Assets.xcassets/TaskEaseMenu.imageset/Menu@2x.png")
+          path: "TaskEase/Resources/Assets.xcassets/TaskEaseMenu.imageset/Menu@2x.png")

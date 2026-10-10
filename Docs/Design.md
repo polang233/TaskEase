@@ -1,65 +1,69 @@
 # TaskEase 设计
 
-## 控制架构
+## 状态与执行职责
 
-菜单栏应用负责采样、规则和界面，独立控制进程统一实施规则。控制进程是唯一常规系统状态写入者。用户界面卡住或主应用退出时，控制进程能自行解除限制。主应用仅在控制进程已经结束后执行恢复补偿。
+AppModel 在 MainActor 上持有规则、显示设置、前台状态和窗口状态。ProcessMonitor actor 持有累计采样计数与可执行路径缓存，负责 libproc 扫描。NativeWorker 是常规进程控制的唯一写入者；WorkerController 负责启动、计划发送和失联后的补偿。
 
-控制进程通过同一个应用可执行文件的独立启动模式运行，使用当前用户权限。进程控制基于公开的 libproc、Mach 和 Darwin 接口。
+工作区消息更新前台状态后，先从缓存生成恢复计划，再异步刷新指标。回到前台的应用无需等待一次完整进程扫描。界面只修改规则，不直接发送暂停信号。
 
-## 模块与数据流
+控制进程通过同一应用可执行文件的独立模式启动，使用当前用户权限。应用目标采用非沙箱配置，不安装管理员服务。
 
-- `ProcessBridge.c` 和 `ProcessBridge.h`：封装 libproc、Mach 计时、后台调度和信号。
-- `NativeProcess.swift`：Swift 调用边界、恢复记录，以及采样应用自有进程的 `ProcessMonitor`。
-- `Models.swift`：应用、进程身份、规则、指标、控制计划和恢复记录。
-- `Policy.swift`：纯函数，判断前台、后台等待、禁用及可控制状态。
-- `Worker.swift`：`NativeWorker` 串行实施计划、CPU 预算和恢复，持有独占控制锁；`WorkerController` 启动控制进程、发送心跳并处理终止补偿。
-- `AppModel.swift`：规则、采样周期、前台事件及界面状态。
-- `TaskEaseApp.swift`：应用入口和生命周期。`AppDelegate` 唯一持有 `AppModel`，避免 SwiftUI App 重复初始化造成模型丢失或重复采样。
-- `ContentView.swift`：菜单栏面板、应用列表和规则编辑器。
-- `SelfCheck.swift`：只读快照与自建限时负载进程自检。
+## 文件与模块
 
-NSWorkspace 前台事件 → Policy → 控制计划 → Worker → NativeProcess。界面不直接发送暂停信号。
+工程使用与磁盘同步的文件夹组织源码，一个应用目标内按职责划分文件。
 
-## 身份与权限
+| 目录 | 职责 |
+| --- | --- |
+| App | 入口、单实例、AppModel、类型化工作区事件与窗口控制 |
+| Features/Applications | 运行列表、已配置列表与管理窗口 |
+| Features/Rules | 规则编辑、Policy 与原有规则格式读写 |
+| Features/MenuBar | 菜单栏面板 |
+| Features/Settings、Help、About | 显示设置、使用帮助、关于信息 |
+| Models | 应用读数、规则、偏好、进程身份和控制消息 |
+| Services/Monitoring | 采样 actor、计数差分和采样周期策略 |
+| Services/ProcessControl | libproc、Mach、Darwin 桥接，控制与恢复 |
+| Shared | 视图组件、图标缓存与数值格式 |
+| Resources | Icon Composer 图标及图片资源 |
+| Validation | 只读快照与自建负载自检 |
 
-ProcessIdentity 包含 PID、启动时间和 UID。控制前验证这些字段和可执行文件所属 bundle 路径。PID 被复用后，旧计划不能作用于新进程。
+Apple 的文件夹组织及本地包说明见 [管理项目文件与文件夹](https://developer.apple.com/documentation/xcode/managing-files-and-folders-in-your-xcode-project) 和 [使用本地包组织代码](https://developer.apple.com/documentation/xcode/organizing-your-code-with-local-packages)。
 
-同一应用的 CPU 预算由全部可控制成员共享。WindowServer、音视频共享服务和其他用户进程不加入控制组。
+## 规则保存与应用身份
 
-应用 bundle identifier 为 `com.github.polang233.TaskEase`。应用目标采用非沙箱配置，以当前用户身份读取和控制其他应用进程；签名按本机开发环境配置。
+rules.v1 继续保存 bundle identifier 到 AppRule 的映射，off、gentle、budget 原始值保持稳定。ruleApplications.v1 独立保存应用名称和 bundle 路径，用于展示未运行的已配置应用。preferences.v1 保存外观、系统应用筛选和显示刷新间隔。
 
-## 生命周期
+关闭某个应用的限制保留编辑记录和参数；移除规则删除该记录。没有有效规则时主开关关闭且不可启用。现有规则损坏时保留原始数据备份并关闭限制。
 
-规则状态包括未管理、前台、等待、温和后台、CPU 预算和不可控制。前台事件即时重新计算计划，定时采样提供补充。睡眠前发送空计划并结束控制进程，唤醒后重新采样。
+ProcessIdentity 包含 PID、启动时间和 UID。控制操作验证完整身份和可执行路径所属应用。路径缓存只用于采样；控制进程每次实施操作仍验证当前可执行路径。PID 复用不能把旧控制计划作用于新进程。
 
-控制计划有 3 秒失联期限。标准输入 EOF、心跳到期、无法解析计划和明确退出均触发恢复。控制进程用独占锁避免重复实例并发控制。
+同一应用的成员共享 CPU 上限。系统应用、其他用户进程和共享服务不加入可控组。
 
-恢复记录只在成员或控制归属改变时写入，不在每个限速周期写盘。记录保存完整进程身份、可执行路径、后台请求归属及曾由本工具暂停的成员。强制结束控制进程后，主应用依据记录补偿；主应用重新启动时恢复已经失联的旧记录。
+## 采样与事件
 
-已有暂停的进程不接管。只解除本工具添加的后台调度。目标应由单一资源限制工具管理，其他控制器同时施加暂停可能无法区分归属。
+RunningApplication 在 MainActor 上把 NSRunningApplication 转换为 Sendable 值。ProcessMonitor actor 串行扫描，AppModel 合并扫描期间到达的刷新请求。
 
-## 后台状态读取
+显示与控制采样各自保留计数基线。控制检查更新成员和状态，显示数值只在刷新到期时更新。
 
-当前 Darwin 的 getpriority(PRIO_DARWIN_PROCESS, otherPID) 可能返回调用者状态。温和模式通过公开 proc_taskinfo 的任务优先级判断既有低优先级状态，已经处于后台优先级的进程不接管。实际验证的任务优先级为 31 → 4 → 31。只清理由本控制进程添加的外部调度请求。
+可见数据窗口采用用户选择的 1、2、5、10 秒间隔。窗口可见性读取 occlusionState，完全遮挡或最小化时停止显示采样。没有可见面板时只扫描启用规则的应用；GPU 驱动统计只在显示系统概览时读取，并保留 4 秒缓存。
 
-恢复只需要确认 PID、UID 和启动时间；路径变化时停止新增限制，但仍按完整进程身份解除曾施加的暂停或后台状态。
+SamplingPolicy 分别考虑显示间隔、2 秒控制检查和后台等待期限。下一次检查取最早期限，慢速显示更新不会让控制计划的 3 秒失联期限到期。没有显示或执行需求时，不设置周期定时器。
 
-## CPU 预算
+NSWorkspace 应用激活、隐藏、启动、退出、睡眠和唤醒使用类型化消息。窗口可见性使用 macOS 27 的类型化消息，观察回调按声明的 actor 执行。睡眠前结束控制进程，唤醒后重新采样。
 
-CPU 时间与墙钟使用相同 Mach 时间单位，避免 Apple Silicon timebase 被误当纳秒。预算累计单位为单核时间。周期检查总增量，超额时暂停，额度恢复时继续。限制是平均预算，存在短时超额和调度延迟。
+## CPU 控制与恢复
 
-无规则时没有控制进程。有可见窗口或已启用规则时每 2 秒采样；没有可见窗口和启用规则时每 8 秒采样。打开面板立即刷新，等待期限到达时提前调度下一次检查。控制进程只在有后台规则时存在。限制器只处理选定应用，避免高频扫描全部系统进程。
+CPU 累计时间和墙钟使用相同 Mach 时间单位。CPU 上限以单核时间计算；总增量超额时暂停成员，额度恢复后继续。允许短时超额，空闲额度有上限，避免累积无限突发额度。
 
-## 应用启动与窗口
+高级模式采用 Darwin 背景调度。当前系统 getpriority(PRIO_DARWIN_PROCESS, otherPID) 可能返回调用者状态，因此通过公开 proc_taskinfo 的任务优先级识别已有后台状态。只解除由 TaskEase 添加的请求。
 
-`ApplicationSession` 在界面和规则模型创建前取得同用户实例锁。重复启动会通知当前实例打开管理窗口，然后结束新启动的进程。锁由操作系统随进程退出释放，文件描述符使用 close-on-exec，使独立控制进程保持自己的生命周期。
+控制计划失联期限为 3 秒。标准输入 EOF、心跳到期、解析失败和退出均触发恢复。控制进程持有独占锁；恢复记录仅在控制归属改变时写入，记录完整进程身份及由本工具降低优先级或暂停的成员。
 
-普通启动显示管理窗口。`ManagementWindowController` 负责窗口复用、位置保存和 Dock 状态：打开窗口时使用 regular activation policy，关闭窗口后使用 accessory policy 并继续菜单栏管理；最小化保留 Dock 入口。Dock 点击和重复启动均恢复同一窗口。
+已有暂停的进程不接管。恢复时按 UID、PID 和启动时间确认归属，路径变化会阻止新增限制，但不妨碍解除之前施加的暂停。控制进程异常结束后，主应用按恢复记录补偿；重启时恢复已经失联的旧记录。
 
-界面测试与预览使用独立环境和测试数据。预览不创建状态栏入口。菜单栏资源提供 18 点的 1x 和 2x 图片，`MenuBarIcon` 显式设置 NSImage 的逻辑尺寸和 template 属性。
+## 单实例与窗口
 
-`Scripts/build-app.sh` 为本机使用生成 Release 应用包，输出到 `build/TaskEase.app`。Xcode 中的开发运行继续使用 Debug 配置。
+ApplicationSession 在规则模型创建前取得同用户实例锁。重复启动通知当前实例恢复管理窗口，然后退出新进程。文件描述符采用 close-on-exec，锁随进程结束释放。
 
-## 界面
+管理、设置、帮助、关于窗口各自复用同一 NSWindow。有打开或最小化的应用窗口时采用 regular activation policy，关闭全部窗口后采用 accessory policy。菜单面板的可见状态单独参与采样决策。
 
-采用原生列表和侧边规则编辑，系统字体、单行占用概览和应用图标。数值使用等宽数字以减少跳动。颜色仅用于当前控制状态和热状态。菜单面板提供高占用应用和恢复入口，管理窗口提供搜索与完整规则。
+预览和测试使用独立数据，不创建正常状态栏入口。菜单栏图片明确采用 18 点逻辑尺寸并提供 Retina 资源。正常使用包由 Scripts/build-app.sh 生成 Release 构建。

@@ -277,7 +277,7 @@ final class WorkerController {
         output?.readabilityHandler = nil
         input = nil; output = nil; process = nil; outputData.removeAll()
         _ = Recovery.restore(testing: testing)
-        if !stopping { onError?("控制进程已结束，限制已恢复。重新启用自动管理可重试。") }
+        if !stopping { onError?("控制进程已结束，限制已恢复。重新开启后台限制可重试。") }
     }
     func stop() {
         guard !stopping else { return }

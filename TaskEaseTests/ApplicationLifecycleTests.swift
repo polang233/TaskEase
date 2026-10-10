@@ -70,4 +70,20 @@ struct ApplicationLifecycleTests {
         #expect(first?.isVisible == true)
         #expect(NSApp.activationPolicy() == .regular)
     }
+    @Test @MainActor func utilityWindowKeepsDockEntryUntilAllApplicationWindowsClose() {
+        let policy = NSApp.activationPolicy()
+        let model = AppModel(preview: true)
+        defer { model.shutdown(); NSApp.setActivationPolicy(policy) }
+        model.showManagement()
+        model.showUtility(.settings)
+        model.showUtility(.settings)
+        let settings = NSApp.windows.filter { $0.identifier?.rawValue == "utility-settings" }
+        #expect(settings.count == 1)
+        #expect(settings.first?.isVisible == true)
+        model.closeManagement()
+        #expect(NSApp.activationPolicy() == .regular)
+        model.closeUtility(.settings)
+        #expect(NSApp.activationPolicy() == .accessory)
+    }
+
 }

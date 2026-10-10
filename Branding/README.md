@@ -14,9 +14,9 @@
 | 文件 | 用途 |
 | --- | --- |
 | `TaskEaseMark.png` | 带透明通道的图形源文件 |
-| `../TaskEase/AppIcon.icon/` | 可在 Icon Composer 中打开的原生图标文件 |
-| `../TaskEase/Assets.xcassets/TaskEaseMark.imageset/` | 窗口和菜单面板的彩色标识 |
-| `../TaskEase/Assets.xcassets/TaskEaseMenu.imageset/` | 菜单栏单色标识 |
+| `../TaskEase/Resources/AppIcon.icon/` | 可在 Icon Composer 中打开的原生图标文件 |
+| `../TaskEase/Resources/Assets.xcassets/TaskEaseMark.imageset/` | 窗口和菜单面板的彩色标识 |
+| `../TaskEase/Resources/Assets.xcassets/TaskEaseMenu.imageset/` | 菜单栏单色标识 |
 | `AppIcon-preview.png` | 从 Xcode 编译产物导出的图标预览 |
 
 图形源文件通过内置 imagegen 生成。资源制作脚本保留源文件，将前景归一为 1024 像素图层，并为界面资源调整透明边距和尺寸。在项目根目录执行：

@@ -1,6 +1,15 @@
 {
-  "seconds": 18.0,
-  "cpuPercentOneCore": 0.5458128320743681,
-  "physicalBytes": 17171344,
-  "scope": "menu_closed_no_rules"
+  "seconds": 25.0,
+  "cpuPercentOneCore": 0.0013939338885994926,
+  "physicalBytes": 36832336,
+  "packageIdleWakeupsPerSecond": 0.12,
+  "interruptWakeupsPerSecond": 0.32,
+  "version": "1.1.0",
+  "configuration": "Release",
+  "conditions": {
+    "displayWindowsVisible": false,
+    "activeRuleCount": 0,
+    "limiterWorkerCount": 0,
+    "desktopLocked": true
+  }
 }
