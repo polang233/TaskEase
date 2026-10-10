@@ -1,38 +1,17 @@
 {
-  "recordedAt": "2026-10-10T19:43:17+08:00",
+  "recordedAt": "2026-10-10T20:31:32+08:00",
   "version": "1.1.0",
   "schemeName": "TaskEase",
   "counts": {
     "expectedFailures": 0,
     "failed": 0,
     "notRun": 0,
-    "passed": 25,
-    "skipped": 4,
+    "passed": 29,
+    "skipped": 0,
     "total": 29
   },
   "uiTestPrecondition": "Unlocked macOS desktop",
-  "uiSkippedReason": "The foreground application was com.apple.loginwindow.",
   "results": [
-    {
-      "identifier": "TaskEaseUITests/testSystemFilterSearchAndReadOnlyApp()",
-      "targetName": "TaskEaseUITests",
-      "state": "Skipped"
-    },
-    {
-      "identifier": "TaskEaseUITests/testConfigureRuleGlobalSwitchAndSavedList()",
-      "targetName": "TaskEaseUITests",
-      "state": "Skipped"
-    },
-    {
-      "identifier": "TaskEaseUITests/testSettingsThemeRefreshHelpAndAbout()",
-      "targetName": "TaskEaseUITests",
-      "state": "Skipped"
-    },
-    {
-      "identifier": "TaskEaseUITests/testCloseAndReopenManagementKeepsSameApplication()",
-      "targetName": "TaskEaseUITests",
-      "state": "Skipped"
-    },
     {
       "identifier": "ApplicationLifecycleTests/menuBarImageHasARealPointSize()",
       "targetName": "TaskEaseTests",
@@ -156,6 +135,26 @@
     {
       "identifier": "TaskEaseTests/inactiveRuleStaysUnmanaged()",
       "targetName": "TaskEaseTests",
+      "state": "Passed"
+    },
+    {
+      "identifier": "TaskEaseUITests/testSystemFilterSearchAndReadOnlyApp()",
+      "targetName": "TaskEaseUITests",
+      "state": "Passed"
+    },
+    {
+      "identifier": "TaskEaseUITests/testConfigureRuleGlobalSwitchAndSavedList()",
+      "targetName": "TaskEaseUITests",
+      "state": "Passed"
+    },
+    {
+      "identifier": "TaskEaseUITests/testSettingsThemeRefreshHelpAndAbout()",
+      "targetName": "TaskEaseUITests",
+      "state": "Passed"
+    },
+    {
+      "identifier": "TaskEaseUITests/testCloseAndReopenManagementKeepsSameApplication()",
+      "targetName": "TaskEaseUITests",
       "state": "Passed"
     }
   ]

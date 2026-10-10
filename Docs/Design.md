@@ -18,12 +18,12 @@ AppModel 在 MainActor 上持有规则、显示设置、前台状态和窗口状
 | Features/Applications | 运行列表、已配置列表与管理窗口 |
 | Features/Rules | 规则编辑、Policy 与原有规则格式读写 |
 | Features/MenuBar | 菜单栏面板 |
-| Features/Settings、Help、About | 显示设置、使用帮助、关于信息 |
+| Features/Settings、Help、About | 显示设置、使用帮助、关于信息与许可证查看 |
 | Models | 应用读数、规则、偏好、进程身份和控制消息 |
 | Services/Monitoring | 采样 actor、计数差分和采样周期策略 |
 | Services/ProcessControl | libproc、Mach、Darwin 桥接，控制与恢复 |
 | Shared | 视图组件、图标缓存与数值格式 |
-| Resources | Icon Composer 图标及图片资源 |
+| Resources | Icon Composer 图标、图片资源与完整许可证 |
 | Validation | 只读快照与自建负载自检 |
 
 Apple 的文件夹组织及本地包说明见 [管理项目文件与文件夹](https://developer.apple.com/documentation/xcode/managing-files-and-folders-in-your-xcode-project) 和 [使用本地包组织代码](https://developer.apple.com/documentation/xcode/organizing-your-code-with-local-packages)。
@@ -64,6 +64,8 @@ CPU 累计时间和墙钟使用相同 Mach 时间单位。CPU 上限以单核时
 
 ApplicationSession 在规则模型创建前取得同用户实例锁。重复启动通知当前实例恢复管理窗口，然后退出新进程。文件描述符采用 close-on-exec，锁随进程结束释放。
 
-管理、设置、帮助、关于窗口各自复用同一 NSWindow。有打开或最小化的应用窗口时采用 regular activation policy，关闭全部窗口后采用 accessory policy。菜单面板的可见状态单独参与采样决策。
+管理、设置、帮助、关于和许可证窗口各自复用同一 NSWindow。有打开或最小化的应用窗口时采用 regular activation policy，关闭全部窗口后采用 accessory policy。菜单面板的可见状态单独参与采样决策。
+
+许可证视图从应用包的 LICENSE.txt 读取完整 GNU GPLv3 文本，采用可选择和滚动的文本展示。仓库 LICENSE 与随包文本保持一致，SPDX 标识为 GPL-3.0-only。
 
 预览和测试使用独立数据，不创建正常状态栏入口。菜单栏图片明确采用 18 点逻辑尺寸并提供 Retina 资源。正常使用包由 Scripts/build-app.sh 生成 Release 构建。

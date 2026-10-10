@@ -2,13 +2,14 @@ import AppKit
 import SwiftUI
 
 enum UtilityWindowKind: String {
-    case settings, help, about
+    case settings, help, about, license
 
     var title: String {
         switch self {
         case .settings: "轻程设置"
         case .help: "轻程帮助"
         case .about: "关于轻程"
+        case .license: "开源许可证"
         }
     }
 
@@ -16,7 +17,8 @@ enum UtilityWindowKind: String {
         switch self {
         case .settings: NSSize(width: 560, height: 510)
         case .help: NSSize(width: 680, height: 580)
-        case .about: NSSize(width: 440, height: 380)
+        case .about: NSSize(width: 440, height: 440)
+        case .license: NSSize(width: 680, height: 600)
         }
     }
 }
@@ -69,6 +71,7 @@ private struct UtilityRoot: View {
             case .settings: SettingsView(model: model)
             case .help: HelpView()
             case .about: AboutView(model: model)
+            case .license: LicenseView()
             }
         }.preferredColorScheme(model.preferences.theme.colorScheme)
     }

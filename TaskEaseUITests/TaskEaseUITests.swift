@@ -92,6 +92,19 @@ final class TaskEaseUITests: XCTestCase {
         let about = app.windows["关于轻程"]
         XCTAssertTrue(about.waitForExistence(timeout: 5))
         XCTAssertTrue(about.staticTexts["TaskEase · 轻程"].exists)
+        about.buttons["许可证"].click()
+        let license = app.windows["开源许可证"]
+        XCTAssertTrue(license.waitForExistence(timeout: 5))
+        let body = license.descendants(matching: .any).matching(identifier: "license-text").firstMatch
+        XCTAssertTrue(body.waitForExistence(timeout: 5))
+        let content = body.value as? String ?? body.label
+        if !content.contains("Free Software Foundation") {
+            let tree = XCTAttachment(string: license.debugDescription)
+            tree.lifetime = .keepAlways
+            add(tree)
+        }
+        XCTAssertTrue(content.contains("Free Software Foundation"))
+        app.typeKey("w", modifierFlags: .command)
         about.buttons["使用帮助"].click()
         let help = app.windows["轻程帮助"]
         XCTAssertTrue(help.waitForExistence(timeout: 5))
@@ -129,6 +142,10 @@ final class TaskEaseUITests: XCTestCase {
         NSWorkspace.shared.openApplication(at: applicationURL, configuration: configuration) { _, _ in reopened.fulfill() }
         wait(for: [reopened], timeout: 10)
         XCTAssertEqual(running?.processIdentifier, originalPID)
+        // Launch Services completion can precede applicationShouldHandleReopen.
+        let restored = expectation(for: NSPredicate { _, _ in running?.activationPolicy == .regular },
+                                   evaluatedWith: nil)
+        wait(for: [restored], timeout: 5)
         XCTAssertEqual(running?.activationPolicy, .regular)
         app.activate()
         XCTAssertTrue(app.windows["轻程"].waitForExistence(timeout: 5))

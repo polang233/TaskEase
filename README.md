@@ -11,7 +11,7 @@
   <img src="https://img.shields.io/badge/macOS-27%2B-24292f?logo=apple" alt="macOS 27 及以上">
   <img src="https://img.shields.io/badge/platform-Apple%20Silicon-24292f" alt="Apple Silicon">
   <img src="https://img.shields.io/badge/Swift-6-F05138?logo=swift&logoColor=white" alt="Swift 6">
-  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-30BBA9" alt="MIT 许可证"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-GPL--3.0-30BBA9" alt="GPL-3.0 许可证"></a>
 </p>
 
 <p align="center">
@@ -42,7 +42,7 @@
 | 后台限制 | 离开前台后等待指定秒数，再限制平均 CPU 使用，回到前台恢复 |
 | 规则列表 | 单独查看已配置规则，应用退出后仍可编辑 |
 | 应用筛选 | 默认展示用户应用，可开启系统应用显示 |
-| 设置与窗口 | 深浅外观、显示刷新间隔、帮助、关于信息、单实例与 Dock 窗口入口 |
+| 设置与窗口 | 深浅外观、显示刷新间隔、帮助、关于信息与许可证、单实例与 Dock 窗口入口 |
 
 CPU 使用上限按单核计算，100% 约等于一个核心满载，并由应用自有进程共享。高级选项可改为仅降低后台优先级。GPU 数值代表整机；热状态表示发热对系统运行的影响程度。
 
@@ -86,13 +86,13 @@ TaskEase/
     MenuBar/                 菜单栏面板
     Settings/                显示与外观设置
     Help/                    使用帮助
-    About/                   关于信息
+    About/                   关于信息与许可证
   Models/                    规则、进程身份与采样数据
   Services/
     Monitoring/              异步采样与采样周期
     ProcessControl/          原生控制、独立控制进程与恢复
   Shared/                    共用视图与数值格式
-  Resources/                 图标与图片资源
+  Resources/                 图标、图片资源与许可证
   Validation/                只读快照与自建负载自检
 TaskEaseTests/               单元与窗口生命周期测试
 TaskEaseUITests/             界面交互测试
@@ -133,4 +133,4 @@ Artifacts/                  验证摘要和界面预览
 - [验证方法与结果](Docs/Validation.md)
 - [图标设计与资源](Branding/README.md)
 
-本项目采用 [MIT 许可证](LICENSE)。
+本项目采用 [GNU GPLv3](LICENSE)，SPDX 标识为 `GPL-3.0-only`。
