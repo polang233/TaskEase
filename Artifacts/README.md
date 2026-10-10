@@ -11,6 +11,7 @@
 - foreground-refresh.json：管理窗口打开但应用在后台时的前台刷新选项开销验证。
 - overhead.json：窗口不可见、无启用规则、桌面锁定时的 Release 构建空闲采样，CPU 按一个核心计算，不能换算成电池节能比例。
 - snapshot-summary.json：真实只读采样的应用数量、进程分组与整机指标。
+- paused-preview.png：管理窗口暂停刷新时的系统概览。
 - management-preview.png、menu-preview.png、settings-preview.png：SwiftUI 界面的渲染检查，显示测试数据。
 
 测试方法与边界见 [验证文档](../Docs/Validation.md)。

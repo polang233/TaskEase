@@ -22,7 +22,7 @@ struct ContentView: View {
                     .help("设置").accessibilityIdentifier("open-settings")
             }.padding(20)
             Divider()
-            SystemStrip(reading: model.system)
+            SystemStrip(reading: model.system, isPaused: model.managementDisplayPaused)
             Divider()
             if let error = model.errorMessage {
                 HStack {

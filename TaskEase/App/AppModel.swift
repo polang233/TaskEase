@@ -17,6 +17,7 @@ final class AppModel {
     private(set) var sampledAt = Date()
     private(set) var isRefreshing = false
     private(set) var managementIsOpen = false
+    private(set) var managementDisplayPaused = false
     private(set) var foregroundID: String?
     let preview: Bool
 
@@ -360,6 +361,9 @@ final class AppModel {
 
     /// 每次只安排一个最早期限；没有显示或控制需求时停用定时器。
     private func scheduleRefresh() {
+        // 将暂停状态作为可观察数据发布，切换焦点时无需定时轮询也能更新提示。
+        managementDisplayPaused = !preview && managementIsOpen && preferences.refreshOnlyInForeground &&
+            NSWorkspace.shared.frontmostApplication?.bundleIdentifier != Bundle.main.bundleIdentifier
         timer?.invalidate()
         timer = nil
         guard !preview, !sleeping, !isShutdown else { return }

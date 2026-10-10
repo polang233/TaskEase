@@ -23,29 +23,30 @@ macOS 的应用移除并不保证清除应用生成的全部文件。应用自�
 
 ## 使用统计方案
 
-建议首先公开近 30 天活跃安装数。指标定义为最近 30 天内有有效上报的安装 ID 去重数。
+统计目标为活跃安装、应用版本、macOS 版本和系统地区的分布。建议通过用户自愿开启的每日上报实现，界面说明上报内容。
 
-| 方案 | 能回答的问题 | 应用开销 |
-| --- | --- | --- |
-| GitHub Release 下载量徽章 | 安装包被下载多少次 | 无应用上报 |
-| 用户自愿开启的日活与 30 天活跃安装 | 有多少安装近期运行过应用 | 运行时每天最多一次 HTTPS 请求 |
-| 在线安装数 | 有多少安装最近发送过心跳 | 需要更频繁的联网和唤醒 |
+### 每日上报
 
-GitHub 的下载量与仓库访问量表示相应平台活动，不能直接换算为正在使用的电脑数量。Release API 提供 download_count，Traffic API 提供仓库访问与克隆统计。
+按用户系统时区安排当地中午 12:00 的一次性计时。当天中午后启动应用、从睡眠唤醒或恢复网络时，检查并补发当天尚未成功的上报。成功后记录日期，当天不再发送。应用退出或电脑睡眠时无需额外后台服务，也不唤醒电脑。
 
-建议的上报流程：
+系统时间、时区变化后重新计算下一次期限；服务端验证日期和限制频率。离线重试只在网络恢复或下次启动时触发，避免持续轮询。
 
-1. 设置中提供使用统计开关，说明上报内容和公开指标，默认关闭。
-2. 开启后在本地生成随机安装 ID，与本应用配置一同清理。
-3. 应用启动或回到可见窗口时检查上次成功上报日期，每天最多一次。关闭应用或电脑睡眠时无需唤醒上报。
-4. 上报安装 ID、应用版本和系统主版本。避免发送应用列表、规则、文件路径、序列号或硬件指纹。
-5. HTTPS 服务按安装 ID 更新最后活跃时间，按服务端日期统计日活和 30 天活跃安装。验证请求、限制频率并避免日志长期保留 IP。
-6. 公共接口仅返回汇总值。Shields.io 的 endpoint 徽章读取该接口，README 展示“30 天活跃安装”。
+上报内容可包含应用版本、macOS 版本、系统配置的地区代码和本地日期。系统地区表示用户的地区设置，与实际所在地可能不同。
 
-随机 ID 对应安装记录。清理数据或重新安装后可能产生新 ID；离线、自行关闭统计和修改客户端都会影响统计。该指标是参与上报的活跃安装估计值。
+要统计跨天去重的活跃安装，需要随机安装 ID，随应用配置清理。这属于去标识化统计。完全不带稳定标识时，可以统计上报次数和版本分布，但无法精确计算活跃安装数。
 
-若要在线指标，可采用 10 分钟心跳和 20 分钟有效窗口。睡眠与联网中断会影响数值，需明确标注“近期在线安装”。对于强调低后台开销的轻程，日上报更合适。
+### 接收与展示
 
-统计服务、域名、数据保留期限和开关文案确定后再实现上报。公开汇总徽章不需要把管理令牌放进应用。
+建议使用一个 HTTPS 接口和小数据库接收上报，例如 Cloudflare Workers 与 D1；小规模使用有免费额度。接口按安装 ID 和日期去重，保存有限期限的数据，仅提供汇总查询。收集器只保存所需字段，明确配置请求日志和数据保留策略。
 
-参考 [GitHub Release assets API](https://docs.github.com/en/rest/releases/assets)、[GitHub Traffic API](https://docs.github.com/en/rest/metrics/traffic) 和 [Shields endpoint badge](https://shields.io/badges/endpoint-badge)。
+GitHub 可以保存汇总 JSON，通过 README 徽章或 Pages 展示。GitHub Actions 可以定期读取汇总接口并更新展示文件。管理凭据放在服务端或 Actions Secrets。
+
+GitHub Pages 提供静态托管。直接向仓库写入文件或触发 repository_dispatch 需要相应 GitHub 写入权限，因此匿名客户端的接收入口应与仓库写入权限分开。
+
+建议的数据路径为：
+
+`TaskEase 每日上报 → HTTPS 收集接口 → 汇总 JSON → GitHub README 徽章`
+
+目前应用没有开启统计上报。收集服务与接收地址确定后，再接入每日调度和用户开关。
+
+参考 [GitHub Pages](https://docs.github.com/en/pages/getting-started-with-github-pages/what-is-github-pages)、[repository_dispatch](https://docs.github.com/en/rest/repos/repos#create-a-repository-dispatch-event)、[Cloudflare Workers 额度](https://developers.cloudflare.com/workers/platform/pricing/) 和 [Cloudflare D1 额度](https://developers.cloudflare.com/d1/platform/pricing/)。

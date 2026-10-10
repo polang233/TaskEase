@@ -1,5 +1,5 @@
 {
-  "recordedAt": "2026-10-11T01:04:56+08:00",
+  "recordedAt": "2026-10-11T01:23:42+08:00",
   "version": "1.1.0",
   "schemeName": "TaskEase",
   "counts": {
@@ -10,7 +10,6 @@
     "skipped": 0,
     "total": 34
   },
-  "uiTestPrecondition": "Unlocked macOS desktop; normal application closed",
   "results": [
     {
       "identifier": "AppDataStoreTests/eraseRemovesOwnedDataAndPreservesAdjacentData()",
