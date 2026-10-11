@@ -1,0 +1,35 @@
+{
+  "recordedAt": "2026-10-11T20:31:23+08:00",
+  "iconSource": "TaskEase/Resources/AppIcon.icon",
+  "emptyTemplateRemoved": true,
+  "legacyICNSPixelSizes": [
+    16,
+    32,
+    128,
+    256
+  ],
+  "compiledPixelSizes": [
+    32,
+    64,
+    128,
+    256,
+    512,
+    1024
+  ],
+  "iconImageStackIncluded": true,
+  "releaseSignatureVerified": true,
+  "activeIconChanged": false,
+  "candidateComparison": "Branding/Concepts/TaskEase-icon-comparison.png",
+  "imageGenerator": "built_in_imagegen",
+  "publicDashboardURL": "https://us.posthog.com/shared/Do9W3574hr41SnipsKsuPGuWM_LYrw",
+  "dashboardTileCount": 3,
+  "tileTypes": [
+    "BoldNumber",
+    "ActionsLineGraph",
+    "ActionsPie"
+  ],
+  "observedActiveInstallationEstimate": 1,
+  "countryPartitionUsesLatestRegionPerInstallation": true,
+  "testEventsExcluded": true,
+  "desktopAndNarrowLayoutsReviewed": true
+}

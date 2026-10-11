@@ -11,6 +11,12 @@
 
 ## 资源
 
+应用图标使用 `Resources/AppIcon.icon`，目标的 App Icon 名称为 `AppIcon`。Icon Composer 在构建时生成系统需要的图标尺寸、外观和较早系统的静态版本；无需逐个填写传统 AppIcon 尺寸槽位。Xcode 默认创建的空图标集合已清理。流程依据 [Apple Icon Composer 文档](https://developer.apple.com/documentation/xcode/creating-your-app-icon-using-icon-composer)。
+
+传统资产目录的尺寸表示逻辑点与显示倍率，例如 16pt 的 2x 对应 32×32 像素。本项目的构建产物已核对 AppIcon.icns、IconImageStack 与 32–1024 像素图标；16 像素表示保存在兼容图标容器中。
+
+新的叠层方向见 [A / B 概念图](Concepts/README.md)。
+
 | 文件 | 用途 |
 | --- | --- |
 | `TaskEaseMark.png` | 带透明通道的图形源文件 |

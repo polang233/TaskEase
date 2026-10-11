@@ -3,8 +3,9 @@
 本目录保存各轮在本机完成的验证摘要。环境为 M5 MacBook Air、macOS 27.0.1、Xcode 27.0；各 JSON 记录自己的采样时间与条件。
 
 - automatic-tests.json：本轮 51 项单元、网络采样、统计调度、数据清理与窗口生命周期测试和 8 项界面测试全部通过的实际结果。
+- statistics-and-icons.json：三块统计卡片、国家归属去重、图标生成流程和候选预览的核对。
 - periphery-update.json：公开统计、实验网络设置、关于尺寸与展开交互的最终核对。
-- usage-statistics.png：公开看板的带日期 README 快照，点击 README 图可打开持续更新的公开页面。
+- usage-statistics.jpg：公开看板的带日期 README 快照，点击 README 图可打开持续更新的公开页面。
 - posthog-update.json：六小时调度、扩展字段和旧记录兼容调整的 50 项测试及 Release 核验。
 - posthog-integration.json：Release 客户端发送合成事件、PostHog 接收及统计看板配置的实际核验。
 - branding-tests.json：图标更新后的 2 项界面回归测试。

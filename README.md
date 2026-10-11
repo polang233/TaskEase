@@ -53,11 +53,11 @@ CPU 限制会短暂暂停整个受控进程，可能影响声音和连接心跳�
 
 ## 使用统计
 
-[查看公开统计看板](https://us.posthog.com/shared/Do9W3574hr41SnipsKsuPGuWM_LYrw)，无需登录即可查看每日活跃安装、应用版本、macOS 版本和系统地区分布。
+[查看公开统计看板](https://us.posthog.com/shared/Do9W3574hr41SnipsKsuPGuWM_LYrw)，无需登录即可查看使用人数、每日趋势和国家/地区占比。
 
-[![TaskEase 公开统计快照](Artifacts/usage-statistics.png)](https://us.posthog.com/shared/Do9W3574hr41SnipsKsuPGuWM_LYrw)
+[![TaskEase 公开统计快照](Artifacts/usage-statistics.jpg)](https://us.posthog.com/shared/Do9W3574hr41SnipsKsuPGuWM_LYrw)
 
-上图是 2026-10-11 的公开看板快照，点击查看持续更新的图表。快照中的正式上报为 0，测试事件已排除。统计按随机安装标识去重，不代表实时在线电脑数量；每日趋势以 UTC 划分日期。
+上图是 2026-10-11 的公开看板快照，点击查看持续更新的图表。测试事件已排除。统计按随机安装标识去重，不代表实时在线电脑数量；每日趋势以 UTC 划分日期。
 
 匿名使用统计默认开启，可以在“关于轻程”中关闭。字段与处理说明见 [PostHog 文档](Docs/PostHog.md)。
 
