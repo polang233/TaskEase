@@ -9,7 +9,7 @@
 <p align="center">叠层双叶呈现前后台任务，菜单栏使用随系统外观变化的单色标识。</p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-1.1.0-30BBA9" alt="版本 1.1.0">
+  <img src="https://img.shields.io/badge/version-1.2.0-30BBA9" alt="版本 1.2.0">
   <img src="https://img.shields.io/badge/macOS-14%2B-24292f?logo=apple" alt="macOS 14 及以上">
   <img src="https://img.shields.io/badge/platform-Apple%20Silicon-24292f" alt="Apple Silicon">
   <img src="https://img.shields.io/badge/Swift-6-F05138?logo=swift&logoColor=white" alt="Swift 6">
@@ -34,6 +34,8 @@
 
 <table><tr><td><img src="Artifacts/menu-preview.png" width="420" alt="菜单栏"></td><td><img src="Artifacts/settings-preview.png" width="420" alt="显示与外观设置"></td></tr></table>
 
+<table><tr><td><img src="Artifacts/about-preview.png" width="420" alt="关于轻程"></td><td><img src="Artifacts/statistics-preview.png" width="420" alt="使用统计"></td></tr></table>
+
 </details>
 
 ## 功能
@@ -43,13 +45,13 @@
 | 应用占用 | 合计应用及其自有辅助进程的 CPU、物理内存、磁盘活动和中断唤醒 |
 | 网络实验 | 默认关闭；开启后显示应用网络速度与测试规则 |
 | 网络规则配置 | 保存阻断、限速和作用时间参数；测试功能暂缺开发者账号签名，尚未执行控制 |
-| 系统概览 | 整机 CPU、GPU 驱动利用率估计值和系统热状态 |
+| 系统概览 | 整机 CPU、GPU、已用与压缩内存、上传/下载速度、芯片传感器温度和系统热状态 |
 | 后台限制 | 离开前台后等待指定秒数，再限制平均 CPU 使用，回到前台恢复 |
 | 规则列表 | 单独查看已配置规则，应用退出后仍可编辑 |
 | 应用筛选 | 默认展示用户应用，可开启系统应用显示 |
 | 设置与窗口 | 深浅外观、显示刷新间隔、帮助、关于信息与许可证、单实例与 Dock 窗口入口 |
 
-CPU 使用上限按单核计算，100% 约等于一个核心满载，并由应用自有进程共享。高级选项可改为仅降低后台优先级。GPU 数值代表整机；热状态表示发热对系统运行的影响程度。
+CPU 使用上限按单核计算，100% 约等于一个核心满载，并由应用自有进程共享。顶部 CPU 表示全部核心的总体占用，GPU 表示整机驱动利用率估计值。压缩内存已包含在已用内存中；全局网速使用 MB/s。温度显示可读芯片传感器的最高值，读取失败时显示系统热状态。口径和能力边界见 [系统指标](Docs/SystemMetrics.md)。
 
 CPU 限制会短暂暂停整个受控进程，可能影响声音和连接心跳。具体效果需要按应用验证。精确帧率、独立 GPU 配额和网络限速属于单独的能力研究，当前控制范围见 [需求文档](Docs/Requirements.md)。
 
@@ -61,7 +63,7 @@ CPU 限制会短暂暂停整个受控进程，可能影响声音和连接心跳�
 
 上图是 2026-10-11 的公开看板快照，点击查看持续更新的图表。测试事件已排除。统计按随机安装标识去重，不代表实时在线电脑数量；每日趋势以 UTC 划分日期。
 
-匿名使用统计默认开启，可以在“关于轻程”中关闭。字段与处理说明见 [PostHog 文档](Docs/PostHog.md)。
+“关于轻程 → 使用统计”显示近 30 天活跃设备估计，提供趋势入口与匿名上报开关。匿名使用统计对新安装默认开启，保留已有关闭选择。字段与处理说明见 [PostHog 文档](Docs/PostHog.md)。
 
 ## 开始使用
 
@@ -102,7 +104,7 @@ TaskEase/
     MenuBar/                 菜单栏面板
     Settings/                显示与外观设置
     Help/                    使用帮助
-    About/                   关于信息与许可证
+    About/                   关于信息、使用统计与许可证
   Models/                    规则、进程身份与采样数据
   Services/
     Monitoring/              异步采样与采样周期
@@ -135,10 +137,12 @@ Artifacts/                  验证摘要和界面预览
 - [x] 采样移出主线程，按窗口可见性和后台规则状态采样。
 - [x] Apple Silicon、macOS 14 及以上与 Swift 6 开发目标。
 - [ ] 多语言支持、String Catalog 和语言切换。
-- [x] PostHog 匿名活跃安装统计及关于窗口开关。
+- [x] PostHog 匿名活跃安装统计、独立统计窗口及上报开关。
 - [x] GitHub README 的公开统计入口与看板快照。
 - [ ] 更多系统指标、历史趋势和自定义显示。
-- [ ] CPU、GPU 传感器温度读数及机型验证。
+- [x] 系统已用与压缩内存、全局上下行速度及占用配色。
+- [x] Apple Silicon 芯片温度只读接口与本机 M5 核验。
+- [ ] 更多 Apple Silicon 机型的温度传感器覆盖验证。
 - [x] 应用及自有进程网络速度监控、独立网络规则配置。
 - [ ] 完成网络扩展签名与部署，实现应用级阻断和上下行限速。
 - [x] 独立回环中继的阻断、上下行限速与共享额度实验。
@@ -153,6 +157,7 @@ Artifacts/                  验证摘要和界面预览
 修改规则或进程控制时，请覆盖前台恢复、应用重启和异常退出场景。提交性能问题时，记录系统版本、芯片、应用前后台状态和采样结果，避免仅凭机身温度判断占用来源。
 
 - [网络监控与规则设计](Docs/Networking.md)
+- [系统概览指标与温度读取](Docs/SystemMetrics.md)
 - [需求与验收条件](Docs/Requirements.md)
 - [设计与恢复机制](Docs/Design.md)
 - [使用说明](Docs/Usage.md)

@@ -21,10 +21,20 @@ struct PreviewRenderer {
                  appearance: .aqua, to: destination.appendingPathComponent("management-preview.png"))
         model.setEnabled(false)
         model.updatePreferences { $0.theme = .dark }
-        try save(MenuPanel(model: model), size: NSSize(width: 420, height: 244),
+        try save(MenuPanel(model: model), size: NSSize(width: 420, height: 308),
                  appearance: .darkAqua, to: destination.appendingPathComponent("menu-preview.png"))
         try save(SettingsView(model: model), size: NSSize(width: 560, height: 700),
                  appearance: .darkAqua, to: destination.appendingPathComponent("settings-preview.png"))
+        try save(AboutView(model: model), size: NSSize(width: 580, height: 430),
+                 appearance: .darkAqua, to: destination.appendingPathComponent("about-preview.png"))
+        try save(UsageStatisticsView(model: model), size: NSSize(width: 580, height: 460),
+                 appearance: .darkAqua, to: destination.appendingPathComponent("statistics-preview.png"))
+        model.apply(MonitoringSnapshot(apps: AppModel.exampleApps,
+            system: SystemReading(cpuPercent: 92, gpuPercent: 66, thermalLabel: "较高",
+                memory: .init(usedBytes: 21 * 1_073_741_824, totalBytes: 24 * 1_073_741_824, compressedBytes: 3 * 1_073_741_824),
+                network: .init(receiveRate: 95_123_456, sendRate: 12_345_678), temperatureCelsius: 86.7)))
+        try save(SystemStrip(reading: model.system, isPaused: true), size: NSSize(width: 840, height: 94),
+                 appearance: .darkAqua, to: destination.appendingPathComponent("paused-preview.png"))
         model.shutdown()
     }
 

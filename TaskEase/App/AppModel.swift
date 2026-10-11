@@ -21,9 +21,11 @@ final class AppModel {
     private(set) var isRefreshing = false
     private(set) var managementIsOpen = false
     private(set) var managementDisplayPaused = false
+    private(set) var statisticsIsOpen = false
     private(set) var foregroundID: String?
     let preview: Bool
     let usageAnalytics: UsageAnalytics
+    let usageStatistics: UsageStatisticsModel
 
     @ObservationIgnored private var savedApplications: [String: SavedApplication] = [:]
     @ObservationIgnored private var backgroundSince: [String: UInt64] = [:]
@@ -46,9 +48,12 @@ final class AppModel {
     init(preview: Bool = false) {
         self.preview = preview
         usageAnalytics = UsageAnalytics(fixtures: preview, deferStart: true)
+        usageStatistics = UsageStatisticsModel(fixtures: preview)
         if preview {
             apps = Self.exampleApps
-            system = SystemReading(cpuPercent: 18, gpuPercent: 24, thermalLabel: "正常")
+            system = SystemReading(cpuPercent: 18, gpuPercent: 24, thermalLabel: "正常",
+                memory: .init(usedBytes: 14 * 1_073_741_824, totalBytes: 24 * 1_073_741_824, compressedBytes: 1_073_741_824),
+                network: .init(receiveRate: 12_345_678, sendRate: 123_456), temperatureCelsius: 54.3)
             foregroundID = "example.editor"
             selectedID = apps.first?.id
             return
@@ -490,11 +495,13 @@ final class AppModel {
     func showUtility(_ kind: UtilityWindowKind) {
         if utilityWindows[kind] == nil { utilityWindows[kind] = UtilityWindowController(kind: kind, model: self) }
         openUtilities.insert(kind)
+        if kind == .statistics { statisticsIsOpen = true; usageStatistics.refresh() }
         utilityWindows[kind]?.present()
     }
 
     func utilityDidClose(_ kind: UtilityWindowKind) {
         openUtilities.remove(kind)
+        if kind == .statistics { statisticsIsOpen = false; usageStatistics.cancel() }
         updateActivationPolicy()
     }
 
@@ -542,6 +549,7 @@ final class AppModel {
     private func stopActivity() {
         isShutdown = true
         usageAnalytics.stop()
+        usageStatistics.cancel()
         timer?.invalidate()
         timer = nil
         refreshTask?.cancel()

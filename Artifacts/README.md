@@ -10,6 +10,7 @@
 - posthog-integration.json：Release 客户端发送合成事件、PostHog 接收及统计看板配置的实际核验。
 - branding-tests.json：2026-10-10 图标更新后的 2 项界面回归测试。
 - branding-resources.json：叠层图标、18pt 菜单栏模板、编译尺寸、签名及界面预览核验。
+- system-overview.json：关于与统计窗口、内存与全局网速、M5 温度读数、只读成本及自动测试核验。
 - application-instance.json：不同应用副本并发启动及崩溃重开的隔离检查。
 - application-delivery.json：Release 包、随包许可证、运行实例、Dock 状态和自动测试的交付检查。
 - self-check.json：项目 build/TaskEase.app 的真实进程控制自检，只使用自建限时负载进程。
@@ -22,6 +23,7 @@
 - network-rules-preview.png：网络规则配置及待启用状态的界面预览。
 - paused-preview.png：管理窗口暂停刷新时的系统概览。
 - management-preview.png、menu-preview.png、settings-preview.png：实际 SwiftUI 视图的离屏渲染，使用示例模型；可通过 `Scripts/render-previews.sh` 更新。
+- about-preview.png、statistics-preview.png：关于页与独立使用统计窗口的示例数据渲染。
 
 测试方法与边界见 [验证文档](../Docs/Validation.md)。
 

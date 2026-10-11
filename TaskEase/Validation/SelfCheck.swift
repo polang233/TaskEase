@@ -20,7 +20,13 @@ enum SelfCheck {
         let report: [String: Any] = ["scope": "read_only_snapshot",
             "appCount": apps.count, "apps": rows,
             "systemCPU": system.cpuPercent ?? -1, "gpuDriverPercent": system.gpuPercent ?? -1,
-            "thermal": system.thermalLabel]
+            "thermal": system.thermalLabel,
+            "temperatureCelsius": system.temperatureCelsius ?? -1,
+            "systemMemoryUsedBytes": system.memory?.usedBytes ?? 0,
+            "systemMemoryTotalBytes": system.memory?.totalBytes ?? 0,
+            "systemMemoryCompressedBytes": system.memory?.compressedBytes ?? 0,
+            "systemReceiveBytesPerSecond": system.network?.receiveRate ?? -1,
+            "systemSendBytesPerSecond": system.network?.sendRate ?? -1]
         if let data = try? JSONSerialization.data(withJSONObject: report, options: [.prettyPrinted, .sortedKeys]),
            let text = String(data: data, encoding: .utf8) { print(text) }
     }

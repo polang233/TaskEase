@@ -89,13 +89,16 @@ struct ProcessSampler {
     private var previousCPU: TECPUTicks?
     private var paths: [ProcessIdentity: String] = [:]
     private var pathCacheTime: UInt64 = 0
-    private var lastGPUTime: UInt64 = 0
+    private var lastHardwareTime: UInt64 = 0
     private var cachedGPU: Double?
+    private var cachedTemperature: Double?
+    private var systemNetwork = SystemNetworkSampler()
 
     mutating func reset() {
         previous.removeAll()
         previousWall = nil
         previousCPU = nil
+        systemNetwork.reset()
     }
 
     mutating func sample(_ applications: [RunningApplication], includeSystem: Bool) -> MonitoringSnapshot {
@@ -177,13 +180,29 @@ struct ProcessSampler {
             }
             previousCPU = ticks
         }
-        // GPU 驱动数据表示整机估计值，只为可见数据面板读取。
-        if lastGPUTime == 0 || Double(now &- lastGPUTime) / NativeProcess.ticksPerSecond >= 4 {
+        // 驱动与传感器只为可见数据面板读取，并共用四秒缓存。
+        if lastHardwareTime == 0 || Double(now &- lastHardwareTime) / NativeProcess.ticksPerSecond >= 4 {
             let raw = te_gpu_percent()
             cachedGPU = raw >= 0 ? raw : nil
-            lastGPUTime = now
+            let temperature = te_chip_temperature()
+            cachedTemperature = temperature >= 0 ? temperature : nil
+            lastHardwareTime = now
         }
         system.gpuPercent = cachedGPU
+        system.temperatureCelsius = cachedTemperature
+        var memory = TESystemMemory()
+        if te_system_memory(&memory) != 0 {
+            system.memory = SystemMemoryReading(usedBytes: memory.usedBytes, totalBytes: memory.totalBytes,
+                                               compressedBytes: memory.compressedBytes)
+        }
+        var interfaces = [TESystemNetwork](repeating: TESystemNetwork(), count: 64)
+        let count = te_system_network(&interfaces, Int32(interfaces.count))
+        if count >= 0 {
+            let counters = interfaces.prefix(Int(count)).map {
+                InterfaceByteCount(index: $0.interfaceIndex, received: $0.receivedBytes, sent: $0.sentBytes)
+            }
+            system.network = systemNetwork.sample(counters, now: now)
+        } else { systemNetwork.reset() }
         switch ProcessInfo.processInfo.thermalState {
         case .nominal: system.thermalLabel = "正常"
         case .fair: system.thermalLabel = "轻度升温"

@@ -182,17 +182,21 @@ final class TaskEaseUITests: XCTestCase {
         defer { app.terminate() }
         app.windows["轻程"].buttons["open-settings"].click()
         app.windows["轻程设置"].buttons["关于轻程"].click()
-        let settings = app.windows["关于轻程"]
-        let toggle = settings.checkBoxes["usage-analytics-toggle"]
+        let about = app.windows["关于轻程"]
+        XCTAssertTrue(about.buttons["open-usage-statistics"].waitForExistence(timeout: 5))
+        XCTAssertTrue(about.descendants(matching: .any).matching(identifier: "project-issues").firstMatch.exists)
+        about.buttons["open-usage-statistics"].click()
+        let statistics = app.windows["使用统计"]
+        let toggle = statistics.switches["usage-analytics-toggle"]
         XCTAssertTrue(toggle.waitForExistence(timeout: 5))
-        if !toggle.isHittable { settings.swipeUp() }
         XCTAssertEqual((toggle.value as? NSNumber)?.intValue, 1)
         toggle.click()
         XCTAssertEqual((toggle.value as? NSNumber)?.intValue, 0)
-        XCTAssertTrue(settings.staticTexts["匿名上传使用概况，不包含个人信息或其他应用明细。"].exists)
+        XCTAssertTrue(statistics.staticTexts["匿名上传使用概况，不包含个人信息或其他应用明细。"].exists)
+        XCTAssertTrue(statistics.staticTexts["近 30 天活跃设备"].exists)
         toggle.click()
         XCTAssertEqual((toggle.value as? NSNumber)?.intValue, 1)
-        XCTAssertGreaterThanOrEqual(settings.frame.width, 580)
+        XCTAssertGreaterThanOrEqual(statistics.frame.width, 580)
     }
 
     /// 展开标题是完整按钮，文字和箭头共享相同的交互入口。

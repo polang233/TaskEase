@@ -1,9 +1,13 @@
 import Foundation
 
+/// 整机读数；内存为物理占用，网络速度按活动物理网卡合计。
 struct SystemReading: Sendable {
     var cpuPercent: Double?
     var gpuPercent: Double?
     var thermalLabel: String = "正常"
+    var memory: SystemMemoryReading?
+    var network: SystemNetworkReading?
+    var temperatureCelsius: Double?
 }
 
 /// 应用与自有辅助进程的合计占用，兼容未运行的已配置应用。

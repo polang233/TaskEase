@@ -86,4 +86,19 @@ struct ApplicationLifecycleTests {
         #expect(NSApp.activationPolicy() == .accessory)
     }
 
+    @Test @MainActor func statisticsWindowReusesAndClearsItsRequestVisibility() {
+        let policy = NSApp.activationPolicy()
+        let model = AppModel(preview: true)
+        defer { model.shutdown(); NSApp.setActivationPolicy(policy) }
+        #expect(!model.statisticsIsOpen)
+        model.showUtility(.statistics)
+        model.showUtility(.statistics)
+        let windows = NSApp.windows.filter { $0.identifier?.rawValue == "utility-statistics" }
+        #expect(windows.count == 1)
+        #expect(model.statisticsIsOpen)
+        model.closeUtility(.statistics)
+        #expect(!model.statisticsIsOpen)
+        #expect(NSApp.activationPolicy() == .accessory)
+    }
+
 }

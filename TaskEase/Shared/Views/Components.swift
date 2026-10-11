@@ -10,7 +10,6 @@ struct BrandMark: View {
             .frame(width: size, height: size).accessibilityHidden(true)
     }
 }
-
 @MainActor
 private enum ApplicationIcons {
     static var images: [String: NSImage] = [:]
@@ -84,36 +83,4 @@ struct BackgroundControlToggle: View {
                 if ready { showHint = false }
             }
     }
-}
-
-struct SystemStrip: View {
-    let reading: SystemReading
-    var isPaused = false
-
-    var body: some View {
-        HStack(spacing: 18) {
-            Label("CPU \(Display.percent(reading.cpuPercent))", systemImage: "cpu").monospacedDigit()
-                .help("整机 CPU 占用，以全部 CPU 核心的总能力计算。")
-            Label("GPU \(Display.percent(reading.gpuPercent))", systemImage: "square.3.layers.3d").monospacedDigit()
-                .help("整机 GPU 驱动利用率估计值，无法归属某个应用。缺失时显示 —。")
-            if isPaused {
-                Label("已暂停刷新", systemImage: "snowflake")
-                    .font(.caption).foregroundStyle(.blue)
-                    .padding(.horizontal, 9).padding(.vertical, 4)
-                    .background(.blue.opacity(0.1), in: Capsule())
-                    .help("当前显示上次采样的数据。切回前台后更新，后台规则继续执行。")
-                    .accessibilityIdentifier("display-paused")
-            }
-            Spacer(minLength: 10)
-            Label(reading.thermalLabel, systemImage: "thermometer.medium")
-                .foregroundStyle(reading.thermalLabel == "正常" ? Color.secondary : Color.orange)
-                .help("系统热状态，表示发热对运行的影响程度。")
-        }.font(.callout).padding(.horizontal, 20).padding(.vertical, 11)
-            .background(isPaused ? Color.blue.opacity(0.04) : Color.clear)
-    }
-}
-
-#Preview("暂停刷新") {
-    SystemStrip(reading: SystemReading(cpuPercent: 18, gpuPercent: 24, thermalLabel: "正常"), isPaused: true)
-        .frame(width: 840)
 }

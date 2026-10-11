@@ -30,7 +30,7 @@ struct RuleEditor: View {
                 }
                 if app.isRunning {
                     HStack(spacing: 30) {
-                        metric("CPU", value: Display.percent(app.cpuPercent))
+                        metric("CPU", value: Display.percent(app.cpuPercent), color: MetricSeverity.applicationCPU(app.cpuPercent).color)
                         metric("物理内存合计", value: Display.memory(app))
                     }
                 } else {
@@ -135,10 +135,10 @@ struct RuleEditor: View {
         }
     }
 
-    private func metric(_ title: String, value: String) -> some View {
+    private func metric(_ title: String, value: String, color: Color = .primary) -> some View {
         VStack(alignment: .leading, spacing: 5) {
             Text(title).font(.caption).foregroundStyle(.secondary)
-            Text(value).font(.title2).monospacedDigit()
+            Text(value).font(.title2).monospacedDigit().foregroundStyle(color)
         }
     }
 

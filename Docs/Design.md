@@ -55,7 +55,13 @@ NSWorkspace 应用激活、隐藏、启动、退出、睡眠和唤醒在 macOS 2
 
 ## 网络采样与规则
 
+系统概览的内存和全局网速使用 Monitoring 下的独立 C 桥接读取。GPU 与 AppleSMC 温度共用四秒硬件缓存；网卡差分按接口独立保留基线。所有系统读取只进入显示采样，控制采样不会触发这些接口。详细定义见 [系统指标](SystemMetrics.md)。
+
 ProcessMonitor 协调 NetworkMonitor actor，只在显示刷新需要时读取系统网络计数；完成后按完整身份核对成员。NetworkRateSampler 持有独立基线。networkRules.v1 保存网络配置，规则列表按 CPU 与网络配置并集展示。网络执行能力与配置状态分别表示，系统扩展未启用时不会显示规则已生效。详细数据流、取消路径及控制方案见 [网络设计](Networking.md)。
+
+## 公开使用统计
+
+关于页面通过 `ProjectLinks` 集中维护仓库、Issues 和公开看板地址。使用统计窗口复用 `UtilityWindowController`；`UsageStatisticsModel` 持有可取消请求，关窗与退出主动取消，代次检查隔离迟到响应。`PublicUsageCache` 只在内存中保留三十分钟结果，没有后台刷新计时器。
 
 ## CPU 控制与恢复
 
@@ -79,7 +85,7 @@ UsageAnalytics 独立持有同意状态、待发送事件和一次性计时；Da
 
 ApplicationSession 在规则模型创建前取得系统用户临时目录中的实例锁。重复启动通知当前实例恢复管理窗口，然后退出新进程。文件描述符采用 close-on-exec，锁随进程结束释放。
 
-管理、设置、帮助、关于和许可证窗口各自复用同一 NSWindow。有打开或最小化的应用窗口时采用 regular activation policy，关闭全部窗口后采用 accessory policy。菜单面板的可见状态单独参与采样决策。
+管理、设置、帮助、关于、使用统计和许可证窗口各自复用同一 NSWindow。有打开或最小化的应用窗口时采用 regular activation policy，关闭全部窗口后采用 accessory policy。菜单面板的可见状态单独参与采样决策。
 
 许可证视图从应用包的 LICENSE.txt 读取完整 GNU GPLv3 文本，采用可选择和滚动的文本展示。仓库 LICENSE 与随包文本保持一致，SPDX 标识为 GPL-3.0-only。
 

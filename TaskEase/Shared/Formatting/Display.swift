@@ -28,4 +28,21 @@ enum Display {
         return bytes(UInt64(min(value, Double(Int64.max)))) + "/s"
     }
     static func wakeups(_ value: Double) -> String { String(format: "%.1f/s", value) }
+
+    /// 概览使用紧凑的 GB 数字，压缩值与物理内存保持相同口径。
+    static func gigabytes(_ value: UInt64?) -> String {
+        value.map { String(format: "%.1f", Double($0) / 1_073_741_824) } ?? "—"
+    }
+
+    /// 全局网速固定使用十进制 MB/s，避免单位切换令一行内容不断变宽。
+    static func megabytesPerSecond(_ value: Double?) -> String {
+        guard let value, value.isFinite, value >= 0 else { return "—" }
+        let megabytes = value / 1_000_000
+        return String(format: megabytes < 100 ? "%.2f" : "%.1f", megabytes)
+    }
+
+    static func temperature(_ value: Double?) -> String {
+        guard let value, value.isFinite else { return "—" }
+        return String(format: "%.1f°C", value)
+    }
 }

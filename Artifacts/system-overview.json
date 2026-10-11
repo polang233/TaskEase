@@ -1,0 +1,73 @@
+{
+  "recordedAt": "2026-10-12T00:39:57+08:00",
+  "scope": "system_overview_and_usage_window",
+  "version": "1.2.0",
+  "build": "3",
+  "tests": {
+    "unitPassed": 60,
+    "distinctUIPassed": 3,
+    "uniquePassed": 63,
+    "failed": 0,
+    "skipped": 0,
+    "finalBundlePassed": 62,
+    "ruleWindowPassedInEarlierBundle": true
+  },
+  "publicUsage": {
+    "activeInstallations": 1,
+    "updatedAt": "2026-10-11T15:48:29Z"
+  },
+  "publicUsageSource": "public_shared_dashboard",
+  "publicUsageRequiresQuerySecret": false,
+  "publicUsageBackgroundTimer": false,
+  "publicRequestCancelledOnWindowClose": true,
+  "nativeReadBenchmark": {
+    "samples": 20,
+    "meanReadMilliseconds": 8.86,
+    "lastTemperatureCelsius": 50.391
+  },
+  "systemSnapshot": {
+    "gpuDriverPercent": 17,
+    "systemCPU": 26.459143968871594,
+    "systemMemoryCompressedBytes": 1753071616,
+    "systemMemoryTotalBytes": 25769803776,
+    "systemMemoryUsedBytes": 17406164992,
+    "systemReceiveBytesPerSecond": 13647.794061997376,
+    "systemSendBytesPerSecond": 7798.7394639985005,
+    "temperatureCelsius": 81.84375,
+    "thermal": "正常"
+  },
+  "temperatureSource": "AppleSMC read-only undocumented interface",
+  "temperatureModelVerified": "M5 MacBook Air",
+  "temperatureDisplayDecimalPlaces": 1,
+  "temperatureAccuracyGuaranteed": false,
+  "temperatureFastestIntervalSeconds": 4,
+  "backgroundMeasurementConditions": {
+    "applicationHidden": false,
+    "foreground": false,
+    "frontmostIsLoginWindow": true,
+    "managementEnabled": false,
+    "refreshOnlyInForeground": true
+  },
+  "backgroundMeasurement": {
+    "seconds": 25.0,
+    "cpuPercentOneCore": 0.0,
+    "childCpuPercentOneCore": 0.0,
+    "combinedCpuPercentOneCore": 0.0,
+    "physicalBytes": 36226080,
+    "packageIdleWakeupsPerSecond": 0.0,
+    "interruptWakeupsPerSecond": 0.0
+  },
+  "releaseBuildPassed": true,
+  "strictSignatureVerified": true,
+  "foregroundAndMenuLayoutsVisuallyReviewed": true,
+  "previewImages": [
+    "Artifacts/management-preview.png",
+    "Artifacts/menu-preview.png",
+    "Artifacts/settings-preview.png",
+    "Artifacts/about-preview.png",
+    "Artifacts/statistics-preview.png",
+    "Artifacts/paused-preview.png"
+  ],
+  "previewData": "fixtures",
+  "normalReleaseApplicationInstanceCount": 1
+}

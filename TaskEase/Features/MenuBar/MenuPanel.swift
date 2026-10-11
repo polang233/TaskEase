@@ -22,7 +22,8 @@ struct MenuPanel: View {
                         AppIcon(app: app, size: 24)
                         Text(app.name).lineLimit(1)
                         Spacer()
-                        Text(Display.percent(app.cpuPercent)).monospacedDigit().foregroundStyle(.secondary)
+                        Text(Display.percent(app.cpuPercent)).monospacedDigit()
+                            .foregroundStyle(MetricSeverity.applicationCPU(app.cpuPercent).color)
                     }
                 }
                 if model.visibleRunningApps.isEmpty {
