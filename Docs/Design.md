@@ -71,6 +71,10 @@ CPU 累计时间和墙钟使用相同 Mach 时间单位。CPU 上限以单核时
 
 AppDataStore 仅持有本应用偏好域和明确归属的目录。AppModel 先停止事件与刷新、等待 WorkerController 恢复并结束工作进程，再执行清理和退出。清理前关闭管理窗口位置的自动保存，防止退出时重新写入配置。文件删除失败时报告错误，偏好域留待成功后移除。
 
+## 使用统计
+
+UsageAnalytics 独立持有同意状态、每日事件和一次性计时；DailyUsageSchedule 计算本机时区的中午与重试期限。PostHogClient 是 HTTPS 边界，只接收固定基础字段并拒绝重定向。AppModel 在睡眠、唤醒和退出时调用统计生命周期，预览与测试使用夹具模式。实现与持久化说明见 [PostHog 文档](PostHog.md)。
+
 ## 单实例与窗口
 
 ApplicationSession 在规则模型创建前取得系统用户临时目录中的实例锁。重复启动通知当前实例恢复管理窗口，然后退出新进程。文件描述符采用 close-on-exec，锁随进程结束释放。

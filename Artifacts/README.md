@@ -1,8 +1,9 @@
 # 验证记录
 
-本目录保存 2026-10-10 在本机完成的验证摘要。环境为 M5 MacBook Air、macOS 27.0.1、Xcode 27.0。
+本目录保存各轮在本机完成的验证摘要。环境为 M5 MacBook Air、macOS 27.0.1、Xcode 27.0；各 JSON 记录自己的采样时间与条件。
 
-- automatic-tests.json：本轮 37 项单元、网络采样、数据清理与窗口生命周期测试和 6 项界面测试全部通过的实际结果。
+- automatic-tests.json：本轮 47 项单元、网络采样、统计调度、数据清理与窗口生命周期测试和 7 项界面测试全部通过的实际结果。
+- posthog-integration.json：Release 客户端发送合成事件、PostHog 接收及统计看板配置的实际核验。
 - branding-tests.json：图标更新后的 2 项界面回归测试。
 - application-instance.json：不同应用副本并发启动及崩溃重开的隔离检查。
 - application-delivery.json：Release 包、随包许可证、运行实例、Dock 状态和自动测试的交付检查。

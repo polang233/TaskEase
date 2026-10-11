@@ -176,6 +176,23 @@ final class TaskEaseUITests: XCTestCase {
         XCTAssertTrue(app.wait(for: .notRunning, timeout: 5))
     }
 
+    /// 界面夹具不发送统计，验证默认关闭和同意开关的状态变化。
+    func testUsageAnalyticsConsentToggle() throws {
+        let app = launchFixture()
+        defer { app.terminate() }
+        app.windows["轻程"].buttons["open-settings"].click()
+        let settings = app.windows["轻程设置"]
+        let toggle = settings.checkBoxes["usage-analytics-toggle"]
+        XCTAssertTrue(toggle.waitForExistence(timeout: 5))
+        if !toggle.isHittable { settings.swipeUp() }
+        XCTAssertEqual((toggle.value as? NSNumber)?.intValue, 0)
+        toggle.click()
+        XCTAssertEqual((toggle.value as? NSNumber)?.intValue, 1)
+        XCTAssertTrue(settings.staticTexts["每天中午发送一次"].exists)
+        toggle.click()
+        XCTAssertEqual((toggle.value as? NSNumber)?.intValue, 0)
+    }
+
     /// 验证网络配置进入已配置列表，同时明确显示待启用状态。
     func testNetworkRuleDraftAndConfiguredList() throws {
         let app = launchFixture()

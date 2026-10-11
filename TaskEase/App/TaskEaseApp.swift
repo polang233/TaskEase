@@ -51,6 +51,7 @@ struct TaskEaseApp: App {
         if args.contains("--burner") { SelfCheck.burn(); exit(0) }
         if args.contains("--snapshot") { SelfCheck.snapshot(); exit(0) }
         if args.contains("--self-test") { exit(SelfCheck.run() ? 0 : 1) }
+        if args.contains("--analytics-check") { exit(AnalyticsCheck.run() ? 0 : 1) }
         do {
             if try !ApplicationSession.shared.claim() { exit(0) }
         } catch {

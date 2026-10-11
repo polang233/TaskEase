@@ -121,7 +121,8 @@ Artifacts/                  验证摘要和界面预览
 - [x] 采样移出主线程，按窗口可见性和后台规则状态采样。
 - [x] Apple Silicon、macOS 14 及以上与 Swift 6 开发目标。
 - [ ] 多语言支持、String Catalog 和语言切换。
-- [ ] 用户自愿开启的使用统计与 GitHub 汇总徽章。
+- [x] 用户自愿开启的 PostHog 每日活跃安装统计。
+- [ ] GitHub 汇总统计徽章。
 - [ ] 更多系统指标、历史趋势和自定义显示。
 - [ ] CPU、GPU 传感器温度读数及机型验证。
 - [x] 应用及自有进程网络速度监控、独立网络规则配置。
@@ -141,7 +142,8 @@ Artifacts/                  验证摘要和界面预览
 - [设计与恢复机制](Docs/Design.md)
 - [使用说明](Docs/Usage.md)
 - [验证方法与结果](Docs/Validation.md)
-- [数据位置与使用统计方案](Docs/DataAndPrivacy.md)
+- [数据位置与使用统计](Docs/DataAndPrivacy.md)
+- [PostHog 配置与维护](Docs/PostHog.md)
 - [图标设计与资源](Branding/README.md)
 
 本项目采用 [GNU GPLv3](LICENSE)，SPDX 标识为 `GPL-3.0-only`。

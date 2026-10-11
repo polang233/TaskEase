@@ -1,0 +1,37 @@
+{
+  "recordedAt": "2026-10-11T13:09:57+08:00",
+  "version": "1.1.0",
+  "build": "2",
+  "configuration": "Release",
+  "architectures": [
+    "arm64"
+  ],
+  "minimumSystemVersion": "14.0",
+  "signatureVerified": true,
+  "licenseMatchesRepository": true,
+  "configurationMatchesBundle": true,
+  "projectID": 657959,
+  "captureHost": "https://us.i.posthog.com",
+  "sampleEvent": {
+    "name": "taskease daily active",
+    "isTest": true,
+    "region": "example",
+    "clientExitCode": 0,
+    "clientResult": "PostHog sample event accepted; is_test=true",
+    "browserResult": "Installation complete"
+  },
+  "dashboardURL": "https://us.posthog.com/project/657959/dashboard/2196112",
+  "insightURL": "https://us.posthog.com/project/657959/insights/MfmaDUaP",
+  "dashboardExcludesTestEvents": true,
+  "automaticTests": {
+    "passed": 54,
+    "failed": 0,
+    "skipped": 0,
+    "unit": 47,
+    "ui": 7
+  },
+  "defaultConsent": false,
+  "debugAndFixtureAutomaticTransmission": false,
+  "normalReleaseInstances": 1,
+  "runtimeConsentEnabled": false
+}

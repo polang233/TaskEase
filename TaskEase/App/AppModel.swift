@@ -23,6 +23,7 @@ final class AppModel {
     private(set) var managementDisplayPaused = false
     private(set) var foregroundID: String?
     let preview: Bool
+    let usageAnalytics: UsageAnalytics
 
     @ObservationIgnored private var savedApplications: [String: SavedApplication] = [:]
     @ObservationIgnored private var backgroundSince: [String: UInt64] = [:]
@@ -44,6 +45,7 @@ final class AppModel {
 
     init(preview: Bool = false) {
         self.preview = preview
+        usageAnalytics = UsageAnalytics(fixtures: preview)
         if preview {
             apps = Self.exampleApps
             system = SystemReading(cpuPercent: 18, gpuPercent: 24, thermalLabel: "正常")
@@ -492,6 +494,7 @@ final class AppModel {
 
     private func prepareForSleep() {
         sleeping = true
+        usageAnalytics.prepareForSleep()
         timer?.invalidate()
         timer = nil
         refreshTask?.cancel()
@@ -504,6 +507,7 @@ final class AppModel {
 
     private func wake() {
         sleeping = false
+        usageAnalytics.wake()
         updateFocus()
         reconcile()
         if displayIsVisible || (enabled && canEnable) { refresh(force: true) }
@@ -525,6 +529,7 @@ final class AppModel {
 
     private func stopActivity() {
         isShutdown = true
+        usageAnalytics.stop()
         timer?.invalidate()
         timer = nil
         refreshTask?.cancel()

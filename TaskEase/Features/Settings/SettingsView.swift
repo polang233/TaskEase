@@ -37,6 +37,16 @@ struct SettingsView: View {
                     model.showManagement()
                 }.accessibilityIdentifier("open-configured-rules")
             }
+            Section("使用统计") {
+                Toggle("分享匿名使用统计", isOn: Binding(get: { model.usageAnalytics.enabled },
+                    set: { model.usageAnalytics.setEnabled($0) }))
+                    .toggleStyle(.checkbox).accessibilityIdentifier("usage-analytics-toggle")
+                    .disabled(!model.usageAnalytics.isConfigured)
+                Text("每天当地中午发送一次应用版本、macOS 版本和系统地区到 PostHog，使用随机安装标识统计活跃安装。")
+                    .font(.caption).foregroundStyle(.secondary)
+                LabeledContent("状态", value: model.usageAnalytics.message)
+                    .font(.caption).foregroundStyle(.secondary)
+            }
             Section("应用数据") {
                 Button("清除数据并退出…", role: .destructive) { confirmErase = true }
                     .accessibilityIdentifier("erase-app-data")
