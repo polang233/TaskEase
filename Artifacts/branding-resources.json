@@ -1,0 +1,90 @@
+{
+  "recordedAt": "2026-10-11T21:29:56+08:00",
+  "scope": "layered_branding_delivery",
+  "version": "1.1.0",
+  "build": "2",
+  "vectorSource": "Branding/TaskEaseMark.svg",
+  "iconSource": "TaskEase/Resources/AppIcon.icon",
+  "independentLayers": [
+    "RearLeaf.svg",
+    "FrontLeaf.svg"
+  ],
+  "systemRenderedAppearances": [
+    "Default",
+    "Dark"
+  ],
+  "compiledIconPixelSizes": [
+    32,
+    64,
+    128,
+    256,
+    512,
+    1024
+  ],
+  "iconImageStackIncluded": true,
+  "compatibilityICNSIncluded": true,
+  "menuTemplate": {
+    "logicalSize": 18,
+    "pixelSizes": [
+      18,
+      36
+    ],
+    "outwardOpticalAdjustmentPerLayerPoints": 0.3,
+    "systemTemplateRendering": true
+  },
+  "pixelChecks": [
+    {
+      "borderPixels": 0,
+      "monochrome": true,
+      "path": "TaskEase/Resources/Assets.xcassets/TaskEaseMenu.imageset/Menu.png",
+      "pixelSize": 18,
+      "separateContoursAtHalfAlpha": 2,
+      "transparentBorder": true
+    },
+    {
+      "borderPixels": 0,
+      "monochrome": true,
+      "path": "TaskEase/Resources/Assets.xcassets/TaskEaseMenu.imageset/Menu@2x.png",
+      "pixelSize": 36,
+      "separateContoursAtHalfAlpha": 2,
+      "transparentBorder": true
+    },
+    {
+      "borderPixels": 0,
+      "monochrome": false,
+      "path": "TaskEase/Resources/Assets.xcassets/TaskEaseMark.imageset/Mark.png",
+      "pixelSize": 512,
+      "separateContoursAtHalfAlpha": 2,
+      "transparentBorder": true
+    },
+    {
+      "borderPixels": 0,
+      "monochrome": false,
+      "path": "Branding/TaskEaseMark.png",
+      "pixelSize": 1024,
+      "separateContoursAtHalfAlpha": 2,
+      "transparentBorder": true
+    }
+  ],
+  "reproducibleResourceGeneration": {
+    "passed": true,
+    "fileCount": 6
+  },
+  "releaseBuildPassed": true,
+  "strictCodeSignatureVerified": true,
+  "previewImages": [
+    "Artifacts/management-preview.png",
+    "Artifacts/menu-preview.png",
+    "Artifacts/settings-preview.png"
+  ],
+  "previewMethod": "Actual SwiftUI views with fixture data in an offscreen hosting window",
+  "previewImagesVisuallyReviewed": true,
+  "uiRegression": {
+    "selectedTests": 2,
+    "executedTests": 0,
+    "status": "runner_initialization_failed",
+    "reason": "Timed out while enabling automation mode."
+  },
+  "normalApplicationRestartedGracefully": true,
+  "finalApplicationInstanceCount": 1
+}

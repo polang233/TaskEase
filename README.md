@@ -6,6 +6,8 @@
 
 <p align="center">查看应用占用，按前后台状态限制 CPU 资源。</p>
 
+<p align="center">叠层双叶呈现前后台任务，菜单栏使用随系统外观变化的单色标识。</p>
+
 <p align="center">
   <img src="https://img.shields.io/badge/version-1.1.0-30BBA9" alt="版本 1.1.0">
   <img src="https://img.shields.io/badge/macOS-14%2B-24292f?logo=apple" alt="macOS 14 及以上">
@@ -25,7 +27,7 @@
 
 ![应用管理与后台规则](Artifacts/management-preview.png)
 
-界面示例使用预览数据。
+界面示例由实际视图与预览数据渲染。
 
 <details>
 <summary>菜单栏与设置</summary>

@@ -2,13 +2,14 @@
 
 本目录保存各轮在本机完成的验证摘要。环境为 M5 MacBook Air、macOS 27.0.1、Xcode 27.0；各 JSON 记录自己的采样时间与条件。
 
-- automatic-tests.json：本轮 51 项单元、网络采样、统计调度、数据清理与窗口生命周期测试和 8 项界面测试全部通过的实际结果。
+- automatic-tests.json：外围功能回归的 51 项单元、网络采样、统计调度、数据清理与窗口生命周期测试和 8 项界面测试全部通过的实际结果。
 - statistics-and-icons.json：三块统计卡片、国家归属去重、图标生成流程和候选预览的核对。
 - periphery-update.json：公开统计、实验网络设置、关于尺寸与展开交互的最终核对。
 - usage-statistics.jpg：公开看板的带日期 README 快照，点击 README 图可打开持续更新的公开页面。
 - posthog-update.json：六小时调度、扩展字段和旧记录兼容调整的 50 项测试及 Release 核验。
 - posthog-integration.json：Release 客户端发送合成事件、PostHog 接收及统计看板配置的实际核验。
-- branding-tests.json：图标更新后的 2 项界面回归测试。
+- branding-tests.json：2026-10-10 图标更新后的 2 项界面回归测试。
+- branding-resources.json：叠层图标、18pt 菜单栏模板、编译尺寸、签名及界面预览核验。
 - application-instance.json：不同应用副本并发启动及崩溃重开的隔离检查。
 - application-delivery.json：Release 包、随包许可证、运行实例、Dock 状态和自动测试的交付检查。
 - self-check.json：项目 build/TaskEase.app 的真实进程控制自检，只使用自建限时负载进程。
@@ -20,7 +21,7 @@
 - network-snapshot.json：原生网络计数与速度的实际只读摘要。
 - network-rules-preview.png：网络规则配置及待启用状态的界面预览。
 - paused-preview.png：管理窗口暂停刷新时的系统概览。
-- management-preview.png、menu-preview.png、settings-preview.png：SwiftUI 界面的渲染检查，显示测试数据。
+- management-preview.png、menu-preview.png、settings-preview.png：实际 SwiftUI 视图的离屏渲染，使用示例模型；可通过 `Scripts/render-previews.sh` 更新。
 
 测试方法与边界见 [验证文档](../Docs/Validation.md)。
 

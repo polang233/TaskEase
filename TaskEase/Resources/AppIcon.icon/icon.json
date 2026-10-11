@@ -1,14 +1,21 @@
 {
   "fill": {
-    "automatic-gradient": "srgb:0.075,0.310,0.270,1.000"
+    "automatic-gradient": "srgb:0.035,0.282,0.251,1.000"
   },
   "groups": [
     {
-      "name": "双叶",
+      "name": "叠层双叶",
       "layers": [
         {
-          "name": "轻程",
-          "image-name": "Leaves.png",
+          "name": "01 后台",
+          "image-name": "RearLeaf.svg",
+          "glass": true,
+          "opacity": 1,
+          "fill": "automatic"
+        },
+        {
+          "name": "02 前台",
+          "image-name": "FrontLeaf.svg",
           "glass": true,
           "opacity": 1,
           "fill": "automatic"
@@ -17,8 +24,8 @@
       "blend-mode": "normal",
       "lighting": "individual",
       "specular": true,
-      "shadow": { "kind": "neutral", "opacity": 0.35 },
-      "translucency": { "enabled": true, "value": 0.12 }
+      "shadow": { "kind": "neutral", "opacity": 0.45 },
+      "translucency": { "enabled": true, "value": 0.08 }
     }
   ],
   "supported-platforms": { "squares": ["macOS"] }

@@ -1,11 +1,11 @@
 # TaskEase 图标叠层概念
 
-[A / B 对比图](TaskEase-icon-comparison.png)使用内置 imagegen 生成，作为视觉选择预览。当前应用仍使用 Resources/AppIcon.icon 的双叶图标。
+[A / B 对比图](TaskEase-icon-comparison.png)使用内置 imagegen 生成，保存设计探索过程。应用采用 A 的叠层双叶方向，正式资源见 [图标制作说明](../README.md)。
 
 - A：青绿与浅绿的叠层叶片，延续轻量感，并用错位、遮挡和材质表达前后台层次。
 - B：蓝色后层与浅色前层的任务卡片，突出前后台任务和切换的几何关系。
 
-选定方向后再制作独立透明图层，由 Icon Composer 配置背景、材质、光照和各外观。对比图中的材质是概念效果，正式图标以系统渲染为准。
+[菜单栏预览](TaskEase-A-menubar-preview.png)展示双叶的单色轮廓。正式图标包含两个独立 SVG 图层，由 Icon Composer 配置背景、材质、光照和各外观；应用及菜单栏资源使用统一的矢量轮廓。
 
 ## 生成提示词
 

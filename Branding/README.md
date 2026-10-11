@@ -1,42 +1,46 @@
 # TaskEase 图标
 
-## 图形与颜色
+叠层双叶通过错位轮廓与弧形留白表达前后台任务。后台叶片使用青色 `#43CDD2`，前台叶片使用浅绿 `#B1F293`；应用图标采用深青色背景，由 Icon Composer 渲染两层独立材质、光照和阴影。
 
-标识由两片错位、收拢的叶片组成。弧形间隙表达应用前后台之间的切换，双叶组成一个紧凑轮廓。
+<img src="AppIcon-preview.png" width="160" alt="默认应用图标"> <img src="AppIcon-dark-preview.png" width="160" alt="深色应用图标">
 
-- 后叶采用青绿色，目标色值 `#30BBA9`。
-- 前叶采用浅绿色，目标色值 `#B9F37B`。
-- 应用图标采用深青绿色背景，由 Icon Composer 应用渐变、光照和材质。
-- 菜单栏使用双叶轮廓的 template image，颜色随系统外观变化。
+菜单栏采用相同轮廓的单色模板，逻辑尺寸为 18pt，分别提供 18px 和 36px 资源。系统按菜单栏背景处理颜色；窗口和菜单面板使用彩色标识。
 
 ## 资源
 
-应用图标使用 `Resources/AppIcon.icon`，目标的 App Icon 名称为 `AppIcon`。Icon Composer 在构建时生成系统需要的图标尺寸、外观和较早系统的静态版本；无需逐个填写传统 AppIcon 尺寸槽位。Xcode 默认创建的空图标集合已清理。流程依据 [Apple Icon Composer 文档](https://developer.apple.com/documentation/xcode/creating-your-app-icon-using-icon-composer)。
-
-传统资产目录的尺寸表示逻辑点与显示倍率，例如 16pt 的 2x 对应 32×32 像素。本项目的构建产物已核对 AppIcon.icns、IconImageStack 与 32–1024 像素图标；16 像素表示保存在兼容图标容器中。
-
-新的叠层方向见 [A / B 概念图](Concepts/README.md)。
-
 | 文件 | 用途 |
 | --- | --- |
-| `TaskEaseMark.png` | 带透明通道的图形源文件 |
-| `../TaskEase/Resources/AppIcon.icon/` | 可在 Icon Composer 中打开的原生图标文件 |
+| `TaskEaseMark.svg` | 统一矢量源，包含前后台两个命名轮廓 |
+| `TaskEaseMark.png` | 矢量源的透明 PNG 导出 |
+| `../TaskEase/Resources/AppIcon.icon/` | 原生图标文档，两片叶片分别使用 SVG 图层 |
 | `../TaskEase/Resources/Assets.xcassets/TaskEaseMark.imageset/` | 窗口和菜单面板的彩色标识 |
-| `../TaskEase/Resources/Assets.xcassets/TaskEaseMenu.imageset/` | 菜单栏单色标识 |
-| `AppIcon-preview.png` | 从 Xcode 编译产物导出的图标预览 |
+| `../TaskEase/Resources/Assets.xcassets/TaskEaseMenu.imageset/` | 18pt 菜单栏模板，包含 1x 与 2x 资源 |
+| `AppIcon-preview.png`、`AppIcon-dark-preview.png` | Apple 渲染器导出的默认和深色外观 |
+| `Concepts/` | 设计概念及菜单栏效果示意 |
 
-图形源文件通过内置 imagegen 生成。资源制作脚本保留源文件，将前景归一为 1024 像素图层，并为界面资源调整透明边距和尺寸。在项目根目录执行：
+## 制作与构建
+
+概念预览使用内置 imagegen 生成，提示词保存在 [概念说明](Concepts/README.md) 与 [菜单栏说明](Concepts/TaskEase-A-menubar-preview.md)。正式轮廓整理为 SVG，全部资源从同一矢量源生成。
+
+在仓库根目录执行：
 
 ```sh
-xcrun swift -module-cache-path /tmp/taskease-branding-module-cache Scripts/prepare-branding.swift
+xcrun swift -module-cache-path /private/tmp/taskease-layered-icon-cache Scripts/prepare-branding.swift
+sh Scripts/build-app.sh
 ```
 
-然后在 Xcode 中构建。图标采用简单正视轮廓、充足留白、分层透明前景和系统材质，依据 [Apple 图标设计说明](https://developer.apple.com/videos/play/wwdc2025/220/) 与 [Icon Composer 文档](https://developer.apple.com/documentation/xcode/creating-your-app-icon-using-icon-composer)。
+脚本按后叶、前叶的顺序导出两个 1024px 画布的 SVG 图层，并直接栅格化彩色标识与菜单栏模板。菜单栏两层各向外调整 0.3pt，保证 1x 与 2x 轮廓间的留白；图层保持一致的坐标，圆角遮罩、材质与阴影由 Icon Composer 处理。
 
-## 生成规格
+应用目标的 App Icon 名称为 `AppIcon`，对应 `Resources/AppIcon.icon`。Xcode 自动生成不同尺寸、外观和较早系统使用的静态图标。传统尺寸槽位的 16pt / 2x 表示 32px；本工程的尺寸由原生图标文档统一生成。流程依据 [Apple Icon Composer 文档](https://developer.apple.com/documentation/xcode/creating-your-app-icon-using-icon-composer)。
 
-使用内置 imagegen，生成透明 PNG 前景。最终前景规格为两片宽而平滑的叶片，保留弧形间隙，表面采用青绿与浅绿，居中约占画布宽高的 65%。轮廓用于 16 像素以上的标识；图标材质由 Icon Composer 处理。
+使用 Xcode 随附的渲染器更新文档预览：
 
-最终修整提示词：
+```sh
+icon_tool="$(xcode-select -p)/../Applications/Icon Composer.app/Contents/Executables/ictool"
+"$icon_tool" "$PWD/TaskEase/Resources/AppIcon.icon" --export-image --output-file "$PWD/Branding/AppIcon-preview.png" --platform macOS --rendition Default --width 1024 --height 1024 --scale 1
+"$icon_tool" "$PWD/TaskEase/Resources/AppIcon.icon" --export-image --output-file "$PWD/Branding/AppIcon-dark-preview.png" --platform macOS --rendition Dark --width 512 --height 512 --scale 1
+```
 
-> Refine this two-leaf TaskEase logo into production-ready flat vector-like artwork. Keep the exact two-piece composition, diagonal flow and broad curved seam. Rebuild both contours as perfectly smooth, simple Bezier shapes, removing every stray colored pixel, spike, speck, little notch and rough fringe. Give each exposed tip a softly rounded cap. The leaf surfaces must be perfectly uniform opaque solid colors: turquoise #30BBA9 above, mint #B9F37B below, no gradients or texture. Center the mark optically in a square canvas with equal transparent margins and about 65 percent coverage. True transparent alpha everywhere outside the two shapes and through the seam. No additional symbol, text, tile, outline, stem, shadows, reflections or material effects. This is the source layer for Apple Icon Composer; precision silhouettes are essential.
+构建与资源核验记录见 [品牌验证](../Artifacts/branding-resources.json)。
+
+README 的界面图片使用实际视图与示例模型离屏渲染，先构建应用，再运行 `bash Scripts/render-previews.sh`。该程序使用独立资源包，不读取用户配置，并在完成后清理临时构建文件。
