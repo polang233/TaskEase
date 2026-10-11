@@ -42,7 +42,7 @@ struct SettingsView: View {
                     set: { model.usageAnalytics.setEnabled($0) }))
                     .toggleStyle(.checkbox).accessibilityIdentifier("usage-analytics-toggle")
                     .disabled(!model.usageAnalytics.isConfigured)
-                Text("每天当地中午发送一次应用版本、macOS 版本和系统地区到 PostHog，使用随机安装标识统计活跃安装。")
+                Text("启动及运行期间低频发送版本、系统、语言、地区和本应用功能配置概况到 PostHog。使用随机安装标识去重，通常每 6 小时最多一次。")
                     .font(.caption).foregroundStyle(.secondary)
                 LabeledContent("状态", value: model.usageAnalytics.message)
                     .font(.caption).foregroundStyle(.secondary)

@@ -1,0 +1,24 @@
+{
+  "recordedAt": "2026-10-11T13:17:43+08:00",
+  "result": "Passed",
+  "tests": {
+    "unit": 49,
+    "ui": 1,
+    "passed": 50,
+    "failed": 0,
+    "skipped": 0
+  },
+  "reportIntervalHours": 6,
+  "firstActivityReportsImmediately": true,
+  "reportsOnLocalDayChange": true,
+  "retryIntervalMinutes": 5,
+  "maximumAttemptsPerEvent": 3,
+  "previousPendingEventsCompatible": true,
+  "contextCapturedAfterPreferencesLoad": true,
+  "releaseValidatedAt": "2026-10-11T13:21:00+08:00",
+  "signatureVerified": true,
+  "bundledConfigurationMatchesSource": true,
+  "syntheticExpandedEventAccepted": true,
+  "runtimeConsentEnabled": false,
+  "settingsExplanationVerified": true
+}

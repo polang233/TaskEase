@@ -23,4 +23,4 @@ macOS 的应用移除并不保证清除应用生成的全部文件。应用自�
 
 ## 使用统计
 
-使用统计接入 PostHog Product Analytics，由用户主动开启。每天当地中午发送应用版本、macOS 版本、系统地区与随机安装标识。调度、关闭、清理范围和后台查看方法见 [PostHog 文档](PostHog.md)。
+使用统计接入 PostHog Product Analytics，由用户主动开启。在启动及运行期间低频发送环境与本应用的配置概况，用随机安装标识去重。调度、关闭、清理范围和后台查看方法见 [PostHog 文档](PostHog.md)。

@@ -188,7 +188,7 @@ final class TaskEaseUITests: XCTestCase {
         XCTAssertEqual((toggle.value as? NSNumber)?.intValue, 0)
         toggle.click()
         XCTAssertEqual((toggle.value as? NSNumber)?.intValue, 1)
-        XCTAssertTrue(settings.staticTexts["每天中午发送一次"].exists)
+        XCTAssertTrue(settings.staticTexts["启动及运行期间低频发送"].exists)
         toggle.click()
         XCTAssertEqual((toggle.value as? NSNumber)?.intValue, 0)
     }

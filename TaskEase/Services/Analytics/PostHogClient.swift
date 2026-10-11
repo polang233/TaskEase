@@ -46,12 +46,23 @@ struct PostHogClient: UsageSending {
 
     func request(for event: DailyUsageEvent) throws -> URLRequest {
         guard let endpoint = configuration.endpoint else { throw SendError.configuration }
-        let properties: [String: Any] = [
+        var properties: [String: Any] = [
             "app_version": event.appVersion, "app_build": event.appBuild,
             "os_name": "macOS", "os_version": event.osVersion,
             "region": event.region, "local_day": event.localDay, "is_test": event.isTest,
             "$process_person_profile": false, "$geoip_disable": true, "$ip": "0.0.0.0"
         ]
+        if let language = event.language { properties["language"] = language }
+        if let timeZone = event.timeZone { properties["time_zone"] = timeZone }
+        if let usage = event.usage {
+            properties["cpu_rule_count"] = usage.cpuRuleCount
+            properties["network_rule_count"] = usage.networkRuleCount
+            properties["management_enabled"] = usage.managementEnabled
+            properties["theme"] = usage.theme
+            properties["refresh_seconds"] = usage.refreshSeconds
+            properties["network_display_enabled"] = usage.networkDisplayEnabled
+            properties["foreground_refresh_only"] = usage.foregroundRefreshOnly
+        }
         let payload: [String: Any] = [
             "api_key": configuration.projectToken, "event": "taskease daily active",
             "distinct_id": event.installationID.uuidString, "uuid": event.id.uuidString,

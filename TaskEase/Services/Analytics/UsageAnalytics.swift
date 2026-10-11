@@ -3,7 +3,7 @@ import Foundation
 import Network
 import Observation
 
-/// 拥有统计同意状态、每日调度与发送任务；关闭时取消全部活动。
+/// 拥有统计同意状态、低频调度与发送任务；关闭时取消全部活动。
 @MainActor @Observable
 final class UsageAnalytics {
     private(set) var enabled = false
@@ -16,6 +16,7 @@ final class UsageAnalytics {
     @ObservationIgnored private let fixtures: Bool
     @ObservationIgnored private let clock: @MainActor () -> Date
     @ObservationIgnored private let observesSystem: Bool
+    @ObservationIgnored private var context: @MainActor () -> UsageContext? = { nil }
     @ObservationIgnored private var state = DailyUsageState()
     @ObservationIgnored private var timer: Timer?
     @ObservationIgnored private var task: Task<Void, Never>?
@@ -28,7 +29,7 @@ final class UsageAnalytics {
     private static let stateKey = "usageAnalytics.v1"
 
     init(fixtures: Bool = false, defaults: UserDefaults = .standard, sender: (any UsageSending)? = nil,
-         observesSystem: Bool = true, clock: @escaping @MainActor () -> Date = { Date() }) {
+         observesSystem: Bool = true, deferStart: Bool = false, clock: @escaping @MainActor () -> Date = { Date() }) {
         #if DEBUG
         self.fixtures = fixtures || sender == nil
         #else
@@ -45,17 +46,23 @@ final class UsageAnalytics {
             lastSuccess = stored.lastSuccess
         }
         enabled = defaults.bool(forKey: Self.enabledKey)
-        if enabled { start() }
+        if enabled && !deferStart { start() }
     }
 
     /// 用户主动开启后才创建随机安装标识；关闭不影响应用规则和资源监控。
     func setEnabled(_ value: Bool) {
         guard value != enabled else { return }
         enabled = value
-        if fixtures { message = value ? "每天中午发送一次" : "未开启"; return }
+        if fixtures { message = value ? "启动及运行期间低频发送" : "未开启"; return }
         defaults.set(value, forKey: Self.enabledKey)
         if value { start() }
         else { stop(); message = "未开启" }
+    }
+
+    /// 等规则与偏好读取完成，再采集功能概况并恢复已同意的统计。
+    func activate(context: @escaping @MainActor () -> UsageContext?) {
+        self.context = context
+        if enabled && !running && !fixtures { start() }
     }
 
     private func start() {
@@ -75,7 +82,7 @@ final class UsageAnalytics {
         reconcile()
     }
 
-    /// 事件驱动检查，关闭时不安排定时器。失败重试限三次，每次至少间隔半小时。
+    /// 事件驱动检查，关闭时不安排定时器。每个事件最多尝试三次，间隔五分钟。
     func reconcile() {
         timer?.invalidate(); timer = nil
         guard enabled, running, !fixtures, !suspended, task == nil, let sender else { return }
@@ -83,18 +90,18 @@ final class UsageAnalytics {
         let calendar = DailyUsageSchedule.calendar()
         switch DailyUsageSchedule.action(now: now, state: state, calendar: calendar) {
         case .wait(let next):
-            message = state.lastSuccess.map { calendar.isDate($0, inSameDayAs: now) } == true ? "今天已发送" : "等待每日上报"
+            message = "等待下次上报"
             schedule(next, now: now)
         case .send:
             guard let installationID = state.installationID else { return }
             let day = DailyUsageSchedule.day(now, calendar: calendar)
-            if state.pending?.localDay != day {
-                state.pending = DailyUsageEvent.capture(installationID: installationID, now: now, calendar: calendar)
+            if state.pending?.localDay != day || state.attempts >= 3 {
+                state.pending = DailyUsageEvent.capture(installationID: installationID, now: now, calendar: calendar, usage: context())
                 state.attempts = 0
             }
             guard let event = state.pending else { return }
             state.attempts += 1
-            state.retryAfter = now.addingTimeInterval(1800)
+            state.retryAfter = now.addingTimeInterval(DailyUsageSchedule.retryInterval)
             persist()
             message = "正在发送"
             let requestGeneration = generation
@@ -153,7 +160,7 @@ final class UsageAnalytics {
     var hasScheduledTimer: Bool { timer != nil }
 }
 
-/// 时钟、时区和跨日变化重新计算当地中午；观察令牌由此对象负责释放。
+/// 时钟、时区和跨日变化重新计算下次上报期限；此对象负责释放观察令牌。
 private final class AnalyticsClockEvents {
     private var tokens: [NSObjectProtocol] = []
     @MainActor init(action: @escaping @MainActor @Sendable () -> Void) {

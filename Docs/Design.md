@@ -73,7 +73,7 @@ AppDataStore 仅持有本应用偏好域和明确归属的目录。AppModel 先�
 
 ## 使用统计
 
-UsageAnalytics 独立持有同意状态、每日事件和一次性计时；DailyUsageSchedule 计算本机时区的中午与重试期限。PostHogClient 是 HTTPS 边界，只接收固定基础字段并拒绝重定向。AppModel 在睡眠、唤醒和退出时调用统计生命周期，预览与测试使用夹具模式。实现与持久化说明见 [PostHog 文档](PostHog.md)。
+UsageAnalytics 独立持有同意状态、待发送事件和一次性计时；DailyUsageSchedule 计算六小时间隔、跨日与重试期限。AppModel 读取配置后提供轻量的功能概况，再恢复已同意的统计。PostHogClient 是 HTTPS 边界，只接收固定字段并拒绝重定向。AppModel 在睡眠、唤醒和退出时调用统计生命周期，预览与测试使用夹具模式。实现与持久化说明见 [PostHog 文档](PostHog.md)。
 
 ## 单实例与窗口
 

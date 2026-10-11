@@ -45,7 +45,7 @@ final class AppModel {
 
     init(preview: Bool = false) {
         self.preview = preview
-        usageAnalytics = UsageAnalytics(fixtures: preview)
+        usageAnalytics = UsageAnalytics(fixtures: preview, deferStart: true)
         if preview {
             apps = Self.exampleApps
             system = SystemReading(cpuPercent: 18, gpuPercent: 24, thermalLabel: "正常")
@@ -55,6 +55,15 @@ final class AppModel {
         }
         _ = Recovery.restore()
         loadStoredState()
+        usageAnalytics.activate { [weak self] in
+            guard let self else { return nil }
+            return UsageContext(cpuRuleCount: self.configuredCount,
+                networkRuleCount: self.networkRules.values.filter(\.isActive).count,
+                managementEnabled: self.enabled, theme: self.preferences.theme.rawValue,
+                refreshSeconds: self.preferences.refreshInterval.rawValue,
+                networkDisplayEnabled: self.preferences.showNetworkActivity,
+                foregroundRefreshOnly: self.preferences.refreshOnlyInForeground)
+        }
         controller.onError = { [weak self] message in
             guard let self else { return }
             self.errorMessage = message

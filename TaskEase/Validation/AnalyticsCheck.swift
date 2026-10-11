@@ -8,9 +8,11 @@ enum AnalyticsCheck {
             print("Analytics configuration unavailable")
             return false
         }
-        let event = DailyUsageEvent(id: UUID(), installationID: UUID(), timestamp: Date(),
-            localDay: "2026-10-11", appVersion: "1.1.0", appBuild: "2", osVersion: "27.0.1",
-            region: "example", isTest: true)
+        let now = Date()
+        let event = DailyUsageEvent(id: UUID(), installationID: UUID(), timestamp: now,
+            localDay: DailyUsageSchedule.day(now, calendar: DailyUsageSchedule.calendar()),
+            appVersion: "1.1.0", appBuild: "2", osVersion: "27.0.1", region: "example", isTest: true,
+            language: "example", timeZone: "Etc/UTC", usage: UsageContext(cpuRuleCount: 2, networkRuleCount: 1))
         var outcome: Bool?
         let task = Task { @MainActor in
             do {

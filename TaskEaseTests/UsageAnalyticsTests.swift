@@ -7,45 +7,53 @@ struct UsageAnalyticsTests {
     private var calendar: Calendar { DailyUsageSchedule.calendar(timeZone: TimeZone(identifier: "Asia/Taipei")!) }
     private func date(_ text: String) -> Date { ISO8601DateFormatter().date(from: text)! }
 
-    @Test func waitsUntilLocalNoonAndSkipsSuccessfulDay() {
+    @Test func firstActivitySendsAndRecentSuccessIsDeduplicated() {
         let morning = date("2026-10-11T03:59:00Z")
         let noon = date("2026-10-11T04:00:00Z")
-        #expect(DailyUsageSchedule.action(now: morning, state: .init(), calendar: calendar) == .wait(noon))
+        #expect(DailyUsageSchedule.action(now: morning, state: .init(), calendar: calendar) == .send)
         #expect(DailyUsageSchedule.action(now: noon, state: .init(), calendar: calendar) == .send)
         #expect(DailyUsageSchedule.action(now: noon.addingTimeInterval(60), state: .init(lastSuccess: noon), calendar: calendar)
-            == .wait(date("2026-10-12T04:00:00Z")))
+            == .wait(date("2026-10-11T10:00:00Z")))
         #expect(DailyUsageSchedule.action(now: morning, state: .init(lastSuccess: noon), calendar: calendar) != .send)
     }
 
     @Test func retryIsBoundedAndEventRemainsStable() throws {
         let noon = date("2026-10-11T04:00:00Z")
         let event = DailyUsageEvent.capture(installationID: UUID(), now: noon, calendar: calendar)
-        let retry = noon.addingTimeInterval(1800)
+        let retry = noon.addingTimeInterval(DailyUsageSchedule.retryInterval)
         let state = DailyUsageState(pending: event, attempts: 1, retryAfter: retry)
         #expect(DailyUsageSchedule.action(now: noon, state: state, calendar: calendar) == .wait(retry))
         #expect(DailyUsageSchedule.action(now: retry, state: state, calendar: calendar) == .send)
         let capped = DailyUsageState(pending: event, attempts: 3)
-        #expect(DailyUsageSchedule.action(now: retry, state: capped, calendar: calendar) == .wait(date("2026-10-12T04:00:00Z")))
+        #expect(DailyUsageSchedule.action(now: retry, state: capped, calendar: calendar) == .wait(date("2026-10-11T10:00:00Z")))
+        #expect(DailyUsageSchedule.action(now: date("2026-10-11T10:00:00Z"), state: capped, calendar: calendar) == .send)
         #expect(DailyUsageSchedule.action(now: date("2026-10-12T04:00:00Z"), state: capped, calendar: calendar) == .send)
         #expect(try JSONDecoder().decode(DailyUsageState.self, from: JSONEncoder().encode(state)) == state)
     }
 
-    @Test func daylightSavingAndTimezoneUseCalendarNoon() {
+    @Test func heartbeatAndLocalDayBoundaryRespectTimezoneAndDST() {
         let us = DailyUsageSchedule.calendar(timeZone: TimeZone(identifier: "America/New_York")!)
-        #expect(DailyUsageSchedule.action(now: date("2026-03-08T15:00:00Z"), state: .init(), calendar: us)
-            == .wait(date("2026-03-08T16:00:00Z")))
+        let last = date("2026-03-08T04:00:00Z")
+        #expect(DailyUsageSchedule.action(now: last, state: .init(lastSuccess: last), calendar: us)
+            == .wait(date("2026-03-08T05:00:00Z")))
+        #expect(DailyUsageSchedule.action(now: date("2026-03-08T05:00:00Z"), state: .init(lastSuccess: last), calendar: us) == .send)
+        let morning = date("2026-10-11T01:00:00Z")
+        #expect(DailyUsageSchedule.action(now: morning.addingTimeInterval(21600), state: .init(lastSuccess: morning), calendar: calendar) == .send)
         #expect(DailyUsageSchedule.day(date("2026-10-11T16:30:00Z"), calendar: calendar) == "2026-10-12")
     }
 
     @Test func payloadHasOnlyDocumentedFieldsAndAnonymousProcessing() throws {
         let config = PostHogConfiguration(projectID: 1, host: "https://us.i.posthog.com", projectToken: "phc_fixture")
-        let event = DailyUsageEvent.capture(installationID: UUID(), now: date("2026-10-11T04:00:00Z"), calendar: calendar)
+        let event = DailyUsageEvent.capture(installationID: UUID(), now: date("2026-10-11T04:00:00Z"), calendar: calendar,
+                                           usage: UsageContext(cpuRuleCount: 2, networkRuleCount: 1, managementEnabled: true))
         let client = PostHogClient(configuration: config)
         let request = try client.request(for: event)
         let body = try #require(request.httpBody)
         let payload = try #require(JSONSerialization.jsonObject(with: body) as? [String: Any])
         let properties = try #require(payload["properties"] as? [String: Any])
-        #expect(Set(properties.keys) == ["app_version", "app_build", "os_name", "os_version", "region", "local_day", "is_test", "$process_person_profile", "$geoip_disable", "$ip"])
+        #expect(Set(properties.keys) == ["app_version", "app_build", "os_name", "os_version", "region", "local_day", "is_test", "$process_person_profile", "$geoip_disable", "$ip", "language", "time_zone", "cpu_rule_count", "network_rule_count", "management_enabled", "theme", "refresh_seconds", "network_display_enabled", "foreground_refresh_only"])
+        #expect(properties["cpu_rule_count"] as? Int == 2)
+        #expect(properties["time_zone"] as? String == "Asia/Taipei")
         #expect(properties["$process_person_profile"] as? Bool == false)
         #expect(properties["$geoip_disable"] as? Bool == true)
         #expect(properties["$ip"] as? String == "0.0.0.0")
@@ -149,6 +157,29 @@ struct UsageAnalyticsTests {
         try await Task.sleep(for: .milliseconds(100))
         #expect(defaults.data(forKey: "usageAnalytics.v1") == nil)
         #expect(!service.hasScheduledTimer)
+    }
+
+    @Test func previousPendingEventsDecodeWithoutNewFields() throws {
+        let event = DailyUsageEvent.capture(installationID: UUID(), now: Date(), calendar: calendar)
+        var object = try #require(JSONSerialization.jsonObject(with: JSONEncoder().encode(event)) as? [String: Any])
+        for key in ["language", "timeZone", "usage"] { object.removeValue(forKey: key) }
+        let restored = try JSONDecoder().decode(DailyUsageEvent.self, from: JSONSerialization.data(withJSONObject: object))
+        #expect(restored.id == event.id)
+        #expect(restored.language == nil && restored.timeZone == nil && restored.usage == nil)
+    }
+
+    @Test @MainActor func deferredStartupCapturesLoadedConfiguration() async throws {
+        let name = "TaskEase.AnalyticsTest." + UUID().uuidString
+        let defaults = try #require(UserDefaults(suiteName: name))
+        defer { defaults.removePersistentDomain(forName: name) }
+        defaults.set(true, forKey: "usageAnalytics.enabled")
+        let sender = MockUsageSender()
+        let service = UsageAnalytics(defaults: defaults, sender: sender, observesSystem: false, deferStart: true)
+        #expect(await sender.events.isEmpty)
+        service.activate { UsageContext(cpuRuleCount: 3, managementEnabled: true) }
+        for _ in 0..<50 { if service.lastSuccess != nil { break }; try await Task.sleep(for: .milliseconds(10)) }
+        #expect(await sender.events.first?.usage?.cpuRuleCount == 3)
+        service.stop()
     }
 }
 
