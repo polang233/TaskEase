@@ -20,9 +20,6 @@ struct SettingsView: View {
                 Toggle("管理窗口仅在前台刷新", isOn: Binding(get: { model.preferences.refreshOnlyInForeground },
                     set: { value in model.updatePreferences { $0.refreshOnlyInForeground = value } }))
                     .toggleStyle(.checkbox).accessibilityIdentifier("foreground-display-only")
-                Toggle("显示应用网络速度", isOn: Binding(get: { model.preferences.showNetworkActivity },
-                    set: { value in model.updatePreferences { $0.showNetworkActivity = value } }))
-                    .toggleStyle(.checkbox).accessibilityIdentifier("show-network-activity")
                 Toggle("显示系统应用", isOn: Binding(get: { model.preferences.showSystemApps },
                                                    set: { value in model.updatePreferences { $0.showSystemApps = value } }))
                     .toggleStyle(.checkbox)
@@ -31,21 +28,23 @@ struct SettingsView: View {
             }
             Section("后台规则") {
                 LabeledContent("已保存", value: "\(model.savedRuleCount) 个应用")
-                LabeledContent("可启用", value: "\(model.configuredCount) 条规则")
+                LabeledContent("已启用", value: "\(model.configuredCount) 条规则")
                 Button("管理后台规则") {
                     model.setApplicationList(.configured)
                     model.showManagement()
                 }.accessibilityIdentifier("open-configured-rules")
             }
-            Section("使用统计") {
-                Toggle("分享匿名使用统计", isOn: Binding(get: { model.usageAnalytics.enabled },
-                    set: { model.usageAnalytics.setEnabled($0) }))
-                    .toggleStyle(.checkbox).accessibilityIdentifier("usage-analytics-toggle")
-                    .disabled(!model.usageAnalytics.isConfigured)
-                Text("启动及运行期间低频发送版本、系统、语言、地区和本应用功能配置概况到 PostHog。使用随机安装标识去重，通常每 6 小时最多一次。")
+            Section("实验功能") {
+                Toggle("网络功能（测试）", isOn: Binding(get: { model.preferences.networkFeaturesEnabled },
+                    set: { value in model.updatePreferences { $0.networkFeaturesEnabled = value } }))
+                    .toggleStyle(.checkbox).accessibilityIdentifier("network-features-enabled")
+                Text("开启后显示网络监控与测试规则。暂缺开发者账号签名，阻断和限速尚未实现。")
                     .font(.caption).foregroundStyle(.secondary)
-                LabeledContent("状态", value: model.usageAnalytics.message)
-                    .font(.caption).foregroundStyle(.secondary)
+                if model.preferences.networkFeaturesEnabled {
+                    Toggle("显示应用网络速度", isOn: Binding(get: { model.preferences.showNetworkActivity },
+                        set: { value in model.updatePreferences { $0.showNetworkActivity = value } }))
+                        .toggleStyle(.checkbox).accessibilityIdentifier("show-network-activity")
+                }
             }
             Section("应用数据") {
                 Button("清除数据并退出…", role: .destructive) { confirmErase = true }

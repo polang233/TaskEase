@@ -43,7 +43,7 @@ enum NetworkRuleStatus: Equatable, Sendable {
         case .paused: "网络规则已暂停"
         case .waiting: "等待网络规则生效"
         case .foreground: "前台正常联网"
-        case .pendingExtension: "待启用网络扩展"
+        case .pendingExtension: "测试功能未实现"
         case .blocked: "联网已阻断"
         case .limited: "网络限速生效"
         }

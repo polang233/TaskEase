@@ -2,7 +2,7 @@
 
 ## 本地数据
 
-轻程的 CPU 规则、网络规则、显示设置和统计偏好由 UserDefaults 保存，控制归属日志单独保存在 Application Support。使用统计由用户在设置中主动开启，数据发送到 PostHog。
+轻程的 CPU 规则、网络规则、显示设置和统计偏好由 UserDefaults 保存，控制归属日志单独保存在 Application Support。使用统计默认开启，可在关于窗口关闭，数据发送到 PostHog。
 
 | 数据 | 位置 |
 | --- | --- |
@@ -23,4 +23,4 @@ macOS 的应用移除并不保证清除应用生成的全部文件。应用自�
 
 ## 使用统计
 
-使用统计接入 PostHog Product Analytics，由用户主动开启。在启动及运行期间低频发送环境与本应用的配置概况，用随机安装标识去重。调度、关闭、清理范围和后台查看方法见 [PostHog 文档](PostHog.md)。
+使用统计接入 PostHog Product Analytics，默认开启，可在关于窗口关闭。在启动及运行期间低频发送环境与本应用的配置概况，用随机安装标识去重。调度、关闭、清理范围和后台查看方法见 [PostHog 文档](PostHog.md)。

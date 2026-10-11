@@ -10,7 +10,7 @@ projectToken 是 PostHog 标注可在公开应用中使用的项目令牌，本�
 
 ## 用户设置与数据
 
-“设置 → 使用统计 → 分享匿名使用统计”默认关闭。用户开启后生成随机安装 UUID，用于对参与统计的安装进行跨天去重。不开启时不创建标识、发送任务、统计计时器或网络观察器。
+“关于轻程 → 匿名使用统计”对新安装默认开启，保留已有用户的关闭选择。启用状态下生成随机安装 UUID，用于对参与统计的安装进行跨天去重。不开启时不创建标识、发送任务、统计计时器或网络观察器。
 
 应用发送 taskease daily active 事件，包含以下字段：
 
@@ -46,9 +46,17 @@ projectToken 是 PostHog 标注可在公开应用中使用的项目令牌，本�
 
 HTTP 请求通过临时 URLSession 发送，有请求和资源超时，不跟随重定向。2xx 表示接收端接受请求，是否已进入分析表以后台 Activity 为准。失败只影响统计，不改变 CPU 和网络规则。
 
-关闭开关、应用退出和清理数据时取消任务、计时器与观察器。取消后的回调通过代次检查停止写入。统计同意开关保存在 usageAnalytics.enabled，随机标识和待发送记录保存在 usageAnalytics.v1，位于本应用 UserDefaults 偏好域。
+在关于窗口关闭统计开关、应用退出和清理数据时取消任务、计时器与观察器。取消后的回调通过代次检查停止写入。统计同意开关保存在 usageAnalytics.enabled，随机标识和待发送记录保存在 usageAnalytics.v1，位于本应用 UserDefaults 偏好域。
 
 “清除数据并退出…”同时清理这些本地记录。已经发送到 PostHog 的事件遵循服务端保留期限；清理本地数据不会删除服务端历史。关闭后再次开启继续使用原安装标识，避免重复计算安装数。
+
+## 公开图表
+
+[TaskEase 公开看板](https://us.posthog.com/shared/Do9W3574hr41SnipsKsuPGuWM_LYrw)已开启免登录访问，包含每日活跃安装折线图及 30 天环境汇总。仅发布聚合数据，排除 is_test=true。每日趋势使用项目的 UTC 时区，本地上报日期仍按安装的系统时区计算。
+
+README 使用公开页面的快照 PNG，并链接到持续更新的看板。PNG 的内容保持为捕获时的数据；更新图片时先查看公开页面再保存新快照，保留捕获日期。网页可以使用 PostHog 提供的 iframe，GitHub README 使用图片和链接。
+
+在后台 Share 中可以关闭公开分享。以后添加看板内容时，只加入适合公开的聚合指标，不添加安装标识列表或事件明细。参考 [PostHog 公开分享与嵌入](https://posthog.com/docs/product-analytics/sharing)。
 
 ## 后台查看
 
@@ -58,7 +66,7 @@ Activity 中可以查看 taskease daily active 的接收记录与属性。正式
 
 创建 Trends 时选择 taskease daily active，聚合选择 Unique users，即去重的随机安装标识。过去 30 天的累计去重数是参与统计的活跃安装估计值。按 app_version、os_version 或 region 分组可查看对应分布，同一安装可能出现在多个版本分组中，因此不能把这些分组简单相加作为整体安装量。
 
-活跃安装按 distinct_id 去重，不以事件次数作为电脑数量。事件属性可继续按 language、theme 或 management_enabled 分组，了解环境与功能采用情况。该事件不提供实时在线状态、页面访问次数或精确使用时长。默认关闭、离线与自行修改客户端都会影响覆盖范围。
+活跃安装按 distinct_id 去重，不以事件次数作为电脑数量。事件属性可继续按 language、theme 或 management_enabled 分组，了解环境与功能采用情况。该事件不提供实时在线状态、页面访问次数或精确使用时长。用户关闭统计、离线与自行修改客户端都会影响覆盖范围。
 
 ## 验证与维护
 

@@ -1,0 +1,34 @@
+{
+  "recordedAt": "2026-10-11T17:08:50+08:00",
+  "version": "1.1.0",
+  "build": "2",
+  "automaticTests": {
+    "passed": 59,
+    "failed": 0,
+    "skipped": 0,
+    "unit": 51,
+    "ui": 8
+  },
+  "loopbackRelayTests": {
+    "passed": 5,
+    "scope": "self_created_loopback_only",
+    "systemNetworkSettingsModified": false
+  },
+  "networkExperimentDefaultEnabled": false,
+  "networkControlImplemented": false,
+  "analyticsDefaultEnabledForNewInstallation": true,
+  "explicitAnalyticsOptOutPreserved": true,
+  "aboutContentSize": {
+    "width": 580,
+    "height": 620
+  },
+  "aboutActualWidthValidated": true,
+  "disclosureTextClickValidated": true,
+  "publicDashboardURL": "https://us.posthog.com/shared/Do9W3574hr41SnipsKsuPGuWM_LYrw",
+  "publicDashboardVerifiedWithoutLogin": true,
+  "publicDashboardExcludesTestEvents": true,
+  "readmeSnapshotDate": "2026-10-11",
+  "releaseSignatureVerified": true,
+  "bundledConfigurationMatchesSource": true,
+  "licenseMatchesRepository": true
+}

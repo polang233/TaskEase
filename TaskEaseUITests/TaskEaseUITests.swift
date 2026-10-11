@@ -176,21 +176,39 @@ final class TaskEaseUITests: XCTestCase {
         XCTAssertTrue(app.wait(for: .notRunning, timeout: 5))
     }
 
-    /// 界面夹具不发送统计，验证默认关闭和同意开关的状态变化。
+    /// 界面夹具不发送统计，验证默认开启和关于窗口内的开关变化。
     func testUsageAnalyticsConsentToggle() throws {
         let app = launchFixture()
         defer { app.terminate() }
         app.windows["轻程"].buttons["open-settings"].click()
-        let settings = app.windows["轻程设置"]
+        app.windows["轻程设置"].buttons["关于轻程"].click()
+        let settings = app.windows["关于轻程"]
         let toggle = settings.checkBoxes["usage-analytics-toggle"]
         XCTAssertTrue(toggle.waitForExistence(timeout: 5))
         if !toggle.isHittable { settings.swipeUp() }
+        XCTAssertEqual((toggle.value as? NSNumber)?.intValue, 1)
+        toggle.click()
         XCTAssertEqual((toggle.value as? NSNumber)?.intValue, 0)
+        XCTAssertTrue(settings.staticTexts["匿名上传使用概况，不包含个人信息或其他应用明细。"].exists)
         toggle.click()
         XCTAssertEqual((toggle.value as? NSNumber)?.intValue, 1)
-        XCTAssertTrue(settings.staticTexts["启动及运行期间低频发送"].exists)
-        toggle.click()
-        XCTAssertEqual((toggle.value as? NSNumber)?.intValue, 0)
+        XCTAssertGreaterThanOrEqual(settings.frame.width, 580)
+    }
+
+    /// 展开标题是完整按钮，文字和箭头共享相同的交互入口。
+    func testProcessInformationHeaderExpandsOnTextClick() throws {
+        let app = launchFixture()
+        defer { app.terminate() }
+        let window = app.windows["轻程"]
+        window.staticTexts["网页浏览器"].firstMatch.click()
+        let header = window.disclosureTriangles["应用与进程信息"]
+        XCTAssertTrue(header.waitForExistence(timeout: 5))
+        XCTAssertFalse(window.staticTexts["example.browser"].exists)
+        // 点击标题区域，避开左端箭头，证明整行可以切换。
+        header.coordinate(withNormalizedOffset: CGVector(dx: 0.3, dy: 0.5)).click()
+        XCTAssertTrue(window.staticTexts["example.browser"].waitForExistence(timeout: 5))
+        header.click()
+        XCTAssertFalse(window.staticTexts["example.browser"].exists)
     }
 
     /// 验证网络配置进入已配置列表，同时明确显示待启用状态。
@@ -199,12 +217,20 @@ final class TaskEaseUITests: XCTestCase {
         defer { app.terminate() }
         let window = app.windows["轻程"]
         window.staticTexts["网页浏览器"].firstMatch.click()
+        XCTAssertFalse(window.popUpButtons["network-rule-mode"].exists)
+        window.buttons["open-settings"].click()
+        let settings = app.windows["轻程设置"]
+        let experiment = settings.checkBoxes["network-features-enabled"]
+        XCTAssertTrue(experiment.waitForExistence(timeout: 5))
+        XCTAssertEqual((experiment.value as? NSNumber)?.intValue, 0)
+        experiment.click()
+        settings.buttons[XCUIIdentifierCloseWindow].click()
         let mode = window.popUpButtons["network-rule-mode"]
         XCTAssertTrue(mode.waitForExistence(timeout: 5))
         mode.click()
         app.menuItems["限制速度"].click()
         XCTAssertTrue(window.textFields["network-download-limit"].waitForExistence(timeout: 5))
-        XCTAssertTrue(window.staticTexts["待启用网络扩展"].exists)
+        XCTAssertTrue(window.staticTexts["测试功能未实现"].exists)
         XCTAssertFalse(window.switches["management-toggle"].isEnabled)
         let scope = window.popUpButtons["network-rule-scope"]
         scope.click()

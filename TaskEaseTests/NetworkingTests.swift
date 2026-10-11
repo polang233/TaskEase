@@ -55,6 +55,7 @@ struct NetworkingTests {
     @Test @MainActor func networkRulesRemainEditableOfflineAndSeparateFromCPU() throws {
         let model = AppModel(preview: true)
         defer { model.shutdown() }
+        model.updatePreferences { $0.networkFeaturesEnabled = true }
         model.setNetworkRule("example.browser", rule: NetworkRule(mode: .limit, scope: .always))
         #expect(model.rules.isEmpty)
         #expect(model.savedRuleCount == 1)
@@ -64,6 +65,7 @@ struct NetworkingTests {
         model.setApplicationList(.configured)
         #expect(model.selectedApp?.name == "网页浏览器")
         #expect(model.selectedApp?.isRunning == false)
+        model.updatePreferences { $0.networkFeaturesEnabled = true }
         model.setNetworkRule("example.browser", rule: .init(mode: .block))
         #expect(model.networkRules["example.browser"]?.mode == .block)
         model.resetRule("example.browser")
@@ -74,6 +76,7 @@ struct NetworkingTests {
         let model = AppModel(preview: true)
         defer { model.shutdown() }
         model.setRule("example.browser", rule: .init(mode: .budget))
+        model.updatePreferences { $0.networkFeaturesEnabled = true }
         model.setNetworkRule("example.browser", rule: .init(mode: .block))
         model.removeNetworkRule("example.browser")
         #expect(model.rules["example.browser"]?.mode == .budget)
@@ -107,6 +110,22 @@ struct NetworkingTests {
         #expect(rule.downloadKiBPerSecond == 16)
         #expect(rule.uploadKiBPerSecond == 102400)
         #expect(try JSONDecoder().decode(NetworkRule.self, from: JSONEncoder().encode(rule)) == rule)
-        #expect(AppPreferences().showNetworkActivity)
+        #expect(!AppPreferences().networkActivityVisible)
+        #expect(!AppPreferences().networkFeaturesEnabled)
+    }
+
+    @Test @MainActor func disablingExperimentHidesNetworkEntriesAndPreservesRules() {
+        let model = AppModel(preview: true)
+        defer { model.shutdown() }
+        model.updatePreferences { $0.networkFeaturesEnabled = true }
+        model.setNetworkRule("example.browser", rule: .init(mode: .block))
+        #expect(model.preferences.networkActivityVisible)
+        #expect(model.savedRuleCount == 1)
+        model.updatePreferences { $0.networkFeaturesEnabled = false }
+        #expect(!model.preferences.networkActivityVisible)
+        #expect(model.configuredApps.isEmpty)
+        #expect(model.networkRules["example.browser"]?.mode == .block)
+        model.updatePreferences { $0.networkFeaturesEnabled = true }
+        #expect(model.savedRuleCount == 1)
     }
 }

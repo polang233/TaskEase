@@ -88,6 +88,7 @@ struct UsageAnalyticsTests {
         let name = "TaskEase.AnalyticsTest." + UUID().uuidString
         let defaults = try #require(UserDefaults(suiteName: name))
         defer { defaults.removePersistentDomain(forName: name) }
+        defaults.set(false, forKey: "usageAnalytics.enabled")
         let sender = MockUsageSender()
         let service = UsageAnalytics(defaults: defaults, sender: sender, observesSystem: false)
         #expect(!service.enabled)
@@ -180,6 +181,20 @@ struct UsageAnalyticsTests {
         for _ in 0..<50 { if service.lastSuccess != nil { break }; try await Task.sleep(for: .milliseconds(10)) }
         #expect(await sender.events.first?.usage?.cpuRuleCount == 3)
         service.stop()
+    }
+
+    @Test @MainActor func newInstallDefaultsOnAndExplicitOptOutPersists() throws {
+        let name = "TaskEase.AnalyticsTest." + UUID().uuidString
+        let defaults = try #require(UserDefaults(suiteName: name))
+        defer { defaults.removePersistentDomain(forName: name) }
+        let sender = MockUsageSender()
+        let fresh = UsageAnalytics(defaults: defaults, sender: sender, observesSystem: false, deferStart: true)
+        #expect(fresh.enabled)
+        fresh.setEnabled(false)
+        let restored = UsageAnalytics(defaults: defaults, sender: sender, observesSystem: false, deferStart: true)
+        #expect(!restored.enabled)
+        #expect(!restored.hasScheduledTimer)
+        fresh.stop(); restored.stop()
     }
 }
 

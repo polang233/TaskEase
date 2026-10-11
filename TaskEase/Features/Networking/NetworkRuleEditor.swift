@@ -28,6 +28,8 @@ struct NetworkRuleEditor: View {
                         .accessibilityIdentifier("remove-network-rule")
                 }
             }
+            Text("测试功能：暂缺开发者账号签名，网络阻断和限速尚未实现。")
+                .font(.caption).foregroundStyle(.secondary)
             Picker("联网方式", selection: Binding(get: { rule.mode }, set: { mode in update { $0.mode = mode } })) {
                 ForEach(NetworkRuleMode.allCases, id: \.self) { Text($0.title).tag($0) }
             }.accessibilityIdentifier("network-rule-mode")
@@ -61,7 +63,7 @@ struct NetworkRuleEditor: View {
                         Text("KiB/s").foregroundStyle(.secondary)
                     }
                 }
-                Text("规则已保存。阻断和限速需要签名的网络扩展及系统批准后启用。")
+                Text("已保存测试配置。")
                     .font(.caption).foregroundStyle(.secondary)
             }
             if let error = model.networkRuleError {

@@ -40,16 +40,20 @@ final class UsageAnalytics {
         self.observesSystem = observesSystem
         self.sender = sender ?? PostHogConfiguration.load().map { PostHogClient(configuration: $0) }
         // 夹具与开发构建不读取生产同意状态，也不自动发送。
-        guard !self.fixtures else { return }
+        guard !self.fixtures else {
+            enabled = true
+            message = "启动及运行期间低频发送"
+            return
+        }
         if let data = defaults.data(forKey: Self.stateKey), let stored = try? JSONDecoder().decode(DailyUsageState.self, from: data) {
             state = stored
             lastSuccess = stored.lastSuccess
         }
-        enabled = defaults.bool(forKey: Self.enabledKey)
+        enabled = defaults.object(forKey: Self.enabledKey) == nil ? true : defaults.bool(forKey: Self.enabledKey)
         if enabled && !deferStart { start() }
     }
 
-    /// 用户主动开启后才创建随机安装标识；关闭不影响应用规则和资源监控。
+    /// 切换统计开关；关闭不影响应用规则和资源监控。
     func setEnabled(_ value: Bool) {
         guard value != enabled else { return }
         enabled = value

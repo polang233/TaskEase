@@ -1,16 +1,271 @@
 {
-  "recordedAt": "2026-10-11T13:08:47+08:00",
+  "recordedAt": "2026-10-11T16:55:34+08:00",
   "version": "1.1.0",
   "schemeName": "TaskEase",
   "counts": {
     "expectedFailures": 0,
     "failed": 0,
     "notRun": 0,
-    "passed": 54,
+    "passed": 59,
     "skipped": 0,
-    "total": 54
+    "total": 59
   },
   "results": [
+    {
+      "identifier": "ApplicationRulesTests/samplerResetStartsAFreshCPUBaseline()",
+      "targetName": "TaskEaseTests",
+      "state": "Passed"
+    },
+    {
+      "identifier": "ApplicationRulesTests/existingDisplayPreferencesKeepTheirValues()",
+      "targetName": "TaskEaseTests",
+      "state": "Passed"
+    },
+    {
+      "identifier": "ApplicationRulesTests/userInstalledAppleApplicationIsVisibleInUserAppList()",
+      "targetName": "TaskEaseTests",
+      "state": "Passed"
+    },
+    {
+      "identifier": "ApplicationRulesTests/invisibleAndUnconfiguredApplicationHasNoPollingTimer()",
+      "targetName": "TaskEaseTests",
+      "state": "Passed"
+    },
+    {
+      "identifier": "ApplicationRulesTests/keepingOriginalBehaviorPreservesEditedEntryUntilRemoved()",
+      "targetName": "TaskEaseTests",
+      "state": "Passed"
+    },
+    {
+      "identifier": "ApplicationRulesTests/emptyRulesCannotEnableAndRemovingLastActiveRuleTurnsOff()",
+      "targetName": "TaskEaseTests",
+      "state": "Passed"
+    },
+    {
+      "identifier": "ApplicationRulesTests/slowDisplayDoesNotDelayControlHeartbeatOrBackgroundDeadline()",
+      "targetName": "TaskEaseTests",
+      "state": "Passed"
+    },
+    {
+      "identifier": "ApplicationRulesTests/preferencesAndExistingRuleFormatRoundTrip()",
+      "targetName": "TaskEaseTests",
+      "state": "Passed"
+    },
+    {
+      "identifier": "ApplicationRulesTests/foregroundDisplayStopsPollingButKeepsControlDeadlines()",
+      "targetName": "TaskEaseTests",
+      "state": "Passed"
+    },
+    {
+      "identifier": "ApplicationRulesTests/savedRuleRemainsEditableAfterApplicationExits()",
+      "targetName": "TaskEaseTests",
+      "state": "Passed"
+    },
+    {
+      "identifier": "ApplicationRulesTests/controlRefreshPreservesVisibleMetricsUntilDisplayRefresh()",
+      "targetName": "TaskEaseTests",
+      "state": "Passed"
+    },
+    {
+      "identifier": "ApplicationRulesTests/systemApplicationsAreHiddenByDefaultAndRemainReadOnly()",
+      "targetName": "TaskEaseTests",
+      "state": "Passed"
+    },
+    {
+      "identifier": "NetworkingTests/nativeSnapshotReaderRunsAndFinishes()",
+      "targetName": "TaskEaseTests",
+      "state": "Passed"
+    },
+    {
+      "identifier": "NetworkingTests/networkRulesRemainEditableOfflineAndSeparateFromCPU()",
+      "targetName": "TaskEaseTests",
+      "state": "Passed"
+    },
+    {
+      "identifier": "NetworkingTests/disablingExperimentHidesNetworkEntriesAndPreservesRules()",
+      "targetName": "TaskEaseTests",
+      "state": "Passed"
+    },
+    {
+      "identifier": "NetworkingTests/bandwidthCreditIsSharedAndIdleBurstIsBounded()",
+      "targetName": "TaskEaseTests",
+      "state": "Passed"
+    },
+    {
+      "identifier": "NetworkingTests/removingNetworkRulePreservesCPURule()",
+      "targetName": "TaskEaseTests",
+      "state": "Passed"
+    },
+    {
+      "identifier": "NetworkingTests/CSVUsesHeaderAndLastPIDSeparator()",
+      "targetName": "TaskEaseTests",
+      "state": "Passed"
+    },
+    {
+      "identifier": "NetworkingTests/ratesAggregateMembersAndResetForReusedPIDs()",
+      "targetName": "TaskEaseTests",
+      "state": "Passed"
+    },
+    {
+      "identifier": "NetworkingTests/networkPermissionsAndScopeDetermineStatus()",
+      "targetName": "TaskEaseTests",
+      "state": "Passed"
+    },
+    {
+      "identifier": "NetworkingTests/networkRuleValidationAndPersistenceRoundTrip()",
+      "targetName": "TaskEaseTests",
+      "state": "Passed"
+    },
+    {
+      "identifier": "ApplicationLifecycleTests/separateValidationScopesCanRunIndependently()",
+      "targetName": "TaskEaseTests",
+      "state": "Passed"
+    },
+    {
+      "identifier": "ApplicationLifecycleTests/managementWindowReusesItsWindowAndChangesDockPolicy()",
+      "targetName": "TaskEaseTests",
+      "state": "Passed"
+    },
+    {
+      "identifier": "ApplicationLifecycleTests/menuBarImageHasARealPointSize()",
+      "targetName": "TaskEaseTests",
+      "state": "Passed"
+    },
+    {
+      "identifier": "ApplicationLifecycleTests/utilityWindowKeepsDockEntryUntilAllApplicationWindowsClose()",
+      "targetName": "TaskEaseTests",
+      "state": "Passed"
+    },
+    {
+      "identifier": "ApplicationLifecycleTests/previewAndTestLaunchesHaveNoStatusItem()",
+      "targetName": "TaskEaseTests",
+      "state": "Passed"
+    },
+    {
+      "identifier": "ApplicationLifecycleTests/oneLockOwnerAndReacquireAfterClose()",
+      "targetName": "TaskEaseTests",
+      "state": "Passed"
+    },
+    {
+      "identifier": "TaskEaseTests/disabledAndProtectedAppsNeverControl()",
+      "targetName": "TaskEaseTests",
+      "state": "Passed"
+    },
+    {
+      "identifier": "TaskEaseTests/inactiveRuleStaysUnmanaged()",
+      "targetName": "TaskEaseTests",
+      "state": "Passed"
+    },
+    {
+      "identifier": "TaskEaseTests/budgetTracksAggregateCPUAndRepaysOvershoot()",
+      "targetName": "TaskEaseTests",
+      "state": "Passed"
+    },
+    {
+      "identifier": "TaskEaseTests/foregroundAlwaysRestores()",
+      "targetName": "TaskEaseTests",
+      "state": "Passed"
+    },
+    {
+      "identifier": "TaskEaseTests/aReusedPIDIsADifferentProcess()",
+      "targetName": "TaskEaseTests",
+      "state": "Passed"
+    },
+    {
+      "identifier": "TaskEaseTests/storedRulesClampValuesAndRejectCorruption()",
+      "targetName": "TaskEaseTests",
+      "state": "Passed"
+    },
+    {
+      "identifier": "TaskEaseTests/idleTimeDoesNotAccumulateAnUnlimitedBurst()",
+      "targetName": "TaskEaseTests",
+      "state": "Passed"
+    },
+    {
+      "identifier": "TaskEaseTests/backgroundGraceAndRapidReturn()",
+      "targetName": "TaskEaseTests",
+      "state": "Passed"
+    },
+    {
+      "identifier": "TaskEaseTests/hiddenApplicationCanBecomeBackground()",
+      "targetName": "TaskEaseTests",
+      "state": "Passed"
+    },
+    {
+      "identifier": "UsageAnalyticsTests/newInstallDefaultsOnAndExplicitOptOutPersists()",
+      "targetName": "TaskEaseTests",
+      "state": "Passed"
+    },
+    {
+      "identifier": "UsageAnalyticsTests/deferredStartupCapturesLoadedConfiguration()",
+      "targetName": "TaskEaseTests",
+      "state": "Passed"
+    },
+    {
+      "identifier": "UsageAnalyticsTests/payloadHasOnlyDocumentedFieldsAndAnonymousProcessing()",
+      "targetName": "TaskEaseTests",
+      "state": "Passed"
+    },
+    {
+      "identifier": "UsageAnalyticsTests/cleanupAndQueuedWakeCannotRecreateData()",
+      "targetName": "TaskEaseTests",
+      "state": "Passed"
+    },
+    {
+      "identifier": "UsageAnalyticsTests/previousPendingEventsDecodeWithoutNewFields()",
+      "targetName": "TaskEaseTests",
+      "state": "Passed"
+    },
+    {
+      "identifier": "UsageAnalyticsTests/successIsPersistedAndRepeatedTriggersDoNotSendAgain()",
+      "targetName": "TaskEaseTests",
+      "state": "Passed"
+    },
+    {
+      "identifier": "UsageAnalyticsTests/heartbeatAndLocalDayBoundaryRespectTimezoneAndDST()",
+      "targetName": "TaskEaseTests",
+      "state": "Passed"
+    },
+    {
+      "identifier": "UsageAnalyticsTests/firstActivitySendsAndRecentSuccessIsDeduplicated()",
+      "targetName": "TaskEaseTests",
+      "state": "Passed"
+    },
+    {
+      "identifier": "UsageAnalyticsTests/disabledAndFixtureModesHaveNoScheduledWork()",
+      "targetName": "TaskEaseTests",
+      "state": "Passed"
+    },
+    {
+      "identifier": "UsageAnalyticsTests/retryIsBoundedAndEventRemainsStable()",
+      "targetName": "TaskEaseTests",
+      "state": "Passed"
+    },
+    {
+      "identifier": "UsageAnalyticsTests/HTTPTransportReportsAcceptedAndRejectedResponses()",
+      "targetName": "TaskEaseTests",
+      "state": "Passed"
+    },
+    {
+      "identifier": "UsageAnalyticsTests/rejectsUnexpectedReceiverOrAdministrativeKey()",
+      "targetName": "TaskEaseTests",
+      "state": "Passed"
+    },
+    {
+      "identifier": "UsageAnalyticsTests/failurePersistsStableRetryAndDisablingStopsIt()",
+      "targetName": "TaskEaseTests",
+      "state": "Passed"
+    },
+    {
+      "identifier": "AppDataStoreTests/eraseRemovesOwnedDataAndPreservesAdjacentData()",
+      "targetName": "TaskEaseTests",
+      "state": "Passed"
+    },
+    {
+      "identifier": "AppDataStoreTests/directoryFailureIsReportedBeforePreferencesAreRemoved()",
+      "targetName": "TaskEaseTests",
+      "state": "Passed"
+    },
     {
       "identifier": "TaskEaseUITests/testCloseAndReopenManagementKeepsSameApplication()",
       "targetName": "TaskEaseUITests",
@@ -32,6 +287,11 @@
       "state": "Passed"
     },
     {
+      "identifier": "TaskEaseUITests/testProcessInformationHeaderExpandsOnTextClick()",
+      "targetName": "TaskEaseUITests",
+      "state": "Passed"
+    },
+    {
       "identifier": "TaskEaseUITests/testSettingsThemeRefreshHelpAndAbout()",
       "targetName": "TaskEaseUITests",
       "state": "Passed"
@@ -44,241 +304,6 @@
     {
       "identifier": "TaskEaseUITests/testUsageAnalyticsConsentToggle()",
       "targetName": "TaskEaseUITests",
-      "state": "Passed"
-    },
-    {
-      "identifier": "ApplicationRulesTests/existingDisplayPreferencesKeepTheirValues()",
-      "targetName": "TaskEaseTests",
-      "state": "Passed"
-    },
-    {
-      "identifier": "ApplicationRulesTests/savedRuleRemainsEditableAfterApplicationExits()",
-      "targetName": "TaskEaseTests",
-      "state": "Passed"
-    },
-    {
-      "identifier": "ApplicationRulesTests/foregroundDisplayStopsPollingButKeepsControlDeadlines()",
-      "targetName": "TaskEaseTests",
-      "state": "Passed"
-    },
-    {
-      "identifier": "ApplicationRulesTests/emptyRulesCannotEnableAndRemovingLastActiveRuleTurnsOff()",
-      "targetName": "TaskEaseTests",
-      "state": "Passed"
-    },
-    {
-      "identifier": "ApplicationRulesTests/samplerResetStartsAFreshCPUBaseline()",
-      "targetName": "TaskEaseTests",
-      "state": "Passed"
-    },
-    {
-      "identifier": "ApplicationRulesTests/keepingOriginalBehaviorPreservesEditedEntryUntilRemoved()",
-      "targetName": "TaskEaseTests",
-      "state": "Passed"
-    },
-    {
-      "identifier": "ApplicationRulesTests/preferencesAndExistingRuleFormatRoundTrip()",
-      "targetName": "TaskEaseTests",
-      "state": "Passed"
-    },
-    {
-      "identifier": "ApplicationRulesTests/slowDisplayDoesNotDelayControlHeartbeatOrBackgroundDeadline()",
-      "targetName": "TaskEaseTests",
-      "state": "Passed"
-    },
-    {
-      "identifier": "ApplicationRulesTests/systemApplicationsAreHiddenByDefaultAndRemainReadOnly()",
-      "targetName": "TaskEaseTests",
-      "state": "Passed"
-    },
-    {
-      "identifier": "ApplicationRulesTests/userInstalledAppleApplicationIsVisibleInUserAppList()",
-      "targetName": "TaskEaseTests",
-      "state": "Passed"
-    },
-    {
-      "identifier": "ApplicationRulesTests/invisibleAndUnconfiguredApplicationHasNoPollingTimer()",
-      "targetName": "TaskEaseTests",
-      "state": "Passed"
-    },
-    {
-      "identifier": "ApplicationRulesTests/controlRefreshPreservesVisibleMetricsUntilDisplayRefresh()",
-      "targetName": "TaskEaseTests",
-      "state": "Passed"
-    },
-    {
-      "identifier": "TaskEaseTests/aReusedPIDIsADifferentProcess()",
-      "targetName": "TaskEaseTests",
-      "state": "Passed"
-    },
-    {
-      "identifier": "TaskEaseTests/backgroundGraceAndRapidReturn()",
-      "targetName": "TaskEaseTests",
-      "state": "Passed"
-    },
-    {
-      "identifier": "TaskEaseTests/disabledAndProtectedAppsNeverControl()",
-      "targetName": "TaskEaseTests",
-      "state": "Passed"
-    },
-    {
-      "identifier": "TaskEaseTests/hiddenApplicationCanBecomeBackground()",
-      "targetName": "TaskEaseTests",
-      "state": "Passed"
-    },
-    {
-      "identifier": "TaskEaseTests/budgetTracksAggregateCPUAndRepaysOvershoot()",
-      "targetName": "TaskEaseTests",
-      "state": "Passed"
-    },
-    {
-      "identifier": "TaskEaseTests/foregroundAlwaysRestores()",
-      "targetName": "TaskEaseTests",
-      "state": "Passed"
-    },
-    {
-      "identifier": "TaskEaseTests/inactiveRuleStaysUnmanaged()",
-      "targetName": "TaskEaseTests",
-      "state": "Passed"
-    },
-    {
-      "identifier": "TaskEaseTests/idleTimeDoesNotAccumulateAnUnlimitedBurst()",
-      "targetName": "TaskEaseTests",
-      "state": "Passed"
-    },
-    {
-      "identifier": "TaskEaseTests/storedRulesClampValuesAndRejectCorruption()",
-      "targetName": "TaskEaseTests",
-      "state": "Passed"
-    },
-    {
-      "identifier": "AppDataStoreTests/directoryFailureIsReportedBeforePreferencesAreRemoved()",
-      "targetName": "TaskEaseTests",
-      "state": "Passed"
-    },
-    {
-      "identifier": "AppDataStoreTests/eraseRemovesOwnedDataAndPreservesAdjacentData()",
-      "targetName": "TaskEaseTests",
-      "state": "Passed"
-    },
-    {
-      "identifier": "NetworkingTests/networkRuleValidationAndPersistenceRoundTrip()",
-      "targetName": "TaskEaseTests",
-      "state": "Passed"
-    },
-    {
-      "identifier": "NetworkingTests/CSVUsesHeaderAndLastPIDSeparator()",
-      "targetName": "TaskEaseTests",
-      "state": "Passed"
-    },
-    {
-      "identifier": "NetworkingTests/networkPermissionsAndScopeDetermineStatus()",
-      "targetName": "TaskEaseTests",
-      "state": "Passed"
-    },
-    {
-      "identifier": "NetworkingTests/removingNetworkRulePreservesCPURule()",
-      "targetName": "TaskEaseTests",
-      "state": "Passed"
-    },
-    {
-      "identifier": "NetworkingTests/bandwidthCreditIsSharedAndIdleBurstIsBounded()",
-      "targetName": "TaskEaseTests",
-      "state": "Passed"
-    },
-    {
-      "identifier": "NetworkingTests/ratesAggregateMembersAndResetForReusedPIDs()",
-      "targetName": "TaskEaseTests",
-      "state": "Passed"
-    },
-    {
-      "identifier": "NetworkingTests/networkRulesRemainEditableOfflineAndSeparateFromCPU()",
-      "targetName": "TaskEaseTests",
-      "state": "Passed"
-    },
-    {
-      "identifier": "NetworkingTests/nativeSnapshotReaderRunsAndFinishes()",
-      "targetName": "TaskEaseTests",
-      "state": "Passed"
-    },
-    {
-      "identifier": "UsageAnalyticsTests/cleanupAndQueuedWakeCannotRecreateData()",
-      "targetName": "TaskEaseTests",
-      "state": "Passed"
-    },
-    {
-      "identifier": "UsageAnalyticsTests/daylightSavingAndTimezoneUseCalendarNoon()",
-      "targetName": "TaskEaseTests",
-      "state": "Passed"
-    },
-    {
-      "identifier": "UsageAnalyticsTests/waitsUntilLocalNoonAndSkipsSuccessfulDay()",
-      "targetName": "TaskEaseTests",
-      "state": "Passed"
-    },
-    {
-      "identifier": "UsageAnalyticsTests/retryIsBoundedAndEventRemainsStable()",
-      "targetName": "TaskEaseTests",
-      "state": "Passed"
-    },
-    {
-      "identifier": "UsageAnalyticsTests/failurePersistsStableRetryAndDisablingStopsIt()",
-      "targetName": "TaskEaseTests",
-      "state": "Passed"
-    },
-    {
-      "identifier": "UsageAnalyticsTests/payloadHasOnlyDocumentedFieldsAndAnonymousProcessing()",
-      "targetName": "TaskEaseTests",
-      "state": "Passed"
-    },
-    {
-      "identifier": "UsageAnalyticsTests/disabledAndFixtureModesHaveNoScheduledWork()",
-      "targetName": "TaskEaseTests",
-      "state": "Passed"
-    },
-    {
-      "identifier": "UsageAnalyticsTests/rejectsUnexpectedReceiverOrAdministrativeKey()",
-      "targetName": "TaskEaseTests",
-      "state": "Passed"
-    },
-    {
-      "identifier": "UsageAnalyticsTests/HTTPTransportReportsAcceptedAndRejectedResponses()",
-      "targetName": "TaskEaseTests",
-      "state": "Passed"
-    },
-    {
-      "identifier": "UsageAnalyticsTests/successIsPersistedAndRepeatedTriggersDoNotSendAgain()",
-      "targetName": "TaskEaseTests",
-      "state": "Passed"
-    },
-    {
-      "identifier": "ApplicationLifecycleTests/utilityWindowKeepsDockEntryUntilAllApplicationWindowsClose()",
-      "targetName": "TaskEaseTests",
-      "state": "Passed"
-    },
-    {
-      "identifier": "ApplicationLifecycleTests/oneLockOwnerAndReacquireAfterClose()",
-      "targetName": "TaskEaseTests",
-      "state": "Passed"
-    },
-    {
-      "identifier": "ApplicationLifecycleTests/managementWindowReusesItsWindowAndChangesDockPolicy()",
-      "targetName": "TaskEaseTests",
-      "state": "Passed"
-    },
-    {
-      "identifier": "ApplicationLifecycleTests/menuBarImageHasARealPointSize()",
-      "targetName": "TaskEaseTests",
-      "state": "Passed"
-    },
-    {
-      "identifier": "ApplicationLifecycleTests/previewAndTestLaunchesHaveNoStatusItem()",
-      "targetName": "TaskEaseTests",
-      "state": "Passed"
-    },
-    {
-      "identifier": "ApplicationLifecycleTests/separateValidationScopesCanRunIndependently()",
-      "targetName": "TaskEaseTests",
       "state": "Passed"
     }
   ]

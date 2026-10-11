@@ -97,7 +97,7 @@ struct ContentView: View {
                                 VStack(alignment: .trailing, spacing: 4) {
                                     Text(Display.percent(app.cpuPercent)).monospacedDigit()
                                     Text(Display.memory(app)).font(.caption).foregroundStyle(.secondary).monospacedDigit()
-                                    if model.preferences.showNetworkActivity {
+                                    if model.preferences.networkActivityVisible {
                                         Text("↓ " + Display.networkRate(app.network?.receiveRate) +
                                              "  ↑ " + Display.networkRate(app.network?.sendRate))
                                             .font(.caption2).foregroundStyle(.secondary).monospacedDigit()

@@ -17,7 +17,7 @@ enum UtilityWindowKind: String {
         switch self {
         case .settings: NSSize(width: 560, height: 700)
         case .help: NSSize(width: 680, height: 580)
-        case .about: NSSize(width: 440, height: 440)
+        case .about: NSSize(width: 580, height: 620)
         case .license: NSSize(width: 680, height: 600)
         }
     }
@@ -38,12 +38,13 @@ final class UtilityWindowController: NSWindowController, NSWindowDelegate {
                               styleMask: style, backing: .buffered, defer: false)
         window.title = kind.title
         window.identifier = NSUserInterfaceItemIdentifier("utility-\(kind.rawValue)")
-        window.minSize = kind.size
+        window.contentMinSize = kind.size
         window.isReleasedWhenClosed = false
         window.collectionBehavior = [.moveToActiveSpace, .fullScreenAuxiliary]
         let hosting = NSHostingController(rootView: UtilityRoot(kind: kind, model: model))
         hosting.sizingOptions = []
         window.contentViewController = hosting
+        window.setContentSize(kind.size)
         super.init(window: window)
         window.delegate = self
         window.center()
@@ -74,6 +75,9 @@ private struct UtilityRoot: View {
             case .about: AboutView(model: model)
             case .license: LicenseView()
             }
-        }.preferredColorScheme(model.preferences.theme.colorScheme)
+        }
+        // 托管视图的最小布局约束与窗口内容尺寸一致，防止关于窗口被压缩。
+        .frame(minWidth: kind.size.width, minHeight: kind.size.height)
+        .preferredColorScheme(model.preferences.theme.colorScheme)
     }
 }

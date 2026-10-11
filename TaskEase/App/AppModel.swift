@@ -61,7 +61,7 @@ final class AppModel {
                 networkRuleCount: self.networkRules.values.filter(\.isActive).count,
                 managementEnabled: self.enabled, theme: self.preferences.theme.rawValue,
                 refreshSeconds: self.preferences.refreshInterval.rawValue,
-                networkDisplayEnabled: self.preferences.showNetworkActivity,
+                networkDisplayEnabled: self.preferences.networkActivityVisible,
                 foregroundRefreshOnly: self.preferences.refreshOnlyInForeground)
         }
         controller.onError = { [weak self] message in
@@ -89,10 +89,13 @@ final class AppModel {
     var canEnable: Bool { configuredCount > 0 && !isShutdown }
     var hasScheduledRefresh: Bool { timer != nil }
 
-    var savedRuleCount: Int { Set(rules.keys).union(networkRules.keys).count }
+    private var visibleRuleIDs: Set<String> {
+        Set(rules.keys).union(preferences.networkFeaturesEnabled ? Set(networkRules.keys) : [])
+    }
+    var savedRuleCount: Int { visibleRuleIDs.count }
 
     var configuredApps: [AppReading] {
-        Set(rules.keys).union(networkRules.keys).map { id in
+        visibleRuleIDs.map { id in
             apps.first { $0.id == id } ?? .offline(id: id, metadata: savedApplications[id])
         }.sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
     }
@@ -298,7 +301,7 @@ final class AppModel {
         }
         let ids = display ? nil : Set(rules.filter { $0.value.isActive }.keys)
         let running = RunningApplication.capture(showSystemApps: display && preferences.showSystemApps, only: ids)
-        let includeNetwork = display && preferences.showNetworkActivity
+        let includeNetwork = display && preferences.networkActivityVisible
         isRefreshing = true
         refreshTask = Task(priority: .utility) { [weak self, monitor] in
             let snapshot = await monitor.sample(running, includeSystem: display, includeNetwork: includeNetwork)
@@ -428,7 +431,7 @@ final class AppModel {
         managementDisplayPaused = !preview && managementIsOpen && preferences.refreshOnlyInForeground && !displayIsVisible
         timer?.invalidate()
         timer = nil
-        if !preview && (!displayIsVisible || !preferences.showNetworkActivity) {
+        if !preview && (!displayIsVisible || !preferences.networkActivityVisible) {
             Task { await monitor.cancelNetworkSampling() }
         }
         guard !preview, !sleeping, !isShutdown else { return }

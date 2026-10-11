@@ -42,11 +42,13 @@ struct RuleEditor: View {
                     Label(app.isSystemApp ? "系统应用只用于观察。" : "该应用当前只支持占用观察。",
                           systemImage: "lock").font(.callout).foregroundStyle(.secondary)
                 }
-                Divider()
-                NetworkRuleEditor(model: model, app: app)
+                if model.preferences.networkFeaturesEnabled {
+                    Divider()
+                    NetworkRuleEditor(model: model, app: app)
+                }
                 if app.isRunning {
                     Divider()
-                    if model.preferences.showNetworkActivity {
+                    if model.preferences.networkActivityVisible {
                         VStack(alignment: .leading, spacing: 10) {
                             Text("网络收发").font(.headline)
                             readingRow("接收速度", value: Display.networkRate(app.network?.receiveRate))
@@ -73,7 +75,7 @@ struct RuleEditor: View {
                                 Spacer()
                                 Text(Display.bytes(process.memoryBytes))
                             }.font(.caption).monospacedDigit()
-                            if model.preferences.showNetworkActivity {
+                            if model.preferences.networkActivityVisible {
                                 HStack {
                                     Text("接收 " + Display.networkRate(app.processNetwork[process.identity]?.receiveRate))
                                     Spacer()
@@ -82,7 +84,7 @@ struct RuleEditor: View {
                             }
                         }
                     }.padding(.top, 8)
-                }.foregroundStyle(.secondary)
+                }.disclosureGroupStyle(FullRowDisclosureStyle()).foregroundStyle(.secondary)
             }.padding(24)
         }
     }
