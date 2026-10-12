@@ -70,8 +70,9 @@ struct ContentView: View {
                 emptyList.frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
                 List(selection: $model.selectedID) {
+                    let key = model.effectiveSortKey
+                    let usage = AppUsage(key, scale: model.preferences.cpuScale, apps: model.apps)
                     ForEach(model.filteredApps) { app in
-                        let key = model.effectiveSortKey
                         HStack(spacing: 10) {
                             AppIcon(app: app, size: 30)
                             VStack(alignment: .leading, spacing: 5) {
@@ -86,8 +87,8 @@ struct ContentView: View {
                             Spacer()
                             if app.isRunning {
                                 VStack(alignment: .trailing, spacing: 4) {
-                                    Text(AppUsage.value(app, key, scale: model.preferences.cpuScale)).monospacedDigit()
-                                    Text(AppUsage.secondary(app, key, scale: model.preferences.cpuScale))
+                                    Text(usage.value(app)).monospacedDigit()
+                                    Text(usage.secondary(app))
                                         .font(.caption).foregroundStyle(.secondary).monospacedDigit()
                                     if model.preferences.networkActivityVisible && key != .network {
                                         Text("↓ " + Display.networkRate(app.network?.receiveRate) +
@@ -98,9 +99,9 @@ struct ContentView: View {
                             }
                         }
                         .padding(.vertical, 8).padding(.horizontal, 8)
-                        .background(UsageFill(fraction: app.isRunning ? AppUsage.fraction(app, key, scale: model.preferences.cpuScale) : nil))
+                        .background(UsageFill(fraction: usage.fraction(app)))
                         .contentShape(Rectangle()).pointingHand()
-                        .listRowSeparator(.hidden)
+                        .listRowSeparator(.visible)
                         .tag(app.id)
                     }
                 }.listStyle(.inset)

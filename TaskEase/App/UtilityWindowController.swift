@@ -23,6 +23,17 @@ enum UtilityWindowKind: String {
         case .statistics: NSSize(width: 580, height: 460)
         }
     }
+
+    /// 可调整的窗口允许缩小，内容随窗口滚动；关于窗口固定尺寸。
+    var minimumSize: NSSize {
+        switch self {
+        case .settings: NSSize(width: 480, height: 360)
+        case .help: NSSize(width: 460, height: 360)
+        case .about: size
+        case .license: NSSize(width: 480, height: 360)
+        case .statistics: size
+        }
+    }
 }
 
 /// 按用途复用设置、帮助、关于和许可证窗口。
@@ -40,7 +51,7 @@ final class UtilityWindowController: NSWindowController, NSWindowDelegate {
                               styleMask: style, backing: .buffered, defer: false)
         window.title = kind.title
         window.identifier = NSUserInterfaceItemIdentifier("utility-\(kind.rawValue)")
-        window.contentMinSize = kind.size
+        window.contentMinSize = kind.minimumSize
         window.isReleasedWhenClosed = false
         window.collectionBehavior = [.moveToActiveSpace, .fullScreenAuxiliary]
         let hosting = NSHostingController(rootView: UtilityRoot(kind: kind, model: model))
@@ -79,7 +90,8 @@ private struct UtilityRoot: View {
             case .statistics: UsageStatisticsView(model: model)
             }
         }
-        // 托管视图的最小布局约束与窗口内容尺寸一致，防止关于窗口被压缩。
-        .frame(minWidth: kind.size.width, minHeight: kind.size.height)
+        // 托管视图的最小布局约束与窗口最小尺寸一致，防止关于窗口被压缩，其余窗口内容可滚动。
+        .frame(minWidth: kind.minimumSize.width, maxWidth: .infinity,
+               minHeight: kind.minimumSize.height, maxHeight: .infinity)
     }
 }

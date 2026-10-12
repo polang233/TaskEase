@@ -23,15 +23,16 @@ struct MenuPanel: View {
                     SortMenu(model: model)
                 }
                 let key = model.effectiveSortKey
+                let usage = AppUsage(key, scale: model.preferences.cpuScale, apps: model.apps)
                 ForEach(Array(AppModel.sorted(model.visibleRunningApps, by: key).prefix(5))) { app in
                     HStack(spacing: 9) {
                         AppIcon(app: app, size: 24)
                         Text(app.name).lineLimit(1)
                         Spacer()
-                        Text(AppUsage.value(app, key, scale: model.preferences.cpuScale)).monospacedDigit()
+                        Text(usage.value(app)).monospacedDigit()
                     }
                     .padding(.vertical, 5).padding(.horizontal, 6)
-                    .background(UsageFill(fraction: AppUsage.fraction(app, key, scale: model.preferences.cpuScale)))
+                    .background(UsageFill(fraction: usage.fraction(app)))
                 }
                 if model.visibleRunningApps.isEmpty {
                     Text(model.isRefreshing ? "正在读取应用占用…" : "当前没有可显示的应用")

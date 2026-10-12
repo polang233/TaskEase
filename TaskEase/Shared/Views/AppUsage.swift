@@ -1,49 +1,70 @@
 import SwiftUI
 
 /// 列表与菜单栏共用的应用占用数值、占用比例和排序菜单。
+/// 占用条与文字同一口径：CPU 按当前显示口径，内存为物理内存占比，GPU 为执行时间占比；
+/// 磁盘和网络没有固定上限，取运行中应用合计里的占比。
 @MainActor
-enum AppUsage {
-    /// 满格参考：CPU 单核口径为一个核心、整机口径为全部核心；内存为物理内存总量；GPU 100%；
-    /// 磁盘 100 MB/s；网络 10 MB/s。
-    private static let diskScale = 100_000_000.0
-    private static let networkScale = 10_000_000.0
+struct AppUsage {
+    let key: AppSortKey
+    let scale: CPUScale
+    private let diskTotal: Double
+    private let networkTotal: Double
+
+    /// 合计过小时按下限计算，避免几 KB/s 的零散读写也铺满整行。
+    private static let diskFloor = 1_000_000.0
+    private static let networkFloor = 100_000.0
     private static var cores: Double { Double(max(1, ProcessInfo.processInfo.activeProcessorCount)) }
+
+    /// `apps` 为参与比较的全部运行中应用，不受搜索与系统应用筛选影响。
+    init(_ key: AppSortKey, scale: CPUScale, apps: [AppReading]) {
+        self.key = key
+        self.scale = scale
+        let running = apps.filter(\.isRunning)
+        diskTotal = key == .disk ? running.reduce(0) { $0 + Self.disk($1) } : 0
+        networkTotal = key == .network ? running.reduce(0) { $0 + (Self.network($1) ?? 0) } : 0
+    }
 
     static func cpu(_ app: AppReading, scale: CPUScale) -> Double? {
         scale == .machine ? app.cpuPercent.map { $0 / cores } : app.cpuPercent
     }
 
-    static func value(_ app: AppReading, _ key: AppSortKey, scale: CPUScale) -> String {
+    func value(_ app: AppReading) -> String {
         switch key {
         case .memory: Display.memory(app)
         case .gpu: Display.percent(app.gpuPercent)
-        case .disk: Display.rate(app.readRate + app.writeRate)
-        case .network: Display.networkRate(networkTotal(app))
-        case .cpu, .name: Display.percent(cpu(app, scale: scale))
+        case .disk: Display.rate(Self.disk(app))
+        case .network: Display.networkRate(Self.network(app))
+        case .cpu, .name: Display.percent(Self.cpu(app, scale: scale))
         }
     }
 
-    static func secondary(_ app: AppReading, _ key: AppSortKey, scale: CPUScale) -> String {
+    /// 次要一行说明当前指标的构成或占比，与占用条对应。
+    func secondary(_ app: AppReading) -> String {
         switch key {
         case .cpu, .name: Display.memory(app)
-        default: "CPU " + Display.percent(cpu(app, scale: scale))
+        case .memory: "占物理内存 " + Display.percent(fraction(app).map { $0 * 100 })
+        case .gpu: "CPU " + Display.percent(Self.cpu(app, scale: scale))
+        case .disk: "读 " + Display.rate(app.readRate) + "  写 " + Display.rate(app.writeRate)
+        case .network: "↓ " + Display.networkRate(app.network?.receiveRate) + "  ↑ " + Display.networkRate(app.network?.sendRate)
         }
     }
 
-    static func fraction(_ app: AppReading, _ key: AppSortKey, scale: CPUScale) -> Double? {
+    func fraction(_ app: AppReading) -> Double? {
         guard app.isRunning else { return nil }
         switch key {
-        case .cpu, .name: return cpu(app, scale: scale).map { $0 / 100 }
+        case .cpu, .name: return Self.cpu(app, scale: scale).map { $0 / 100 }
         case .memory:
             let total = Double(ProcessInfo.processInfo.physicalMemory)
             return total > 0 && app.memoryBytes > 0 ? Double(app.memoryBytes) / total : nil
         case .gpu: return app.gpuPercent.map { $0 / 100 }
-        case .disk: return (app.readRate + app.writeRate) / diskScale
-        case .network: return networkTotal(app).map { $0 / networkScale }
+        case .disk: return Self.disk(app) / max(diskTotal, Self.diskFloor)
+        case .network: return Self.network(app).map { $0 / max(networkTotal, Self.networkFloor) }
         }
     }
 
-    private static func networkTotal(_ app: AppReading) -> Double? {
+    private static func disk(_ app: AppReading) -> Double { app.readRate + app.writeRate }
+
+    private static func network(_ app: AppReading) -> Double? {
         app.network.map { ($0.receiveRate ?? 0) + ($0.sendRate ?? 0) }
     }
 }
