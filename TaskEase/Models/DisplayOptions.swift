@@ -6,9 +6,9 @@ enum MetricDisplayStyle: String, Codable, CaseIterable, Sendable {
 
     var title: String {
         switch self {
-        case .number: "数字"
-        case .ring: "圆环"
-        case .bar: "进度条"
+        case .number: String(localized: "style.number")
+        case .ring: String(localized: "style.ring")
+        case .bar: String(localized: "style.bar")
         }
     }
 }
@@ -20,11 +20,11 @@ enum AppSortKey: String, Codable, CaseIterable, Sendable {
     var title: String {
         switch self {
         case .cpu: "CPU"
-        case .memory: "内存"
+        case .memory: String(localized: "metric.memory")
         case .gpu: "GPU"
-        case .disk: "磁盘"
-        case .network: "网络"
-        case .name: "名称"
+        case .disk: String(localized: "sort.disk")
+        case .network: String(localized: "sort.network")
+        case .name: String(localized: "sort.name")
         }
     }
 }
@@ -35,8 +35,8 @@ enum CPUScale: String, Codable, CaseIterable, Sendable {
 
     var title: String {
         switch self {
-        case .core: "单核"
-        case .machine: "整机"
+        case .core: String(localized: "cpuScale.core")
+        case .machine: String(localized: "cpuScale.machine")
         }
     }
 }

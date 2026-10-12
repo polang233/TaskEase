@@ -4,7 +4,7 @@ import Foundation
 struct SystemReading: Equatable, Sendable {
     var cpuPercent: Double?
     var gpuPercent: Double?
-    var thermalLabel: String = "正常"
+    var thermal: ThermalLevel = .nominal
     var memory: SystemMemoryReading?
     var network: SystemNetworkReading?
     var temperatureCelsius: Double?
@@ -72,8 +72,8 @@ enum ApplicationList: String, CaseIterable, Sendable {
 
     var title: String {
         switch self {
-        case .running: "运行中的应用"
-        case .configured: "已配置规则"
+        case .running: String(localized: "list.running")
+        case .configured: String(localized: "list.configured")
         }
     }
 }

@@ -58,7 +58,7 @@ actor ProcessMonitor {
         guard let counters = await networkMonitor.sample(pids: Set(identities.keys)) else {
             networkSampler.reset()
             return MonitoringSnapshot(apps: snapshot.apps, system: snapshot.system,
-                networkStatus: .unavailable("暂时无法读取网络统计"))
+                networkStatus: .unavailable(String(localized: "network.monitor.unavailable")))
         }
         // nettop 输出仅用 PID 标识，完成后再次验证启动时间，排除读取期间的 PID 复用。
         let verified = counters.filter { pid, _ in
@@ -233,11 +233,11 @@ struct ProcessSampler {
             system.network = systemNetwork.sample(counters, now: now)
         } else { systemNetwork.reset() }
         switch ProcessInfo.processInfo.thermalState {
-        case .nominal: system.thermalLabel = "正常"
-        case .fair: system.thermalLabel = "轻度升温"
-        case .serious: system.thermalLabel = "较高"
-        case .critical: system.thermalLabel = "严重"
-        @unknown default: system.thermalLabel = "未知"
+        case .nominal: system.thermal = .nominal
+        case .fair: system.thermal = .fair
+        case .serious: system.thermal = .serious
+        case .critical: system.thermal = .critical
+        @unknown default: system.thermal = .unknown
         }
         return system
     }

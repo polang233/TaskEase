@@ -33,7 +33,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     static func showStartupError(_ error: Error) {
         let alert = NSAlert()
-        alert.messageText = "轻程无法启动"
+        alert.messageText = String(localized: "error.launch.title")
         alert.informativeText = error.localizedDescription
         alert.runModal()
     }
@@ -63,26 +63,26 @@ struct TaskEaseApp: App {
         MenuBarExtra(isInserted: .constant(LaunchContext.current.hasStatusItem)) {
             MenuPanel(model: delegate.model)
         } label: {
-            Image(nsImage: MenuBarIcon.image).accessibilityLabel("轻程")
+            Image(nsImage: MenuBarIcon.image).accessibilityLabel("app.name")
         }.menuBarExtraStyle(.window)
             .commands {
                 CommandGroup(replacing: .appInfo) {
-                    Button("关于轻程") { delegate.model.showUtility(.about) }
+                    Button("menu.about") { delegate.model.showUtility(.about) }
                 }
                 CommandGroup(after: .appInfo) {
-                    Button("应用管理") { delegate.model.showManagement() }
+                    Button("menu.manageApps") { delegate.model.showManagement() }
                         .keyboardShortcut("1", modifiers: .command)
                 }
                 CommandGroup(replacing: .appSettings) {
-                    Button("设置…") { delegate.model.showUtility(.settings) }
+                    Button("menu.settings") { delegate.model.showUtility(.settings) }
                         .keyboardShortcut(",", modifiers: .command)
                 }
                 CommandGroup(after: .windowList) {
-                    Button("关闭窗口") { NSApp.keyWindow?.performClose(nil) }
+                    Button("menu.closeWindow") { NSApp.keyWindow?.performClose(nil) }
                         .keyboardShortcut("w", modifiers: .command)
                 }
                 CommandGroup(replacing: .help) {
-                    Button("轻程帮助") { delegate.model.showUtility(.help) }
+                    Button("menu.help") { delegate.model.showUtility(.help) }
                         .keyboardShortcut("?", modifiers: .command)
                 }
             }

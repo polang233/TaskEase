@@ -35,7 +35,7 @@ struct PreviewRenderer {
             MetricDetails(metric: .memory, reading: model.system)
         }.padding(16), size: NSSize(width: 732, height: 190), appearance: .aqua,
             to: destination.appendingPathComponent("metric-details-preview.png"))
-        let busy = SystemReading(cpuPercent: 23, gpuPercent: 61, thermalLabel: "正常",
+        let busy = SystemReading(cpuPercent: 23, gpuPercent: 61, thermal: .nominal,
             memory: .init(usedBytes: 19 * 1_073_741_824, totalBytes: 24 * 1_073_741_824, compressedBytes: 2 * 1_073_741_824),
             network: .init(receiveRate: 12_345_678, sendRate: 345_678), temperatureCelsius: 78.4)
         for (name, appearance) in [("light", NSAppearance.Name.aqua), ("dark", .darkAqua)] {
@@ -48,7 +48,7 @@ struct PreviewRenderer {
                 to: destination.appendingPathComponent("metric-styles-\(name).png"))
         }
         model.apply(MonitoringSnapshot(apps: AppModel.exampleApps,
-            system: SystemReading(cpuPercent: 92, gpuPercent: 66, thermalLabel: "较高",
+            system: SystemReading(cpuPercent: 92, gpuPercent: 66, thermal: .serious,
                 memory: .init(usedBytes: 21 * 1_073_741_824, totalBytes: 24 * 1_073_741_824, compressedBytes: 3 * 1_073_741_824),
                 network: .init(receiveRate: 95_123_456, sendRate: 12_345_678), temperatureCelsius: 86.7)))
         try save(SystemStrip(reading: model.system, isPaused: true), size: NSSize(width: 840, height: 42),

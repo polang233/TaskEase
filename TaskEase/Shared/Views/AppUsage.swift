@@ -42,9 +42,9 @@ struct AppUsage {
     func secondary(_ app: AppReading) -> String {
         switch key {
         case .cpu, .name: Display.memory(app)
-        case .memory: "占物理内存 " + Display.percent(fraction(app).map { $0 * 100 })
+        case .memory: String(localized: "usage.memoryShare \(Display.percent(fraction(app).map { $0 * 100 }))")
         case .gpu: "CPU " + Display.percent(Self.cpu(app, scale: scale))
-        case .disk: "读 " + Display.rate(app.readRate) + "  写 " + Display.rate(app.writeRate)
+        case .disk: String(localized: "usage.diskReadWrite \(Display.rate(app.readRate)) \(Display.rate(app.writeRate))")
         case .network: "↓ " + Display.networkRate(app.network?.receiveRate) + "  ↑ " + Display.networkRate(app.network?.sendRate)
         }
     }
@@ -94,21 +94,21 @@ struct SortMenu: View {
 
     var body: some View {
         Menu {
-            Picker("排序", selection: Binding(get: { model.effectiveSortKey },
+            Picker("sort.title", selection: Binding(get: { model.effectiveSortKey },
                                             set: { key in model.updatePreferences { $0.sortKey = key } })) {
                 ForEach(model.sortKeys, id: \.self) { Text($0.title).tag($0) }
             }.pickerStyle(.inline)
             if showsSystemToggle && model.applicationList == .running {
                 Divider()
-                Toggle("显示系统应用", isOn: Binding(get: { model.preferences.showSystemApps },
+                Toggle("settings.showSystemApps", isOn: Binding(get: { model.preferences.showSystemApps },
                     set: { value in model.updatePreferences { $0.showSystemApps = value } }))
                     .accessibilityIdentifier("show-system-apps")
             }
         } label: {
-            Label("按 \(model.effectiveSortKey.title)", systemImage: "arrow.up.arrow.down")
+            Label("sort.by \(model.effectiveSortKey.title)", systemImage: "arrow.up.arrow.down")
                 .labelStyle(.titleAndIcon)
         }
         .menuStyle(.button).buttonStyle(.bordered).controlSize(.small).fixedSize()
-        .pointingHand().help("排序与筛选").accessibilityIdentifier("app-sort")
+        .pointingHand().help("sort.help").accessibilityIdentifier("app-sort")
     }
 }

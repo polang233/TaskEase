@@ -80,7 +80,7 @@ struct BackgroundControlToggle: View {
     @State private var anchor: WeakAnchor?
 
     var body: some View {
-        Toggle("启用后台限制", isOn: Binding(get: { model.enabled }, set: { model.setEnabled($0) }))
+        Toggle("toggle.enable", isOn: Binding(get: { model.enabled }, set: { model.setEnabled($0) }))
             .toggleStyle(.switch)
             .disabled(!model.canEnable)
             .accessibilityIdentifier("management-toggle")
@@ -93,7 +93,7 @@ struct BackgroundControlToggle: View {
                         Color.clear.contentShape(Rectangle())
                     }
                     .buttonStyle(.plain).pointingHand()
-                    .accessibilityLabel("启用后台限制的配置提示")
+                    .accessibilityLabel("toggle.enable.hint.a11y")
                     .accessibilityIdentifier("management-unavailable")
                     .onHover { hint.anchorHover($0) }
                 }
@@ -107,7 +107,7 @@ struct BackgroundControlToggle: View {
     private func showHint() {
         guard let view = anchor?.view else { return }
         hint.show(anchor: view, content: AnyView(
-            Text("先为应用设置后台规则").font(.callout).padding(.horizontal, 14).padding(.vertical, 10)
+            Text("toggle.enable.hint").font(.callout).padding(.horizontal, 14).padding(.vertical, 10)
                 .accessibilityIdentifier("configure-rules-hint")))
         hint.anchorHover(true)
     }

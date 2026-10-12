@@ -12,19 +12,19 @@ struct ContentView: View {
             HStack(spacing: 12) {
                 HStack(spacing: 8) {
                     BrandMark(size: 24)
-                    Text("轻程").font(.title3.weight(.semibold))
-                    Text("TaskEase \(AppVersion.short)").font(.caption).foregroundStyle(.secondary)
+                    Text("app.name").font(.title3.weight(.semibold))
+                    Text("header.version \(AppVersion.short)").font(.caption).foregroundStyle(.secondary)
                         .padding(.top, 2)
                 }.modifier(WindowHeaderDrag(enabled: titlebar != nil))
                 Color.clear.frame(maxWidth: .infinity).frame(height: 32)
                     .modifier(WindowHeaderDrag(enabled: titlebar != nil))
                 if model.managedCount > 0 {
-                    Text("\(model.managedCount) 个应用限制生效").font(.callout).foregroundStyle(.secondary)
+                    Text("header.activeLimits \(model.managedCount)").font(.callout).foregroundStyle(.secondary)
                 }
                 BackgroundControlToggle(model: model)
-                Button("设置", systemImage: "gearshape") { model.showUtility(.settings) }
+                Button("common.settings", systemImage: "gearshape") { model.showUtility(.settings) }
                     .labelStyle(.iconOnly).buttonStyle(.borderless).font(.title3)
-                    .help("设置").pointingHand().accessibilityIdentifier("open-settings")
+                    .help("common.settings").pointingHand().accessibilityIdentifier("open-settings")
             }.padding(.leading, titlebar.map { $0.leading + 16 } ?? 20)
                 .padding(.trailing, 20).padding(.vertical, titlebar == nil ? 14 : 0)
                 .frame(height: titlebar?.height)
@@ -36,7 +36,7 @@ struct ContentView: View {
                     Image(systemName: "exclamationmark.triangle").foregroundStyle(.orange)
                     Text(error).font(.callout)
                     Spacer()
-                    Button("恢复并重试") { model.setEnabled(true) }.disabled(!model.canEnable)
+                    Button("error.recoverRetry") { model.setEnabled(true) }.disabled(!model.canEnable)
                 }.padding(12).background(Color.orange.opacity(0.08))
             }
             HSplitView {
@@ -45,8 +45,8 @@ struct ContentView: View {
                     if let app = model.selectedApp {
                         RuleEditor(model: model, app: app)
                     } else {
-                        ContentUnavailableView("选择一个应用", systemImage: "slider.horizontal.3",
-                                               description: Text("查看占用并设置后台规则。"))
+                        ContentUnavailableView("empty.selectApp.title", systemImage: "slider.horizontal.3",
+                                               description: Text("empty.selectApp.message"))
                     }
                 }.frame(minWidth: 360, idealWidth: 440, maxWidth: .infinity, maxHeight: .infinity)
             }
@@ -80,7 +80,7 @@ struct ContentView: View {
                                 HStack(spacing: 7) {
                                     StatusLabel(status: app.status)
                                     if app.isRunning && !app.targets.isEmpty {
-                                        Text("\(app.targets.count) 个进程").font(.caption).foregroundStyle(.tertiary)
+                                        Text("list.processes \(app.targets.count)").font(.caption).foregroundStyle(.tertiary)
                                     }
                                 }
                             }
@@ -110,7 +110,7 @@ struct ContentView: View {
     }
 
     private var listPicker: some View {
-        Picker("应用列表", selection: Binding(get: { model.applicationList }, set: { model.setApplicationList($0) })) {
+        Picker("list.picker", selection: Binding(get: { model.applicationList }, set: { model.setApplicationList($0) })) {
             ForEach(ApplicationList.allCases, id: \.self) { Text($0.title).tag($0) }
         }.selectionRail().labelsHidden().fixedSize()
             .accessibilityIdentifier("application-list")
@@ -119,11 +119,11 @@ struct ContentView: View {
     private var searchField: some View {
         HStack(spacing: 6) {
             Image(systemName: "magnifyingglass").foregroundStyle(.secondary)
-            TextField("搜索 \(model.filteredApps.count) 个应用", text: $model.search).textFieldStyle(.plain)
+            TextField("list.search \(model.filteredApps.count)", text: $model.search).textFieldStyle(.plain)
                 .focused($searchFocused)
                 .accessibilityIdentifier("app-search")
             if !model.search.isEmpty {
-                Button("清除搜索", systemImage: "xmark.circle.fill") { model.search = "" }
+                Button("list.clearSearch", systemImage: "xmark.circle.fill") { model.search = "" }
                     .labelStyle(.iconOnly).buttonStyle(.plain).foregroundStyle(.secondary).pointingHand()
             }
         }
@@ -138,17 +138,17 @@ struct ContentView: View {
     @ViewBuilder private var emptyList: some View {
         if model.applicationList == .configured && model.savedRuleCount == 0 {
             ContentUnavailableView {
-                Label("还没有后台规则", systemImage: "slider.horizontal.3")
+                Label("empty.noRules.title", systemImage: "slider.horizontal.3")
             } description: {
-                Text("选择一个运行中的应用，为它开启后台限制。")
+                Text("empty.noRules.message")
             } actions: {
-                Button("选择应用") { model.setApplicationList(.running) }
+                Button("empty.noRules.action") { model.setApplicationList(.running) }
             }
         } else if model.isRefreshing && model.apps.isEmpty {
-            ProgressView("正在读取应用占用…")
+            ProgressView("list.loading")
         } else {
-            ContentUnavailableView("没有匹配的应用", systemImage: "magnifyingglass",
-                                   description: Text("调整搜索条件或应用显示设置。"))
+            ContentUnavailableView("empty.noMatch.title", systemImage: "magnifyingglass",
+                                   description: Text("empty.noMatch.message"))
         }
     }
 }

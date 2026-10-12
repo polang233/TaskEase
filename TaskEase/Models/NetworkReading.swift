@@ -25,8 +25,8 @@ enum NetworkMonitorStatus: Equatable, Sendable {
 
     var message: String {
         switch self {
-        case .disabled: "网络监控已关闭"
-        case .available: "系统网络统计"
+        case .disabled: String(localized: "network.monitor.off")
+        case .available: String(localized: "network.monitor.on")
         case .unavailable(let reason): reason
         }
     }

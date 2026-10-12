@@ -23,24 +23,24 @@ struct RuleEditor: View {
                     }
                     Spacer()
                     if model.rules[app.id] != nil || model.networkRules[app.id] != nil {
-                        Button("移除规则", systemImage: "trash", role: .destructive) { model.resetRule(app.id) }
-                            .labelStyle(.iconOnly).buttonStyle(.borderless).help("移除规则").pointingHand()
+                        Button("rule.remove", systemImage: "trash", role: .destructive) { model.resetRule(app.id) }
+                            .labelStyle(.iconOnly).buttonStyle(.borderless).help("rule.remove").pointingHand()
                             .accessibilityIdentifier("remove-rule")
                     }
                 }
                 if app.isRunning {
                     HStack(spacing: 30) {
-                        metric("CPU", value: Display.percent(AppUsage.cpu(app, scale: model.preferences.cpuScale)))
-                        metric("内存", value: Display.memory(app))
+                        metric("metric.cpu", value: Display.percent(AppUsage.cpu(app, scale: model.preferences.cpuScale)))
+                        metric("metric.memory", value: Display.memory(app))
                     }
                 } else {
-                    Text("应用下次运行时按此规则执行。").font(.callout).foregroundStyle(.secondary)
+                    Text("rule.notRunning").font(.callout).foregroundStyle(.secondary)
                 }
                 Divider()
                 ruleControls.disabled(!model.allowsRuleEditing(app))
                 if !model.allowsRuleEditing(app) {
-                    Label(app.isSystemApp ? "系统应用只用于观察。" : "该应用当前只支持占用观察。",
-                          systemImage: "lock").font(.callout).foregroundStyle(.secondary)
+                    Label(title: { app.isSystemApp ? Text("rule.readOnly.system") : Text("rule.readOnly.other") }, icon: { Image(systemName: "lock") })
+                        .font(.callout).foregroundStyle(.secondary)
                 }
                 if model.preferences.networkFeaturesEnabled {
                     Divider()
@@ -50,36 +50,36 @@ struct RuleEditor: View {
                     Divider()
                     if model.preferences.networkActivityVisible {
                         VStack(alignment: .leading, spacing: 10) {
-                            Text("网络收发").font(.headline)
-                            readingRow("接收速度", value: Display.networkRate(app.network?.receiveRate))
-                            readingRow("发送速度", value: Display.networkRate(app.network?.sendRate))
-                            Text(app.network?.sampledProcesses == 0 ? "当前没有系统网络计数" : model.networkMonitorStatus.message)
+                            Text("rule.network.title").font(.headline)
+                            readingRow("rule.network.receive", value: Display.networkRate(app.network?.receiveRate))
+                            readingRow("rule.network.send", value: Display.networkRate(app.network?.sendRate))
+                            Text(app.network?.sampledProcesses == 0 ? String(localized: "rule.network.none") : model.networkMonitorStatus.message)
                                 .font(.caption).foregroundStyle(.secondary)
-                        }.help("应用自有进程的系统网络计数。共享代理、系统代发与短连接可能无法完整归属；第一帧需要建立速度基线。")
+                        }.help("rule.network.help")
                         Divider()
                     }
                     VStack(alignment: .leading, spacing: 10) {
-                        Text("磁盘与唤醒").font(.headline)
-                        readingRow("磁盘读取", value: Display.rate(app.readRate))
-                        readingRow("磁盘写入", value: Display.rate(app.writeRate))
-                        readingRow("中断唤醒", value: Display.wakeups(app.wakeupRate))
-                            .help("应用及其自有辅助进程每秒的中断唤醒次数。")
+                        Text("rule.disk.title").font(.headline)
+                        readingRow("rule.disk.read", value: Display.rate(app.readRate))
+                        readingRow("rule.disk.write", value: Display.rate(app.writeRate))
+                        readingRow("rule.wakeups", value: Display.wakeups(app.wakeupRate))
+                            .help("rule.wakeups.help")
                     }
                 }
-                DisclosureGroup("应用与进程信息") {
+                DisclosureGroup("rule.processInfo") {
                     VStack(alignment: .leading, spacing: 8) {
                         Text(app.id).font(.caption).textSelection(.enabled)
                         ForEach(app.samples, id: \.identity) { process in
                             HStack {
-                                Text("PID \(process.identity.pid)")
+                                Text(verbatim: "PID \(process.identity.pid)")
                                 Spacer()
                                 Text(Display.bytes(process.memoryBytes))
                             }.font(.caption).monospacedDigit()
                             if model.preferences.networkActivityVisible {
                                 HStack {
-                                    Text("接收 " + Display.networkRate(app.processNetwork[process.identity]?.receiveRate))
+                                    Text("rule.process.receive \(Display.networkRate(app.processNetwork[process.identity]?.receiveRate))")
                                     Spacer()
-                                    Text("发送 " + Display.networkRate(app.processNetwork[process.identity]?.sendRate))
+                                    Text("rule.process.send \(Display.networkRate(app.processNetwork[process.identity]?.sendRate))")
                                 }.font(.caption).foregroundStyle(.secondary).monospacedDigit()
                             }
                         }
@@ -91,12 +91,12 @@ struct RuleEditor: View {
 
     private var ruleControls: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Toggle("限制后台资源", isOn: Binding(get: { rule.isActive },
+            Toggle("rule.toggle", isOn: Binding(get: { rule.isActive },
                                                 set: { value in update { $0.mode = value ? .budget : .off } }))
                 .toggleStyle(.switch).font(.headline).accessibilityIdentifier("app-rule-toggle")
             if rule.isActive {
                 VStack(alignment: .leading, spacing: 8) {
-                    Picker("限制方式", selection: Binding(get: { rule.mode }, set: { setMode($0) })) {
+                    Picker("rule.mode", selection: Binding(get: { rule.mode }, set: { setMode($0) })) {
                         ForEach(ControlMode.limits, id: \.self) { Text($0.title).tag($0) }
                     }.selectionRail().accessibilityIdentifier("control-mode")
                     Text(modeNote).font(.caption).foregroundStyle(rule.mode == .suspend ? .orange : .secondary)
@@ -104,7 +104,7 @@ struct RuleEditor: View {
                 }
                 VStack(alignment: .leading, spacing: 8) {
                     HStack {
-                        Text("生效时机")
+                        Text("rule.timing")
                         Spacer()
                         Text(delayTitle).monospacedDigit().foregroundStyle(rule.alwaysLimit ? .orange : .primary)
                     }
@@ -112,34 +112,34 @@ struct RuleEditor: View {
                            in: Double(minimumDelayIndex)...Double(AppRule.delayPresets.count - 1), step: 1)
                         .accessibilityIdentifier("background-delay")
                         .accessibilityValue(delayTitle)
-                    Text(rule.alwaysLimit ? "前台使用时也限制，操作可能不流畅。" : "切走或隐藏后开始计时，回到前台立即恢复。")
+                    (rule.alwaysLimit ? Text("rule.timing.always.note") : Text("rule.timing.background.note"))
                         .font(.caption).foregroundStyle(.secondary)
                 }
                 if rule.mode == .budget {
                     VStack(alignment: .leading, spacing: 8) {
                         HStack {
-                            Text("CPU 使用上限")
+                            Text("rule.cpuCap")
                             Spacer()
-                            Text("\(Int(rule.cpuPercent))%").monospacedDigit()
+                            Text(verbatim: "\(Int(rule.cpuPercent))%").monospacedDigit()
                         }
                         Slider(value: Binding(get: { rule.cpuPercent }, set: { percent in update { $0.cpuPercent = percent } }),
                                in: 5...200, step: 5).accessibilityIdentifier("cpu-budget")
-                        Text("100% 为一个核心满载，含应用的辅助进程。")
+                        Text("rule.cpuCap.note")
                             .font(.caption).foregroundStyle(.secondary)
                     }
                 }
                 if !model.enabled {
-                    Text("打开顶部总开关后生效。").font(.caption).foregroundStyle(.secondary)
+                    Text("rule.enableHint").font(.caption).foregroundStyle(.secondary)
                 }
             }
         }
     }
 
-    private var modeNote: String {
+    private var modeNote: LocalizedStringKey {
         switch rule.mode {
-        case .gentle: "降低调度优先级，前台应用优先获得资源；不设上限，空闲时占用可能不变。"
-        case .suspend: "完全暂停，不占用 CPU。后台播放、下载和消息通知都会停止，回到前台后恢复。"
-        default: "按上限短暂暂停应用，平均占用不超过设定值；可能影响声音和网络连接。"
+        case .gentle: "rule.mode.gentle.note"
+        case .suspend: "rule.mode.suspend.note"
+        default: "rule.mode.budget.note"
         }
     }
 
@@ -164,9 +164,9 @@ struct RuleEditor: View {
     }
 
     private var delayTitle: String {
-        if rule.alwaysLimit { return "始终限制" }
+        if rule.alwaysLimit { return String(localized: "rule.timing.always") }
         let seconds = Int(AppRule.delayPresets[delayIndex])
-        return seconds >= 60 ? "离开前台 \(seconds / 60) 分钟后" : "离开前台 \(seconds) 秒后"
+        return seconds >= 60 ? String(localized: "rule.timing.minutes \(seconds / 60)") : String(localized: "rule.timing.seconds \(seconds)")
     }
 
     private func setDelay(index: Int) {
@@ -179,14 +179,14 @@ struct RuleEditor: View {
         }
     }
 
-    private func metric(_ title: String, value: String, color: Color = .primary) -> some View {
+    private func metric(_ title: LocalizedStringKey, value: String, color: Color = .primary) -> some View {
         VStack(alignment: .leading, spacing: 5) {
             Text(title).font(.caption).foregroundStyle(.secondary)
             Text(value).font(.title2).monospacedDigit().foregroundStyle(color)
         }
     }
 
-    private func readingRow(_ title: String, value: String) -> some View {
+    private func readingRow(_ title: LocalizedStringKey, value: String) -> some View {
         HStack { Text(title); Spacer(); Text(value).monospacedDigit() }.font(.callout)
     }
 }

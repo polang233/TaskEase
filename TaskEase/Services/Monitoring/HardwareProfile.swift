@@ -36,14 +36,14 @@ struct HardwareProfile: Sendable {
                                memoryBytes: ProcessInfo.processInfo.physicalMemory)
     }
 
-    /// 系统给出的簇名称换成中文；新芯片出现未知名称时原样显示。
+    /// 系统给出的簇名称换成本地化名称；新芯片出现未知名称时原样显示。
     private static func clusterName(_ raw: String?) -> String {
         switch raw {
-        case "Super": "超级核"
-        case "Performance": "性能核"
-        case "Efficiency": "能效核"
+        case "Super": String(localized: "cpu.cluster.super")
+        case "Performance": String(localized: "cpu.cluster.performance")
+        case "Efficiency": String(localized: "cpu.cluster.efficiency")
         case let value?: value
-        case nil: "核心"
+        case nil: String(localized: "cpu.cluster.generic")
         }
     }
 

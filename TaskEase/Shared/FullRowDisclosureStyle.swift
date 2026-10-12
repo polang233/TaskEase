@@ -12,7 +12,7 @@ struct FullRowDisclosureStyle: DisclosureGroupStyle {
                     Spacer(minLength: 0)
                 }.contentShape(Rectangle())
             }.buttonStyle(.plain)
-                .accessibilityValue(configuration.isExpanded ? "已展开" : "已收起")
+                .accessibilityValue(configuration.isExpanded ? Text("a11y.expanded") : Text("a11y.collapsed"))
             if configuration.isExpanded { configuration.content }
         }
     }

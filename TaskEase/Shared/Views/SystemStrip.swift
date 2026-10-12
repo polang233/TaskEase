@@ -36,14 +36,14 @@ struct SystemStrip: View {
             metric(.memory, compact: compact, value: Display.percent(reading.memory?.percent),
                    fraction: reading.memory?.percent.map { $0 / 100 })
             metric(.temperature, compact: compact,
-                   value: reading.temperatureCelsius == nil ? reading.thermalLabel : Display.temperature(reading.temperatureCelsius),
+                   value: reading.temperatureCelsius == nil ? reading.thermal.title : Display.temperature(reading.temperatureCelsius),
                    fraction: MetricPalette.thermalFraction(celsius: reading.temperatureCelsius),
-                   color: MetricPalette.thermal(celsius: reading.temperatureCelsius, label: reading.thermalLabel))
+                   color: MetricPalette.thermal(celsius: reading.temperatureCelsius, level: reading.thermal))
             NetworkRateStack(reading: reading.network, compact: compact)
             if isPaused {
                 Image(systemName: "snowflake").font(.caption).foregroundStyle(.blue)
-                    .help("已暂停刷新，切回前台后更新")
-                    .accessibilityLabel("已暂停刷新").accessibilityIdentifier("display-paused")
+                    .help("strip.paused.help")
+                    .accessibilityLabel("strip.paused").accessibilityIdentifier("display-paused")
             }
         }.fixedSize(horizontal: true, vertical: false)
     }
@@ -62,8 +62,8 @@ struct SystemStrip: View {
         }
         .buttonStyle(.plain).pointingHand()
         .padding(.horizontal, -5)
-        .accessibilityLabel("\(kind.rawValue) \(value)")
-        .accessibilityHint(isPinned ? "取消固定详细信息" : "固定显示详细信息")
+        .accessibilityLabel(Text(kind.title) + Text(verbatim: " \(value)"))
+        .accessibilityHint(isPinned ? Text("strip.unpinHint") : Text("strip.pinHint"))
         .accessibilityAddTraits(isPinned ? .isSelected : [])
         .accessibilityIdentifier("system-\(kind.rawValue)")
         .background(AnchorReader { view in
@@ -115,14 +115,14 @@ private struct MetricGauge: View {
             case .number:
                 Image(systemName: kind.symbol).foregroundStyle(emphasized ? color : .secondary)
                     .scaleEffect(emphasized ? 1.25 : 1)
-                if !compact { Text(kind.shortTitle) }
+                if !compact { Text(kind.title) }
                 valueSlot
             case .ring:
                 ring.scaleEffect(emphasized ? 1.2 : 1)
-                if !compact { Text(kind.shortTitle) }
+                if !compact { Text(kind.title) }
                 valueSlot
             case .bar:
-                Text(kind.shortTitle).foregroundStyle(compact ? .secondary : .primary)
+                Text(kind.title).foregroundStyle(compact ? .secondary : .primary)
                 MetricBar(value: value, widestValues: kind.widestValues, fraction: fraction,
                           color: color, compact: compact)
             }
@@ -184,7 +184,7 @@ private struct MetricBar: View {
 #Preview("单行概览") {
     VStack(spacing: 0) {
         ForEach(MetricDisplayStyle.allCases, id: \.self) { style in
-            SystemStrip(reading: SystemReading(cpuPercent: 18, gpuPercent: 64, thermalLabel: "正常",
+            SystemStrip(reading: SystemReading(cpuPercent: 18, gpuPercent: 64, thermal: .nominal,
                 memory: .init(usedBytes: 14 * 1_073_741_824, totalBytes: 24 * 1_073_741_824, compressedBytes: 1_073_741_824, swapBytes: 512 * 1_048_576),
                 network: .init(receiveRate: 12_345_678, sendRate: 123_456), temperatureCelsius: 74.3), style: style)
             Divider()

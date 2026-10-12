@@ -12,6 +12,8 @@ cp "$repo_directory/build/TaskEase.app/Contents/Resources/Assets.car" "$applicat
 cp "$repo_directory/build/TaskEase.app/Contents/Resources/AppIcon.icns" "$application/Contents/Resources/"
 cp "$repo_directory/TaskEase/Resources/PostHog.json" "$application/Contents/Resources/"
 cp "$repo_directory/build/TaskEase.app/Contents/Info.plist" "$application/Contents/Info.plist"
+# 编译好的本地化资源来自 Release 包；PREVIEW_LANGUAGE 指定渲染语言，例如 en、zh-Hans、zh-Hant。
+cp -R "$repo_directory/build/TaskEase.app/Contents/Resources/"*.lproj "$application/Contents/Resources/"
 /usr/libexec/PlistBuddy \
     -c 'Set :CFBundleIdentifier com.github.polang233.TaskEase.PreviewRenderer' \
     -c 'Set :CFBundleExecutable TaskEasePreview' "$application/Contents/Info.plist"
@@ -32,4 +34,5 @@ xcrun swiftc -parse-as-library -swift-version 6 -target arm64-apple-macos14.0 \
     -framework IOKit "${objects[@]}" \
     "${sources[@]}" "$repo_directory/Scripts/render-previews.swift" \
     -o "$application/Contents/MacOS/TaskEasePreview"
-"$application/Contents/MacOS/TaskEasePreview" "$destination"
+language=${PREVIEW_LANGUAGE:-zh-Hans}
+"$application/Contents/MacOS/TaskEasePreview" "$destination" -AppleLanguages "($language)"

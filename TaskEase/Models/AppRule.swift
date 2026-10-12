@@ -6,10 +6,10 @@ enum ControlMode: String, Codable, CaseIterable, Hashable, Sendable {
 
     var title: String {
         switch self {
-        case .off: "保持原样"
-        case .gentle: "降低优先级"
-        case .budget: "限制 CPU"
-        case .suspend: "暂停应用"
+        case .off: String(localized: "mode.off")
+        case .gentle: String(localized: "mode.gentle")
+        case .budget: String(localized: "mode.budget")
+        case .suspend: String(localized: "mode.suspend")
         }
     }
 
@@ -55,15 +55,15 @@ enum RuleStatus: Equatable, Sendable {
 
     var title: String {
         switch self {
-        case .unmanaged: "保持原样"
-        case .foreground: "前台正常"
-        case .waiting: "等待生效"
-        case .gentle: "已降低优先级"
-        case .budget: "CPU 限制中"
-        case .suspended: "已暂停运行"
-        case .paused: "规则已暂停"
-        case .unavailable: "只读"
-        case .notRunning: "未运行"
+        case .unmanaged: String(localized: "status.unmanaged")
+        case .foreground: String(localized: "status.foreground")
+        case .waiting: String(localized: "status.waiting")
+        case .gentle: String(localized: "status.gentle")
+        case .budget: String(localized: "status.budget")
+        case .suspended: String(localized: "status.suspended")
+        case .paused: String(localized: "status.paused")
+        case .unavailable: String(localized: "status.readOnly")
+        case .notRunning: String(localized: "status.notRunning")
         }
     }
 }

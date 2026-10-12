@@ -9,7 +9,7 @@ struct MenuPanel: View {
         VStack(spacing: 0) {
             HStack(spacing: 12) {
                 BrandMark(size: 22)
-                Text("轻程").font(.headline)
+                Text("app.name").font(.headline)
                 Spacer()
                 BackgroundControlToggle(model: model).controlSize(.small)
             }.padding(16)
@@ -18,7 +18,7 @@ struct MenuPanel: View {
             Divider()
             VStack(spacing: 4) {
                 HStack {
-                    Text("占用最高").font(.caption).foregroundStyle(.secondary)
+                    Text("menu.topUsage").font(.caption).foregroundStyle(.secondary)
                     Spacer()
                     SortMenu(model: model)
                 }
@@ -35,18 +35,18 @@ struct MenuPanel: View {
                     .background(UsageFill(fraction: usage.fraction(app)))
                 }
                 if model.visibleRunningApps.isEmpty {
-                    Text(model.isRefreshing ? "正在读取应用占用…" : "当前没有可显示的应用")
+                    (model.isRefreshing ? Text("list.loading") : Text("menu.noApps"))
                         .font(.callout).foregroundStyle(.secondary)
                 }
             }.padding(16)
             Divider()
             HStack {
-                Button("应用管理") { model.showManagement() }.pointingHand()
-                Button("设置", systemImage: "gearshape") { model.showUtility(.settings) }
-                    .labelStyle(.iconOnly).help("设置").pointingHand()
+                Button("menu.manageApps") { model.showManagement() }.pointingHand()
+                Button("common.settings", systemImage: "gearshape") { model.showUtility(.settings) }
+                    .labelStyle(.iconOnly).help("common.settings").pointingHand()
                 Spacer()
-                Text("\(model.managedCount) 个生效").font(.caption).foregroundStyle(.secondary)
-                Button("退出") { NSApp.terminate(nil) }.pointingHand()
+                Text("menu.activeCount \(model.managedCount)").font(.caption).foregroundStyle(.secondary)
+                Button("common.quit") { NSApp.terminate(nil) }.pointingHand()
             }.padding(14)
         }
         .frame(width: 420)

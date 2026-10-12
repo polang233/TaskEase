@@ -5,16 +5,16 @@ enum NetworkRuleMode: String, Codable, CaseIterable, Sendable {
     case allow, block, limit
     var title: String {
         switch self {
-        case .allow: "保持联网"
-        case .block: "阻断联网"
-        case .limit: "限制速度"
+        case .allow: String(localized: "network.mode.allow")
+        case .block: String(localized: "network.mode.block")
+        case .limit: String(localized: "network.mode.limit")
         }
     }
 }
 
 enum NetworkRuleScope: String, Codable, CaseIterable, Sendable {
     case background, always
-    var title: String { self == .background ? "仅后台" : "始终" }
+    var title: String { self == .background ? String(localized: "network.scope.background") : String(localized: "network.scope.always") }
 }
 
 struct NetworkRule: Codable, Equatable, Sendable {
@@ -39,13 +39,13 @@ enum NetworkRuleStatus: Equatable, Sendable {
 
     var title: String {
         switch self {
-        case .original: "保持联网"
-        case .paused: "网络规则已暂停"
-        case .waiting: "等待网络规则生效"
-        case .foreground: "前台正常联网"
-        case .pendingExtension: "测试功能未实现"
-        case .blocked: "联网已阻断"
-        case .limited: "网络限速生效"
+        case .original: String(localized: "network.status.original")
+        case .paused: String(localized: "network.status.paused")
+        case .waiting: String(localized: "network.status.waiting")
+        case .foreground: String(localized: "network.status.foreground")
+        case .pendingExtension: String(localized: "network.status.pending")
+        case .blocked: String(localized: "network.status.blocked")
+        case .limited: String(localized: "network.status.limited")
         }
     }
 }
