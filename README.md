@@ -9,7 +9,7 @@
 <p align="center">叠层双叶呈现前后台任务，菜单栏使用随系统外观变化的单色标识。</p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-1.2.0-30BBA9" alt="版本 1.2.0">
+  <img src="https://img.shields.io/badge/version-1.4.0-30BBA9" alt="版本 1.4.0">
   <img src="https://img.shields.io/badge/macOS-14%2B-24292f?logo=apple" alt="macOS 14 及以上">
   <img src="https://img.shields.io/badge/platform-Apple%20Silicon-24292f" alt="Apple Silicon">
   <img src="https://img.shields.io/badge/Swift-6-F05138?logo=swift&logoColor=white" alt="Swift 6">
@@ -45,31 +45,27 @@
 | 应用占用 | 合计应用及其自有辅助进程的 CPU、物理内存、磁盘活动和中断唤醒 |
 | 网络实验 | 默认关闭；开启后显示应用网络速度与测试规则 |
 | 网络规则配置 | 保存阻断、限速和作用时间参数；测试功能暂缺开发者账号签名，尚未执行控制 |
-| 系统概览 | 整机 CPU、GPU、已用与压缩内存、上传/下载速度、芯片传感器温度和系统热状态 |
-| 后台限制 | 离开前台后等待指定秒数，再限制平均 CPU 使用，回到前台恢复 |
+| 系统概览 | 整机 CPU、GPU、内存占比、上传/下载速度和芯片温度；点击查看芯片型号、核心数等详情，可切换数字、圆环或进度条样式 |
+| 后台限制 | 离开前台后按预设档位等待，再限制 CPU、降低优先级或暂停应用，回到前台恢复；也可设为始终限制 |
 | 规则列表 | 单独查看已配置规则，应用退出后仍可编辑 |
-| 应用筛选 | 默认展示用户应用，可开启系统应用显示 |
-| 设置与窗口 | 深浅外观、显示刷新间隔、帮助、关于信息与许可证、单实例与 Dock 窗口入口 |
+| 应用列表 | 搜索，按 CPU、内存、GPU、磁盘、网络或名称排序；默认展示用户应用，可开启系统应用显示 |
+| 设置与窗口 | 深浅外观、显示刷新间隔、应用 CPU 口径、帮助、关于信息与许可证、手动检查更新、单实例与 Dock 窗口入口 |
 
-CPU 使用上限按单核计算，100% 约等于一个核心满载，并由应用自有进程共享。顶部 CPU 表示全部核心的总体占用，GPU 表示整机驱动利用率估计值。压缩内存已包含在已用内存中；全局网速使用 MB/s。温度显示可读芯片传感器的最高值，读取失败时显示系统热状态。口径和能力边界见 [系统指标](Docs/SystemMetrics.md)。
+CPU 使用上限按单核计算，100% 约等于一个核心满载，并由应用自有进程共享。顶部 CPU 表示全部核心的总体占用，GPU 表示整机驱动利用率估计值，内存为已用物理内存占比。温度显示可读芯片传感器的最高值，读取失败时显示系统热状态。口径和能力边界见 [系统指标](Docs/SystemMetrics.md)。
 
 CPU 限制会短暂暂停整个受控进程，可能影响声音和连接心跳。具体效果需要按应用验证。精确帧率、独立 GPU 配额和网络限速属于单独的能力研究，当前控制范围见 [需求文档](Docs/Requirements.md)。
 
 ## 使用统计
 
-[查看公开统计看板](https://us.posthog.com/shared/Do9W3574hr41SnipsKsuPGuWM_LYrw)，无需登录即可查看使用人数、每日趋势和国家/地区占比。
+[![轻程使用统计](https://raw.githubusercontent.com/polang233/TaskEase/usage-stats/usage-stats.svg)](https://us.posthog.com/shared/Do9W3574hr41SnipsKsuPGuWM_LYrw)
 
-[![TaskEase 公开统计快照](Artifacts/usage-statistics.jpg)](https://us.posthog.com/shared/Do9W3574hr41SnipsKsuPGuWM_LYrw)
-
-上图是 2026-10-11 的公开看板快照，点击查看持续更新的图表。测试事件已排除。统计按随机安装标识去重，不代表实时在线电脑数量；每日趋势以 UTC 划分日期。
-
-“关于轻程 → 使用统计”显示近 30 天活跃设备估计，提供趋势入口与匿名上报开关。匿名使用统计对新安装默认开启，保留已有关闭选择。字段与处理说明见 [PostHog 文档](Docs/PostHog.md)。
+统计图每天从公开看板自动生成。轻程默认开启匿名使用统计，只上报版本、系统地区等概况，可在“关于轻程 → 使用统计”关闭；字段说明见 [PostHog 文档](Docs/PostHog.md)。
 
 ## 开始使用
 
-1. 双击本机生成的 `build/TaskEase.app`。
+1. 从 [Releases](https://github.com/polang233/TaskEase/releases/latest) 下载 DMG，把轻程拖到“应用程序”文件夹。应用暂未经过 Apple 公证，首次打开若被拦截，在“系统设置 → 隐私与安全性”中点“仍要打开”。
 2. 在“运行中的应用”中选择应用，打开“限制后台资源”。
-3. 设置等待时间与 CPU 使用上限，再打开顶部的“启用后台限制”。
+3. 设置生效时机与 CPU 使用上限，再打开顶部的“启用后台限制”。
 4. 在“已配置规则”中集中修改、暂停或移除配置。
 
 没有有效规则时，总开关置灰，点击可查看配置提示。应用默认保持原样，已有规则按 bundle identifier 保存并重新匹配。
@@ -88,7 +84,7 @@ CPU 限制会短暂暂停整个受控进程，可能影响声音和连接心跳�
 sh Scripts/build-app.sh
 ```
 
-输出为 `build/TaskEase.app`。应用包采用本机签名，跨电脑分发需要完成相应的签名与公证。构建产物保存在 Git 忽略的 `build/` 目录。
+输出为 `build/TaskEase.app`。再运行 `sh Scripts/build-dmg.sh` 生成带拖放提示的 `build/TaskEase-版本.dmg`。应用包采用本机签名，跨电脑分发需要完成相应的签名与公证。构建产物保存在 Git 忽略的 `build/` 目录。
 
 应用以当前用户身份读取和控制进程，应用目标关闭 App Sandbox。只有正在执行后台规则时才启动同用户控制进程，退出、失联和异常终止有恢复机制。
 
@@ -138,8 +134,9 @@ Artifacts/                  验证摘要和界面预览
 - [x] Apple Silicon、macOS 14 及以上与 Swift 6 开发目标。
 - [ ] 多语言支持、String Catalog 和语言切换。
 - [x] PostHog 匿名活跃安装统计、独立统计窗口及上报开关。
-- [x] GitHub README 的公开统计入口与看板快照。
-- [ ] 更多系统指标、历史趋势和自定义显示。
+- [x] GitHub README 的公开统计入口。
+- [x] 芯片详情、占比渐变色和概览样式切换。
+- [ ] 更多系统指标与历史趋势。
 - [x] 系统已用与压缩内存、全局上下行速度及占用配色。
 - [x] Apple Silicon 芯片温度只读接口与本机 M5 核验。
 - [ ] 更多 Apple Silicon 机型的温度传感器覆盖验证。
@@ -148,7 +145,8 @@ Artifacts/                  验证摘要和界面预览
 - [x] 独立回环中继的阻断、上下行限速与共享额度实验。
 - [ ] 针对支持应用研究后台帧率和视频处理节奏适配。
 - [ ] 实际应用的耗电、温度和限制效果对比。
-- [ ] 发布签名、公证与可下载的安装包。
+- [x] GitHub Releases 提供 DMG 安装包与应用内检查更新。
+- [ ] 发布签名与公证。
 
 ## 验证与贡献
 

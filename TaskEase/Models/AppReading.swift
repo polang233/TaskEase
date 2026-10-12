@@ -1,7 +1,7 @@
 import Foundation
 
 /// 整机读数；内存为物理占用，网络速度按活动物理网卡合计。
-struct SystemReading: Sendable {
+struct SystemReading: Equatable, Sendable {
     var cpuPercent: Double?
     var gpuPercent: Double?
     var thermalLabel: String = "正常"
@@ -19,6 +19,8 @@ struct AppReading: Identifiable, Sendable {
     var targets: [ControlTarget]
     var samples: [ProcessSample]
     var cpuPercent: Double?
+    /// 自有进程 GPU 执行时间占墙钟时间的比例，仅显示采样读取。
+    var gpuPercent: Double? = nil
     var memoryBytes: UInt64
     var readRate: Double
     var writeRate: Double

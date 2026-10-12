@@ -24,7 +24,8 @@ struct PublicUsageClient: Sendable {
         return try Self.parse(data)
     }
 
-    /// PostHog 的公开页面携带双重 JSON 编码的缓存结果，只解析指定统计卡片。
+    /// PostHog 的公开页面携带双重 JSON 编码的缓存结果。只读取三张指定卡片：
+    /// 人数（必需）、每日趋势与地区占比（可缺省），其余内容不解析也不保存。
     static func parse(_ data: Data) throws -> PublicUsageSummary {
         guard let html = String(data: data, encoding: .utf8) else { throw LoadError.format }
         let regex = try NSRegularExpression(pattern: #"<script\b(?=[^>]*\bid=["']posthog-exported-data["'])[^>]*>(.*?)</script>"#,
@@ -36,18 +37,55 @@ struct PublicUsageClient: Sendable {
         var object = try JSONSerialization.jsonObject(with: Data(html[content].utf8), options: .fragmentsAllowed)
         if let encoded = object as? String { object = try JSONSerialization.jsonObject(with: Data(encoded.utf8)) }
         guard let root = object as? [String: Any], let dashboard = root["dashboard"] as? [String: Any],
-              dashboard["id"] as? Int == 2_196_112, let tiles = dashboard["tiles"] as? [[String: Any]],
-              let insight = tiles.compactMap({ $0["insight"] as? [String: Any] }).first(where: { $0["short_id"] as? String == "MfmaDUaP" }),
-              let rows = insight["result"] as? [[Any]], rows.count == 1, rows[0].count == 1,
-              let number = rows[0][0] as? NSNumber, CFGetTypeID(number) != CFBooleanGetTypeID(),
-              number.doubleValue.isFinite, number.doubleValue >= 0, number.doubleValue <= 1_000_000_000,
-              number.doubleValue.rounded(.towardZero) == number.doubleValue else { throw LoadError.format }
-        let updatedAt = (insight["last_refresh"] as? String).flatMap { text -> Date? in
-            let formatter = ISO8601DateFormatter()
-            formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-            return formatter.date(from: text) ?? ISO8601DateFormatter().date(from: text)
+              dashboard["id"] as? Int == 2_196_112, let tiles = dashboard["tiles"] as? [[String: Any]] else { throw LoadError.format }
+        let insights = tiles.compactMap { $0["insight"] as? [String: Any] }
+        func insight(_ id: String) -> [String: Any]? { insights.first { $0["short_id"] as? String == id } }
+
+        guard let count = insight(Tile.count), let rows = count["result"] as? [[Any]], rows.count == 1, rows[0].count == 1,
+              let total = integer(rows[0][0]) else { throw LoadError.format }
+        let updatedAt = (count["last_refresh"] as? String).flatMap(date)
+        var summary = PublicUsageSummary(activeInstallations: total, updatedAt: updatedAt)
+
+        if let series = (insight(Tile.trend)?["result"] as? [[String: Any]])?.first,
+           let days = series["days"] as? [String], let values = series["data"] as? [Any], days.count == values.count, days.count <= 400 {
+            let parser = DateFormatter()
+            parser.calendar = Calendar(identifier: .gregorian)
+            parser.locale = Locale(identifier: "en_US_POSIX")
+            parser.timeZone = TimeZone(identifier: "UTC")
+            parser.dateFormat = "yyyy-MM-dd"
+            summary.days = zip(days, values).compactMap { day, value in
+                guard let date = parser.date(from: day), let count = integer(value) else { return nil }
+                return .init(date: date, installations: count)
+            }
         }
-        return .init(activeInstallations: number.intValue, updatedAt: updatedAt)
+        if let rows = insight(Tile.regions)?["result"] as? [[Any]] {
+            summary.regions = rows.compactMap { row -> PublicUsageSummary.Region? in
+                guard row.count == 2, let name = row[0] as? String, !name.isEmpty, name.count <= 40,
+                      let count = integer(row[1]) else { return nil }
+                return .init(name: name, installations: count)
+            }.sorted { $0.installations > $1.installations }.prefix(5).map { $0 }
+        }
+        return summary
+    }
+
+    private enum Tile {
+        static let count = "MfmaDUaP"
+        static let trend = "8r3p40Y9"
+        static let regions = "l1yAQ9JN"
+    }
+
+    /// 只接受合理范围内的非负整数，排除布尔值与小数。
+    private static func integer(_ value: Any) -> Int? {
+        guard let number = value as? NSNumber, CFGetTypeID(number) != CFBooleanGetTypeID(),
+              number.doubleValue.isFinite, number.doubleValue >= 0, number.doubleValue <= 1_000_000_000,
+              number.doubleValue.rounded(.towardZero) == number.doubleValue else { return nil }
+        return number.intValue
+    }
+
+    private static func date(_ text: String) -> Date? {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        return formatter.date(from: text) ?? ISO8601DateFormatter().date(from: text)
     }
 
     enum LoadError: Error { case unavailable, format }

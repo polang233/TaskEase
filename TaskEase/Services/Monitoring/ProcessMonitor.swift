@@ -85,6 +85,7 @@ actor ProcessMonitor {
 /// 采样状态为值类型，同样供命令行自检同步调用。
 struct ProcessSampler {
     private var previous: [ProcessIdentity: ProcessSample] = [:]
+    private var previousGPU: [ProcessIdentity: UInt64] = [:]
     private var previousWall: UInt64?
     private var previousCPU: TECPUTicks?
     private var paths: [ProcessIdentity: String] = [:]
@@ -96,6 +97,7 @@ struct ProcessSampler {
 
     mutating func reset() {
         previous.removeAll()
+        previousGPU.removeAll()
         previousWall = nil
         previousCPU = nil
         systemNetwork.reset()
@@ -124,6 +126,10 @@ struct ProcessSampler {
                                      isHidden: app.isHidden)
             for pid in app.primaryPIDs { primaryOwners[pid] = app.id }
         }
+        // GPU 客户端时间只在显示采样读取；控制采样不访问 IORegistry。
+        let gpuTimes = includeSystem ? Self.gpuTimes() : [:]
+        var nextGPU: [ProcessIdentity: UInt64] = [:]
+        var gpuComparable: Set<String> = []
         var next: [ProcessIdentity: ProcessSample] = [:]
         var nextPaths: [ProcessIdentity: String] = [:]
         var comparable: Set<String> = []
@@ -143,6 +149,15 @@ struct ProcessSampler {
             if let root = apps[id]?.bundlePaths.first(where: { executable.hasPrefix($0 + "/Contents/") }) {
                 apps[id]?.targets.append(ControlTarget(identity: identity, executablePath: executable, bundlePath: root))
             }
+            if let gpu = gpuTimes[pid] {
+                nextGPU[identity] = gpu
+                if let elapsed, elapsed > 0, let old = previousGPU[identity], gpu >= old {
+                    let seconds = elapsed / NativeProcess.ticksPerSecond
+                    let current = apps[id]?.gpuPercent ?? 0
+                    apps[id]?.gpuPercent = current + Double(gpu - old) / 1e9 / seconds * 100
+                    gpuComparable.insert(id)
+                }
+            }
             if let elapsed, elapsed > 0, let old = previous[identity] {
                 comparable.insert(id)
                 apps[id]?.cpuPercent? += 100 * Double(reading.cpuTicks >= old.cpuTicks ? reading.cpuTicks - old.cpuTicks : 0) / elapsed
@@ -154,9 +169,12 @@ struct ProcessSampler {
         }
         for id in Array(apps.keys) {
             if !comparable.contains(id) { apps[id]?.cpuPercent = nil }
+            if includeSystem, previousWall != nil, !gpuComparable.contains(id) { apps[id]?.gpuPercent = 0 }
+            if let gpu = apps[id]?.gpuPercent { apps[id]?.gpuPercent = min(100, gpu) }
             if apps[id]?.samples.isEmpty == true { apps[id]?.canControl = false }
         }
         previous = next
+        previousGPU = nextGPU
         previousWall = now
         paths = nextPaths
         let system = includeSystem ? sampleSystem(now: now) : nil
@@ -165,6 +183,16 @@ struct ProcessSampler {
             return ($0.cpuPercent ?? -1) > ($1.cpuPercent ?? -1)
         }
         return MonitoringSnapshot(apps: sorted, system: system)
+    }
+
+    /// 同一进程可能持有多个 GPU 客户端，按 PID 合并累计时间。
+    private static func gpuTimes() -> [Int32: UInt64] {
+        var buffer = [TEProcessGPU](repeating: TEProcessGPU(), count: 512)
+        let count = te_gpu_process_times(&buffer, Int32(buffer.count))
+        guard count > 0 else { return [:] }
+        var result: [Int32: UInt64] = [:]
+        for item in buffer.prefix(Int(count)) { result[item.pid, default: 0] &+= item.gpuNanoseconds }
+        return result
     }
 
     private mutating func sampleSystem(now: UInt64) -> SystemReading {
@@ -193,7 +221,8 @@ struct ProcessSampler {
         var memory = TESystemMemory()
         if te_system_memory(&memory) != 0 {
             system.memory = SystemMemoryReading(usedBytes: memory.usedBytes, totalBytes: memory.totalBytes,
-                                               compressedBytes: memory.compressedBytes)
+                                               compressedBytes: memory.compressedBytes,
+                                               swapBytes: memory.swapAvailable != 0 ? memory.swapUsedBytes : nil)
         }
         var interfaces = [TESystemNetwork](repeating: TESystemNetwork(), count: 64)
         let count = te_system_network(&interfaces, Int32(interfaces.count))

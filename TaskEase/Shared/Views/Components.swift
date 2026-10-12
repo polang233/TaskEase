@@ -10,15 +10,33 @@ struct BrandMark: View {
             .frame(width: size, height: size).accessibilityHidden(true)
     }
 }
+/// 应用图标缩成一张 96 像素位图后缓存，不保留系统图标的多尺寸表示。
 @MainActor
 private enum ApplicationIcons {
+    static let pixels = 96
     static var images: [String: NSImage] = [:]
 
     static func image(at path: String) -> NSImage {
         if let cached = images[path] { return cached }
         if images.count > 128 { images.removeAll() }
-        let image = NSWorkspace.shared.icon(forFile: path)
+        let source = NSWorkspace.shared.icon(forFile: path)
+        let image = downscaled(source) ?? source
         images[path] = image
+        return image
+    }
+
+    private static func downscaled(_ source: NSImage) -> NSImage? {
+        guard let bitmap = NSBitmapImageRep(bitmapDataPlanes: nil, pixelsWide: pixels, pixelsHigh: pixels,
+                                            bitsPerSample: 8, samplesPerPixel: 4, hasAlpha: true, isPlanar: false,
+                                            colorSpaceName: .deviceRGB, bytesPerRow: 0, bitsPerPixel: 0),
+              let context = NSGraphicsContext(bitmapImageRep: bitmap) else { return nil }
+        NSGraphicsContext.saveGraphicsState()
+        NSGraphicsContext.current = context
+        context.imageInterpolation = .high
+        source.draw(in: NSRect(x: 0, y: 0, width: pixels, height: pixels))
+        NSGraphicsContext.restoreGraphicsState()
+        let image = NSImage(size: NSSize(width: pixels / 2, height: pixels / 2))
+        image.addRepresentation(bitmap)
         return image
     }
 }
@@ -44,6 +62,7 @@ struct StatusLabel: View {
     private var color: Color {
         switch status {
         case .gentle, .budget: .green
+        case .suspended: .blue
         case .waiting: .orange
         default: .secondary
         }
@@ -54,33 +73,42 @@ struct StatusLabel: View {
     }
 }
 
-/// 总开关的无规则提示仅在点击时展示，保持主界面紧凑。
+/// 总开关在没有规则时置灰；点击后用无箭头卡片提示，指针离开开关和卡片即关闭。
 struct BackgroundControlToggle: View {
     @Bindable var model: AppModel
-    @State private var showHint = false
+    @State private var hint = HoverCardCoordinator()
+    @State private var anchor: WeakAnchor?
 
     var body: some View {
         Toggle("启用后台限制", isOn: Binding(get: { model.enabled }, set: { model.setEnabled($0) }))
             .toggleStyle(.switch)
             .disabled(!model.canEnable)
             .accessibilityIdentifier("management-toggle")
+            .background(AnchorReader { view in
+                if anchor?.view !== view { anchor = WeakAnchor(view) }
+            })
             .overlay {
                 if !model.canEnable {
-                    Button { showHint = true } label: {
+                    Button { showHint() } label: {
                         Color.clear.contentShape(Rectangle())
                     }
-                    .buttonStyle(.plain)
+                    .buttonStyle(.plain).pointingHand()
                     .accessibilityLabel("启用后台限制的配置提示")
                     .accessibilityIdentifier("management-unavailable")
+                    .onHover { hint.anchorHover($0) }
                 }
             }
-            .popover(isPresented: $showHint, arrowEdge: .bottom) {
-                Text("先为应用设置后台规则")
-                    .font(.callout).padding(16)
-                    .accessibilityIdentifier("configure-rules-hint")
-            }
             .onChange(of: model.canEnable) { _, ready in
-                if ready { showHint = false }
+                if ready { hint.close() }
             }
+            .onDisappear { hint.close() }
+    }
+
+    private func showHint() {
+        guard let view = anchor?.view else { return }
+        hint.show(anchor: view, content: AnyView(
+            Text("先为应用设置后台规则").font(.callout).padding(.horizontal, 14).padding(.vertical, 10)
+                .accessibilityIdentifier("configure-rules-hint")))
+        hint.anchorHover(true)
     }
 }

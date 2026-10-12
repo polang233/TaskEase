@@ -7,12 +7,18 @@ enum Policy {
         guard controllable else { return .unavailable }
         guard rule.mode != .off else { return .unmanaged }
         guard enabled else { return .paused }
-        guard !isForeground || isHidden else { return .foreground }
-        guard backgroundSeconds >= rule.delaySeconds else { return .waiting }
-        return rule.mode == .gentle ? .gentle : .budget
+        if !rule.alwaysLimit {
+            guard !isForeground || isHidden else { return .foreground }
+            guard backgroundSeconds >= rule.delaySeconds else { return .waiting }
+        }
+        switch rule.mode {
+        case .gentle: return .gentle
+        case .suspend: return .suspended
+        default: return .budget
+        }
     }
     static func shouldControl(_ status: RuleStatus) -> Bool {
-        status == .gentle || status == .budget
+        status == .gentle || status == .budget || status == .suspended
     }
 }
 

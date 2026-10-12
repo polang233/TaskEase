@@ -26,7 +26,10 @@ int te_set_background(int32_t pid, uint64_t seconds, uint64_t microseconds, int 
 int te_get_background(int32_t pid);
 int te_signal_process(int32_t pid, uint64_t seconds, uint64_t microseconds, int signal_number);
 int te_cpu_ticks(TECPUTicks *result);
+typedef struct { int32_t pid; uint64_t gpuNanoseconds; } TEProcessGPU;
 double te_gpu_percent(void);
+int te_gpu_process_times(TEProcessGPU *results, int capacity);
+int te_gpu_info(char *model, uint32_t length, int32_t *cores);
 void te_install_worker_signals(void);
 int te_worker_should_exit(void);
 #endif

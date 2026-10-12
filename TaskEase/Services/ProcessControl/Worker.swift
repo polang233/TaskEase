@@ -39,6 +39,8 @@ enum NativeWorker {
         var hasSavedOwnership = false
         var lastMessage = NativeProcess.now
         var input = Data()
+        var bytes = [UInt8](repeating: 0, count: 16384)
+        let decoder = JSONDecoder()
         var closing = false
         var failed = false
         let ownBundle = Bundle.main.bundleURL.resolvingSymlinksInPath().path
@@ -119,7 +121,6 @@ enum NativeWorker {
             var descriptor = pollfd(fd: inputFD, events: Int16(POLLIN | POLLHUP), revents: 0)
             let result = poll(&descriptor, 1, groups.values.contains { $0.config.mode == .budget } ? 50 : 150)
             if result > 0 {
-                var bytes = [UInt8](repeating: 0, count: 16384)
                 while true {
                     let count = read(inputFD, &bytes, bytes.count)
                     if count > 0 {
@@ -133,7 +134,7 @@ enum NativeWorker {
                 while let newline = input.firstIndex(of: 10) {
                     let line = Data(input[..<newline])
                     input.removeSubrange(...newline)
-                    do { try apply(JSONDecoder().decode(ControlMessage.self, from: line)) }
+                    do { try apply(decoder.decode(ControlMessage.self, from: line)) }
                     catch {
                         emit(WorkerEvent(kind: "error", message: "控制计划无法应用，已恢复限制。"))
                         failed = true; break
@@ -154,7 +155,21 @@ enum NativeWorker {
                     if sample.status == 4 && !stopped.contains(target.identity) {
                         excluded.insert(target.identity); continue
                     }
-                    if group.config.mode == .gentle {
+                    if group.config.mode == .suspend {
+                        // 整组保持暂停，直到计划移除该组；归属先写入恢复日志再发送信号。
+                        if !stopped.contains(target.identity) {
+                            if maySuspend[target.identity] == nil {
+                                maySuspend[target.identity] = target
+                                do { try saveOwnership() } catch { failed = true; break }
+                            }
+                            if NativeProcess.signal(target, number: SIGSTOP) {
+                                stopped.insert(target.identity)
+                            } else if NativeProcess.identity(target.identity.pid) == target.identity {
+                                emit(WorkerEvent(kind: "error", message: "该应用不允许进程暂停，已解除限制。"))
+                                failed = true; break
+                            }
+                        }
+                    } else if group.config.mode == .gentle {
                         if lowered[target.identity] == nil && te_get_background(target.identity.pid) == 0 {
                             lowered[target.identity] = target
                             do { try saveOwnership() } catch { failed = true; break }
@@ -212,6 +227,8 @@ enum NativeWorker {
 @MainActor
 final class WorkerController {
     private var process: Process?
+    /// 计划清空后正在退出的工作进程；退出在后台等待，不阻塞主线程。
+    private var retiring: Process?
     private var input: FileHandle?
     private var output: FileHandle?
     private var outputData = Data()
@@ -222,10 +239,12 @@ final class WorkerController {
     var onError: ((String) -> Void)?
     var helperPID: Int32? { process?.isRunning == true ? process?.processIdentifier : nil }
 
-    /// 有控制需求才启动工作进程；空计划立即停止并恢复。
+    /// 有控制需求才启动工作进程；空计划让工作进程自行恢复并退出，主线程不等待。
     func update(_ groups: [ControlGroup]) {
-        guard !groups.isEmpty else { stop(); return }
+        guard !groups.isEmpty else { retire(); return }
         if process?.isRunning != true {
+            // 旧进程仍持有控制锁时，新进程会启动失败；这种少见情况下同步等它退出。
+            if let old = retiring { finish(old) }
             _ = Recovery.restore(testing: testing)
             guard let executable = Bundle.main.executableURL else { return }
             generation += 1
@@ -236,8 +255,8 @@ final class WorkerController {
             child.arguments = [testing ? "--self-test-worker" : "--limiter-worker"]
             child.standardInput = incoming; child.standardOutput = outgoing
             child.standardError = FileHandle.nullDevice
-            child.terminationHandler = { [weak self] _ in
-                Task { @MainActor in self?.ended(generation: currentGeneration) }
+            child.terminationHandler = { [weak self] ended in
+                Task { @MainActor in self?.ended(ended, generation: currentGeneration) }
             }
             outgoing.fileHandleForReading.readabilityHandler = { [weak self] handle in
                 let data = handle.availableData
@@ -275,30 +294,63 @@ final class WorkerController {
             if !stopping { stop() }
         }
     }
-    private func ended(generation expected: Int) {
+    private func ended(_ child: Process, generation expected: Int) {
+        if child === retiring {
+            retiring = nil
+            _ = Recovery.restore(testing: testing)
+            return
+        }
         guard generation == expected, process != nil else { return }
         output?.readabilityHandler = nil
         input = nil; output = nil; process = nil; outputData.removeAll()
         _ = Recovery.restore(testing: testing)
         if !stopping { onError?("控制进程已结束，限制已恢复。重新开启后台限制可重试。") }
     }
-    /// 请求正常恢复，必要时结束工作进程，再处理归属日志。
-    func stop() {
-        guard !stopping else { return }
-        guard let child = process else { _ = Recovery.restore(testing: testing); return }
-        stopping = true
+
+    /// 发送关闭消息并断开连接，退出由终止回调收尾；超时后依次结束、强制结束。
+    private func retire() {
+        guard let child = process else {
+            if retiring == nil { _ = Recovery.restore(testing: testing) }
+            return
+        }
         send(ControlMessage(groups: [], shutdown: true))
         try? input?.close()
         output?.readabilityHandler = nil
+        process = nil; input = nil; output = nil; outputData.removeAll()
+        generation += 1
+        retiring = child
+        Task { @MainActor [weak self] in
+            try? await Task.sleep(for: .seconds(1))
+            guard let self, self.retiring === child, child.isRunning else { return }
+            child.terminate()
+            try? await Task.sleep(for: .milliseconds(500))
+            if self.retiring === child, child.isRunning { kill(child.processIdentifier, SIGKILL) }
+        }
+    }
+
+    /// 同步等待退出，仅用于启动新进程前、睡眠、退出和数据清理。
+    private func finish(_ child: Process) {
         let deadline = Date().addingTimeInterval(1)
         while child.isRunning && Date() < deadline { usleep(10_000) }
         if child.isRunning { child.terminate() }
         let finalDeadline = Date().addingTimeInterval(0.5)
         while child.isRunning && Date() < finalDeadline { usleep(10_000) }
         if child.isRunning { kill(child.processIdentifier, SIGKILL) }
-        // 等待工作进程完全退出后恢复日志，数据清理才能安全移除该目录。
         child.waitUntilExit()
+        if retiring === child { retiring = nil }
         _ = Recovery.restore(testing: testing)
+    }
+
+    /// 请求正常恢复并等待工作进程完全退出，数据清理才能安全移除恢复目录。
+    func stop() {
+        guard !stopping else { return }
+        if let old = retiring { finish(old) }
+        guard let child = process else { _ = Recovery.restore(testing: testing); return }
+        stopping = true
+        send(ControlMessage(groups: [], shutdown: true))
+        try? input?.close()
+        output?.readabilityHandler = nil
+        finish(child)
         process = nil; input = nil; output = nil; outputData.removeAll()
         generation += 1
         stopping = false

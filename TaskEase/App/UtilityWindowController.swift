@@ -17,7 +17,7 @@ enum UtilityWindowKind: String {
     var size: NSSize {
         switch self {
         case .settings: NSSize(width: 560, height: 700)
-        case .help: NSSize(width: 680, height: 580)
+        case .help: NSSize(width: 560, height: 520)
         case .about: NSSize(width: 580, height: 430)
         case .license: NSSize(width: 680, height: 600)
         case .statistics: NSSize(width: 580, height: 460)
@@ -81,6 +81,5 @@ private struct UtilityRoot: View {
         }
         // 托管视图的最小布局约束与窗口内容尺寸一致，防止关于窗口被压缩。
         .frame(minWidth: kind.size.width, minHeight: kind.size.height)
-        .preferredColorScheme(model.preferences.theme.colorScheme)
     }
 }

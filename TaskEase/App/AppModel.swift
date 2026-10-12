@@ -26,6 +26,7 @@ final class AppModel {
     let preview: Bool
     let usageAnalytics: UsageAnalytics
     let usageStatistics: UsageStatisticsModel
+    let updates: UpdateChecker
 
     @ObservationIgnored private var savedApplications: [String: SavedApplication] = [:]
     @ObservationIgnored private var backgroundSince: [String: UInt64] = [:]
@@ -49,10 +50,11 @@ final class AppModel {
         self.preview = preview
         usageAnalytics = UsageAnalytics(fixtures: preview, deferStart: true)
         usageStatistics = UsageStatisticsModel(fixtures: preview)
+        updates = UpdateChecker(fixtures: preview)
         if preview {
             apps = Self.exampleApps
             system = SystemReading(cpuPercent: 18, gpuPercent: 24, thermalLabel: "正常",
-                memory: .init(usedBytes: 14 * 1_073_741_824, totalBytes: 24 * 1_073_741_824, compressedBytes: 1_073_741_824),
+                memory: .init(usedBytes: 14 * 1_073_741_824, totalBytes: 24 * 1_073_741_824, compressedBytes: 1_073_741_824, swapBytes: 512 * 1_048_576),
                 network: .init(receiveRate: 12_345_678, sendRate: 123_456), temperatureCelsius: 54.3)
             foregroundID = "example.editor"
             selectedID = apps.first?.id
@@ -60,6 +62,7 @@ final class AppModel {
         }
         _ = Recovery.restore()
         loadStoredState()
+        applyAppearance()
         usageAnalytics.activate { [weak self] in
             guard let self else { return nil }
             return UsageContext(cpuRuleCount: self.configuredCount,
@@ -112,8 +115,39 @@ final class AppModel {
     var filteredApps: [AppReading] {
         let query = search.trimmingCharacters(in: .whitespacesAndNewlines)
         let source = applicationList == .running ? visibleRunningApps : configuredApps
-        return source.filter {
+        return Self.sorted(source.filter {
             query.isEmpty || $0.name.localizedCaseInsensitiveContains(query) || $0.id.localizedCaseInsensitiveContains(query)
+        }, by: effectiveSortKey)
+    }
+
+    /// 网络排序依赖应用网络速度显示；关闭后退回 CPU。
+    var effectiveSortKey: AppSortKey {
+        preferences.sortKey == .network && !preferences.networkActivityVisible ? .cpu : preferences.sortKey
+    }
+
+    var sortKeys: [AppSortKey] {
+        AppSortKey.allCases.filter { $0 != .network || preferences.networkActivityVisible }
+    }
+
+    /// 数值降序，缺失值排在最后，相同时按名称排列，避免刷新时行顺序跳动。
+    static func sorted(_ apps: [AppReading], by key: AppSortKey) -> [AppReading] {
+        func value(_ app: AppReading) -> Double? {
+            guard app.isRunning else { return nil }
+            switch key {
+            case .cpu: return app.cpuPercent
+            case .memory: return Double(app.memoryBytes)
+            case .gpu: return app.gpuPercent
+            case .disk: return app.readRate + app.writeRate
+            case .network: return app.network.map { ($0.receiveRate ?? 0) + ($0.sendRate ?? 0) }
+            case .name: return nil
+            }
+        }
+        return apps.sorted { left, right in
+            if key != .name {
+                let a = value(left) ?? -1, b = value(right) ?? -1
+                if a != b { return a > b }
+            }
+            return left.name.localizedStandardCompare(right.name) == .orderedAscending
         }
     }
 
@@ -209,13 +243,19 @@ final class AppModel {
         var changed = preferences
         update(&changed)
         guard changed != preferences else { return }
+        let themeChanged = changed.theme != preferences.theme
         preferences = changed
+        if themeChanged { applyAppearance() }
         if !preview, let data = try? JSONEncoder().encode(changed) {
             defaults.set(data, forKey: "preferences.v1")
         }
         ensureSelection()
         scheduleRefresh()
         refresh(force: true)
+    }
+
+    func applyAppearance() {
+        NSApp?.appearance = preferences.theme.appearance
     }
 
     /// 读取旧规则与独立显示元数据；损坏数据保留备份供恢复。
@@ -287,7 +327,8 @@ final class AppModel {
 
     private var controlMonitoringRequired: Bool {
         enabled && apps.contains {
-            rules[$0.id]?.isActive == true && ($0.id != foregroundID || $0.isHidden)
+            guard let rule = rules[$0.id], rule.isActive else { return false }
+            return rule.alwaysLimit || $0.id != foregroundID || $0.isHidden
         }
     }
 
@@ -351,6 +392,7 @@ final class AppModel {
                 next.network = old.network
                 next.processNetwork = old.processNetwork
                 next.cpuPercent = old.cpuPercent
+                next.gpuPercent = old.gpuPercent
                 next.memoryBytes = old.memoryBytes
                 next.readRate = old.readRate
                 next.writeRate = old.writeRate
@@ -550,6 +592,7 @@ final class AppModel {
         isShutdown = true
         usageAnalytics.stop()
         usageStatistics.cancel()
+        updates.cancel()
         timer?.invalidate()
         timer = nil
         refreshTask?.cancel()

@@ -24,14 +24,14 @@ struct RuleEditor: View {
                     Spacer()
                     if model.rules[app.id] != nil || model.networkRules[app.id] != nil {
                         Button("移除规则", systemImage: "trash", role: .destructive) { model.resetRule(app.id) }
-                            .labelStyle(.iconOnly).buttonStyle(.borderless).help("移除规则")
+                            .labelStyle(.iconOnly).buttonStyle(.borderless).help("移除规则").pointingHand()
                             .accessibilityIdentifier("remove-rule")
                     }
                 }
                 if app.isRunning {
                     HStack(spacing: 30) {
-                        metric("CPU", value: Display.percent(app.cpuPercent), color: MetricSeverity.applicationCPU(app.cpuPercent).color)
-                        metric("物理内存合计", value: Display.memory(app))
+                        metric("CPU", value: Display.percent(AppUsage.cpu(app, scale: model.preferences.cpuScale)))
+                        metric("内存", value: Display.memory(app))
                     }
                 } else {
                     Text("应用下次运行时按此规则执行。").font(.callout).foregroundStyle(.secondary)
@@ -84,54 +84,98 @@ struct RuleEditor: View {
                             }
                         }
                     }.padding(.top, 8)
-                }.disclosureGroupStyle(FullRowDisclosureStyle()).foregroundStyle(.secondary)
+                }.disclosureGroupStyle(FullRowDisclosureStyle()).foregroundStyle(.secondary).pointingHand()
             }.padding(24)
         }
     }
 
     private var ruleControls: some View {
-        VStack(alignment: .leading, spacing: 14) {
+        VStack(alignment: .leading, spacing: 16) {
             Toggle("限制后台资源", isOn: Binding(get: { rule.isActive },
                                                 set: { value in update { $0.mode = value ? .budget : .off } }))
                 .toggleStyle(.switch).font(.headline).accessibilityIdentifier("app-rule-toggle")
             if rule.isActive {
-                Stepper("离开前台 \(Int(rule.delaySeconds)) 秒后生效",
-                        value: Binding(get: { rule.delaySeconds }, set: { delay in update { $0.delaySeconds = delay } }),
-                        in: 0...300, step: 1)
-                    .accessibilityIdentifier("background-delay")
-                Text("失去前台焦点或隐藏后开始计时，切回前台恢复。")
-                    .font(.caption).foregroundStyle(.secondary)
-                VStack(alignment: .leading, spacing: 10) {
+                VStack(alignment: .leading, spacing: 8) {
+                    Picker("限制方式", selection: Binding(get: { rule.mode }, set: { setMode($0) })) {
+                        ForEach(ControlMode.limits, id: \.self) { Text($0.title).tag($0) }
+                    }.selectionRail().accessibilityIdentifier("control-mode")
+                    Text(modeNote).font(.caption).foregroundStyle(rule.mode == .suspend ? .orange : .secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                VStack(alignment: .leading, spacing: 8) {
                     HStack {
-                        Text("CPU 使用上限")
+                        Text("生效时机")
                         Spacer()
-                        Text("\(Int(rule.cpuPercent))%").monospacedDigit()
+                        Text(delayTitle).monospacedDigit().foregroundStyle(rule.alwaysLimit ? .orange : .primary)
                     }
-                    Slider(value: Binding(get: { rule.cpuPercent }, set: { percent in update { $0.cpuPercent = percent } }),
-                           in: 5...200, step: 5).accessibilityIdentifier("cpu-budget")
-                    Text("100% 约等于一个核心满载，按整个应用合计控制平均占用。")
+                    Slider(value: Binding(get: { Double(delayIndex) }, set: { setDelay(index: Int($0.rounded())) }),
+                           in: Double(minimumDelayIndex)...Double(AppRule.delayPresets.count - 1), step: 1)
+                        .accessibilityIdentifier("background-delay")
+                        .accessibilityValue(delayTitle)
+                    Text(rule.alwaysLimit ? "前台使用时也限制，操作可能不流畅。" : "切走或隐藏后开始计时，回到前台立即恢复。")
                         .font(.caption).foregroundStyle(.secondary)
-                }.disabled(rule.mode == .gentle)
-                DisclosureGroup("高级选项") {
-                    VStack(alignment: .leading, spacing: 10) {
-                        Toggle("仅降低后台优先级", isOn: Binding(get: { rule.mode == .gentle },
-                                                           set: { value in update { $0.mode = value ? .gentle : .budget } }))
-                            .toggleStyle(.checkbox).accessibilityIdentifier("gentle-mode")
-                        Text("让前台任务优先获得资源，没有固定 CPU 上限。")
-                            .font(.caption).foregroundStyle(.secondary)
-                    }.padding(.top, 10)
                 }
                 if rule.mode == .budget {
-                    Label("CPU 限制会短暂暂停应用，也会影响声音和连接心跳。",
-                          systemImage: "info.circle").font(.caption).foregroundStyle(.secondary)
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack {
+                            Text("CPU 使用上限")
+                            Spacer()
+                            Text("\(Int(rule.cpuPercent))%").monospacedDigit()
+                        }
+                        Slider(value: Binding(get: { rule.cpuPercent }, set: { percent in update { $0.cpuPercent = percent } }),
+                               in: 5...200, step: 5).accessibilityIdentifier("cpu-budget")
+                        Text("100% 为一个核心满载，含应用的辅助进程。")
+                            .font(.caption).foregroundStyle(.secondary)
+                    }
                 }
                 if !model.enabled {
-                    Text("规则已保存，打开顶部总开关后执行。").font(.caption).foregroundStyle(.secondary)
+                    Text("打开顶部总开关后生效。").font(.caption).foregroundStyle(.secondary)
                 }
-            } else {
-                Text("保持原样").font(.callout).foregroundStyle(.secondary)
-                Text("开启后设置等待时间和 CPU 使用上限。").font(.caption).foregroundStyle(.secondary)
             }
+        }
+    }
+
+    private var modeNote: String {
+        switch rule.mode {
+        case .gentle: "降低调度优先级，前台应用优先获得资源；不设上限，空闲时占用可能不变。"
+        case .suspend: "完全暂停，不占用 CPU。后台播放、下载和消息通知都会停止，回到前台后恢复。"
+        default: "按上限短暂暂停应用，平均占用不超过设定值；可能影响声音和网络连接。"
+        }
+    }
+
+    /// 暂停应用不能在前台生效，滑块从 1 秒开始。
+    private var minimumDelayIndex: Int { rule.mode == .suspend ? 1 : 0 }
+
+    private func setMode(_ mode: ControlMode) {
+        update {
+            $0.mode = mode
+            if mode == .suspend && $0.alwaysLimit {
+                $0.alwaysLimit = false
+                $0.delaySeconds = 3
+            }
+        }
+    }
+
+    /// 旧规则的等待时间可能不在预设中，显示最接近的档位。
+    private var delayIndex: Int {
+        if rule.alwaysLimit { return 0 }
+        let presets = AppRule.delayPresets
+        return (1..<presets.count).min { abs(presets[$0] - rule.delaySeconds) < abs(presets[$1] - rule.delaySeconds) } ?? 2
+    }
+
+    private var delayTitle: String {
+        if rule.alwaysLimit { return "始终限制" }
+        let seconds = Int(AppRule.delayPresets[delayIndex])
+        return seconds >= 60 ? "离开前台 \(seconds / 60) 分钟后" : "离开前台 \(seconds) 秒后"
+    }
+
+    private func setDelay(index: Int) {
+        let presets = AppRule.delayPresets
+        let index = min(presets.count - 1, max(minimumDelayIndex, index))
+        guard index != delayIndex else { return }
+        update {
+            $0.alwaysLimit = index == 0
+            $0.delaySeconds = presets[index]
         }
     }
 

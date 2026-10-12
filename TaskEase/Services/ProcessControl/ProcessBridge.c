@@ -10,6 +10,7 @@
 #include <unistd.h>
 #include <errno.h>
 #include <string.h>
+#include <stdio.h>
 
 int te_list_pids(int32_t *pids, int bytes) { return proc_listallpids(pids, bytes); }
 int te_process_identity(int32_t pid, TEProcessStats *out) {
@@ -91,6 +92,83 @@ double te_gpu_percent(void) {
     }
     IOObjectRelease(iterator);
     return value;
+}
+/* 累计一个 GPU 客户端的执行时间（纳秒）；创建者 PID 解析失败或没有记录时返回 0。 */
+static int gpu_client_time(io_registry_entry_t entry, TEProcessGPU *out) {
+    CFTypeRef creator = IORegistryEntryCreateCFProperty(entry, CFSTR("IOUserClientCreator"), kCFAllocatorDefault, 0);
+    CFTypeRef usage = IORegistryEntryCreateCFProperty(entry, CFSTR("AppUsage"), kCFAllocatorDefault, 0);
+    char text[64] = {0};
+    int pid = 0;
+    uint64_t total = 0;
+    if (creator && CFGetTypeID(creator) == CFStringGetTypeID() &&
+        CFStringGetCString((CFStringRef)creator, text, sizeof(text), kCFStringEncodingUTF8) &&
+        sscanf(text, "pid %d", &pid) == 1 && pid > 0 &&
+        usage && CFGetTypeID(usage) == CFArrayGetTypeID()) {
+        CFIndex count = CFArrayGetCount((CFArrayRef)usage);
+        for (CFIndex index = 0; index < count; index++) {
+            CFTypeRef item = CFArrayGetValueAtIndex((CFArrayRef)usage, index);
+            if (!item || CFGetTypeID(item) != CFDictionaryGetTypeID()) continue;
+            CFTypeRef number = CFDictionaryGetValue((CFDictionaryRef)item, CFSTR("accumulatedGPUTime"));
+            int64_t value = 0;
+            if (number && CFGetTypeID(number) == CFNumberGetTypeID() &&
+                CFNumberGetValue((CFNumberRef)number, kCFNumberSInt64Type, &value) && value > 0) total += (uint64_t)value;
+        }
+    }
+    if (creator) CFRelease(creator);
+    if (usage) CFRelease(usage);
+    if (total == 0) return 0;
+    *out = (TEProcessGPU){ pid, total };
+    return 1;
+}
+
+/* GPU 用户客户端挂在 AGXAccelerator 下，不能通过服务匹配取得，只遍历加速器的直接子节点。
+   同一 PID 可能出现多条，由调用方合并。 */
+int te_gpu_process_times(TEProcessGPU *out, int capacity) {
+    if (!out || capacity <= 0) return -1;
+    io_iterator_t accelerators = 0;
+    if (IOServiceGetMatchingServices(kIOMainPortDefault, IOServiceMatching("AGXAccelerator"), &accelerators) != KERN_SUCCESS) return -1;
+    int found = 0;
+    io_registry_entry_t accelerator;
+    while ((accelerator = IOIteratorNext(accelerators))) {
+        io_iterator_t children = 0;
+        if (IORegistryEntryGetChildIterator(accelerator, kIOServicePlane, &children) == KERN_SUCCESS) {
+            io_registry_entry_t child;
+            while ((child = IOIteratorNext(children))) {
+                if (found < capacity && IOObjectConformsTo(child, "IOUserClient") &&
+                    gpu_client_time(child, &out[found])) found++;
+                IOObjectRelease(child);
+            }
+            IOObjectRelease(children);
+        }
+        IOObjectRelease(accelerator);
+    }
+    IOObjectRelease(accelerators);
+    return found;
+}
+/* 读取 GPU 型号与核心数；只在第一次打开详情时调用。 */
+int te_gpu_info(char *model, uint32_t length, int32_t *cores) {
+    if (!model || length == 0 || !cores) return 0;
+    model[0] = 0; *cores = 0;
+    io_iterator_t iterator = 0;
+    if (IOServiceGetMatchingServices(kIOMainPortDefault, IOServiceMatching("AGXAccelerator"), &iterator) != KERN_SUCCESS) return 0;
+    io_registry_entry_t entry = IOIteratorNext(iterator);
+    int found = 0;
+    if (entry) {
+        CFTypeRef name = IORegistryEntryCreateCFProperty(entry, CFSTR("model"), kCFAllocatorDefault, 0);
+        if (name && CFGetTypeID(name) == CFStringGetTypeID()) {
+            found = CFStringGetCString((CFStringRef)name, model, length, kCFStringEncodingUTF8) ? 1 : 0;
+        }
+        if (name) CFRelease(name);
+        CFTypeRef number = IORegistryEntryCreateCFProperty(entry, CFSTR("gpu-core-count"), kCFAllocatorDefault, 0);
+        if (number && CFGetTypeID(number) == CFNumberGetTypeID()) {
+            CFNumberGetValue((CFNumberRef)number, kCFNumberSInt32Type, cores);
+            found = 1;
+        }
+        if (number) CFRelease(number);
+        IOObjectRelease(entry);
+    }
+    IOObjectRelease(iterator);
+    return found;
 }
 static volatile sig_atomic_t worker_exit = 0;
 static void on_worker_signal(int number) { (void)number; worker_exit = 1; }

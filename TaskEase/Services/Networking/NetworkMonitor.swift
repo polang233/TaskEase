@@ -43,7 +43,7 @@ actor NetworkMonitor {
                     deadline = Task {
                         do { try await Task.sleep(for: .seconds(1.5)) }
                         catch { return }
-                        await self.cancel()
+                        self.cancel()
                     }
                 } catch { finish(result: nil) }
             }

@@ -25,6 +25,7 @@ enum SelfCheck {
             "systemMemoryUsedBytes": system.memory?.usedBytes ?? 0,
             "systemMemoryTotalBytes": system.memory?.totalBytes ?? 0,
             "systemMemoryCompressedBytes": system.memory?.compressedBytes ?? 0,
+            "systemMemorySwapBytes": system.memory?.swapBytes.map { Int64(clamping: $0) } ?? -1,
             "systemReceiveBytesPerSecond": system.network?.receiveRate ?? -1,
             "systemSendBytesPerSecond": system.network?.sendRate ?? -1]
         if let data = try? JSONSerialization.data(withJSONObject: report, options: [.prettyPrinted, .sortedKeys]),
@@ -96,7 +97,8 @@ enum SelfCheck {
         pump(0.25)
         let limited = usage(target, seconds: 2.5) { controller.update([budget]) }
         controller.update([])
-        pump(0.15)
+        // 空计划不再同步等待退出，留出工作进程读取关闭消息并恢复的时间。
+        pump(0.4)
         let resumed = usage(target, seconds: 0.8)
         results["baseline_cpu_percent"] = baseline
         results["limited_cpu_percent"] = limited
@@ -106,10 +108,20 @@ enum SelfCheck {
         pump(0.25)
         let gentleApplied = te_get_background(identity.pid) == 1
         controller.update([])
-        pump(0.15)
+        pump(0.4)
         let gentleRestored = te_get_background(identity.pid) == 0
         results["gentle_applied"] = gentleApplied
         results["gentle_restored"] = gentleRestored
+
+        let suspend = ControlGroup(bundleID: "TaskEase.self-check", mode: .suspend, cpuPercent: 20, targets: [target])
+        controller.update([suspend])
+        pump(0.4)
+        let suspendApplied = NativeProcess.sample(identity.pid)?.status == 4
+        controller.update([])
+        pump(0.4)
+        let suspendRestored = NativeProcess.sample(identity.pid)?.status != 4
+        results["suspend_applied"] = suspendApplied
+        results["suspend_restored"] = suspendRestored
 
         // An alive controller without renewals models a stalled main app.
         controller.update([budget])
@@ -164,7 +176,7 @@ enum SelfCheck {
         results["group_restored"] = groupRestored
 
         let passed = groupCPU >= 8 && groupCPU <= 35 && groupRestored && baseline > 55 && limited >= 8 && limited <= 35 && resumed > 55 &&
-            gentleApplied && gentleRestored && leaseRecovered && crashRecovered
+            gentleApplied && gentleRestored && suspendApplied && suspendRestored && leaseRecovered && crashRecovered
         results["passed"] = passed
         if let data = try? JSONSerialization.data(withJSONObject: results, options: [.prettyPrinted, .sortedKeys]),
            let text = String(data: data, encoding: .utf8) { print(text) }
