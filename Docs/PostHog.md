@@ -54,7 +54,7 @@ HTTP 请求通过临时 URLSession 发送，有请求和资源超时，不跟随
 
 [TaskEase 公开看板](https://us.posthog.com/shared/Do9W3574hr41SnipsKsuPGuWM_LYrw)已开启免登录访问，包含使用人数大数字、每日趋势折线图及国家/地区占比饼图。仅发布聚合数据，排除 is_test=true。每日趋势使用项目的 UTC 时区，本地上报日期仍按安装的系统时区计算。
 
-README 的统计图由 `.github/workflows/usage-stats.yml` 每天运行 [usage-stats-svg.py](../Scripts/usage-stats-svg.py) 生成：读取公开看板的三张卡片（人数、每日趋势、地区占比），渲染为适配深浅色的 SVG，强制推送到独立的 `usage-stats` 分支，不在 main 上产生提交。也可在 Actions 中手动运行。脚本只用 Python 标准库，不需要 PostHog 密钥。
+README 的统计图由 `.github/workflows/usage-stats.yml` 每 6 小时运行 [usage-stats-svg.py](../Scripts/usage-stats-svg.py) 生成：读取公开看板的三张卡片（人数、每日趋势、地区占比），渲染为适配深浅色的 SVG，强制推送到独立的 `usage-stats` 分支，不在 main 上产生提交。也可在 Actions 中手动运行。脚本只用 Python 标准库，不需要 PostHog 密钥。
 
 在后台 Share 中可以关闭公开分享。以后添加看板内容时，只加入适合公开的聚合指标，不添加安装标识列表或事件明细。参考 [PostHog 公开分享与嵌入](https://posthog.com/docs/product-analytics/sharing)。
 

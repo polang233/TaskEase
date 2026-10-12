@@ -65,7 +65,7 @@ def render(total, days, regions):
     share = '  '.join(f'{html.escape(name)} {round(count * 100 / total) if total else 0}%' for name, count in regions)
     first = days[0][0][5:] if days else ''
     last = days[-1][0][5:] if days else ''
-    updated = datetime.datetime.now(datetime.timezone.utc).strftime('%Y-%m-%d')
+    updated = datetime.datetime.now(datetime.timezone.utc).strftime('%Y-%m-%d %H:%M')
     return f'''<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 {width} {height}" role="img" aria-label="轻程近 30 天 {total} 台设备">
 <style>
   .card {{ fill: #ffffff; stroke: #d0d7de; }}

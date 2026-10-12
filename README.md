@@ -59,7 +59,7 @@ CPU 限制会短暂暂停整个受控进程，可能影响声音和连接心跳�
 
 [![轻程使用统计](https://raw.githubusercontent.com/polang233/TaskEase/usage-stats/usage-stats.svg)](https://us.posthog.com/shared/Do9W3574hr41SnipsKsuPGuWM_LYrw)
 
-统计图每天从公开看板自动生成。轻程默认开启匿名使用统计，只上报版本、系统地区等概况，可在“关于轻程 → 使用统计”关闭；字段说明见 [PostHog 文档](Docs/PostHog.md)。
+统计图每 6 小时从公开看板自动生成。轻程默认开启匿名使用统计，只上报版本、系统地区等概况，可在“关于轻程 → 使用统计”关闭；字段说明见 [PostHog 文档](Docs/PostHog.md)。
 
 ## 开始使用
 
