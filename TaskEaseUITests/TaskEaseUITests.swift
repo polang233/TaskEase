@@ -24,7 +24,10 @@ final class TaskEaseUITests: XCTestCase {
         defer { app.terminate() }
         let window = app.windows["轻程"]
         XCTAssertFalse(window.staticTexts["Finder"].exists)
-        let filter = window.checkBoxes["show-system-apps"]
+        let menu = window.descendants(matching: .any).matching(identifier: "app-sort").firstMatch
+        XCTAssertTrue(menu.waitForExistence(timeout: 5))
+        menu.click()
+        let filter = app.menuItems["显示系统应用"]
         XCTAssertTrue(filter.waitForExistence(timeout: 5))
         filter.click()
         let search = window.textFields["app-search"]
@@ -192,8 +195,8 @@ final class TaskEaseUITests: XCTestCase {
         XCTAssertEqual((toggle.value as? NSNumber)?.intValue, 1)
         toggle.click()
         XCTAssertEqual((toggle.value as? NSNumber)?.intValue, 0)
-        XCTAssertTrue(statistics.staticTexts["匿名上传使用概况，不包含个人信息或其他应用明细。"].exists)
-        XCTAssertTrue(statistics.staticTexts["近 30 天活跃设备"].exists)
+        XCTAssertTrue(statistics.staticTexts["默认开启匿名使用统计，收集系统地区、版本等使用概况，不包含姓名、文件或其他应用明细。"].exists)
+        XCTAssertTrue(statistics.staticTexts["台设备在用轻程"].exists)
         toggle.click()
         XCTAssertEqual((toggle.value as? NSNumber)?.intValue, 1)
         XCTAssertGreaterThanOrEqual(statistics.frame.width, 580)

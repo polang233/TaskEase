@@ -3,26 +3,33 @@ import SwiftUI
 /// 管理窗口，展示运行中的应用、已配置规则与当前选中的规则编辑器。
 struct ContentView: View {
     @Bindable var model: AppModel
+    /// 管理窗口把页眉放进透明标题栏；独立预览为 nil，保持普通页眉。
+    var titlebar: TitlebarMetrics?
+    @FocusState private var searchFocused: Bool
 
     var body: some View {
         VStack(spacing: 0) {
             HStack(spacing: 12) {
-                BrandMark(size: 32)
-                VStack(alignment: .leading, spacing: 3) {
-                    Text("轻程").font(.title2.weight(.semibold))
-                    Text("TaskEase · \(AppVersion.short)").font(.caption).foregroundStyle(.secondary)
-                }
-                Spacer()
+                HStack(spacing: 8) {
+                    BrandMark(size: 24)
+                    Text("轻程").font(.title3.weight(.semibold))
+                    Text("TaskEase \(AppVersion.short)").font(.caption).foregroundStyle(.secondary)
+                        .padding(.top, 2)
+                }.modifier(WindowHeaderDrag(enabled: titlebar != nil))
+                Color.clear.frame(maxWidth: .infinity).frame(height: 32)
+                    .modifier(WindowHeaderDrag(enabled: titlebar != nil))
                 if model.managedCount > 0 {
                     Text("\(model.managedCount) 个应用限制生效").font(.callout).foregroundStyle(.secondary)
                 }
                 BackgroundControlToggle(model: model)
                 Button("设置", systemImage: "gearshape") { model.showUtility(.settings) }
                     .labelStyle(.iconOnly).buttonStyle(.borderless).font(.title3)
-                    .help("设置").accessibilityIdentifier("open-settings")
-            }.padding(20)
+                    .help("设置").pointingHand().accessibilityIdentifier("open-settings")
+            }.padding(.leading, titlebar.map { $0.leading + 16 } ?? 20)
+                .padding(.trailing, 20).padding(.vertical, titlebar == nil ? 14 : 0)
+                .frame(height: titlebar?.height)
             Divider()
-            SystemStrip(reading: model.system, isPaused: model.managementDisplayPaused)
+            SystemStrip(reading: model.system, isPaused: model.managementDisplayPaused, style: model.preferences.metricStyle)
             Divider()
             if let error = model.errorMessage {
                 HStack {
@@ -46,41 +53,25 @@ struct ContentView: View {
 
         }
         .frame(minWidth: 840, minHeight: 580)
-        .preferredColorScheme(model.preferences.theme.colorScheme)
+        .ignoresSafeArea(.container, edges: titlebar == nil ? [] : .top)
         .onChange(of: model.search) { _, _ in model.ensureSelection() }
     }
 
     private var applicationList: some View {
         VStack(spacing: 0) {
-            Picker("应用列表", selection: Binding(get: { model.applicationList }, set: { model.setApplicationList($0) })) {
-                ForEach(ApplicationList.allCases, id: \.self) { Text($0.title).tag($0) }
-            }.pickerStyle(.segmented).labelsHidden().padding(.horizontal, 16).padding(.top, 14)
-                .accessibilityIdentifier("application-list")
-            HStack {
-                Image(systemName: "magnifyingglass").foregroundStyle(.secondary)
-                TextField("搜索应用", text: $model.search).textFieldStyle(.plain)
-                    .accessibilityIdentifier("app-search")
-                if !model.search.isEmpty {
-                    Button("清除搜索", systemImage: "xmark.circle.fill") { model.search = "" }
-                        .labelStyle(.iconOnly).buttonStyle(.plain).foregroundStyle(.secondary)
-                }
-            }.padding(.horizontal, 18).padding(.vertical, 12)
-            HStack {
-                Text("\(model.filteredApps.count) 个应用").font(.caption).foregroundStyle(.secondary)
-                Spacer()
-                if model.applicationList == .running {
-                    Toggle("显示系统应用", isOn: Binding(get: { model.preferences.showSystemApps },
-                                                   set: { value in model.updatePreferences { $0.showSystemApps = value } }))
-                        .toggleStyle(.checkbox).font(.caption)
-                        .accessibilityIdentifier("show-system-apps")
-                }
-            }.padding(.horizontal, 18).padding(.bottom, 12)
+            // 宽度足够时列表切换与排序菜单同一行，窄时排序菜单换到下一行。
+            ViewThatFits(in: .horizontal) {
+                HStack(spacing: 10) { listPicker; Spacer(minLength: 0); SortMenu(model: model, showsSystemToggle: true) }
+                VStack(alignment: .trailing, spacing: 8) { listPicker; SortMenu(model: model, showsSystemToggle: true) }
+            }.padding(.horizontal, 16).padding(.top, 14)
+            searchField.padding(.horizontal, 16).padding(.top, 10).padding(.bottom, 10)
             Divider()
             if model.filteredApps.isEmpty {
                 emptyList.frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
                 List(selection: $model.selectedID) {
                     ForEach(model.filteredApps) { app in
+                        let key = model.effectiveSortKey
                         HStack(spacing: 10) {
                             AppIcon(app: app, size: 30)
                             VStack(alignment: .leading, spacing: 5) {
@@ -95,21 +86,52 @@ struct ContentView: View {
                             Spacer()
                             if app.isRunning {
                                 VStack(alignment: .trailing, spacing: 4) {
-                                    Text(Display.percent(app.cpuPercent)).monospacedDigit()
-                                        .foregroundStyle(MetricSeverity.applicationCPU(app.cpuPercent).color)
-                                    Text(Display.memory(app)).font(.caption).foregroundStyle(.secondary).monospacedDigit()
-                                    if model.preferences.networkActivityVisible {
+                                    Text(AppUsage.value(app, key, scale: model.preferences.cpuScale)).monospacedDigit()
+                                    Text(AppUsage.secondary(app, key, scale: model.preferences.cpuScale))
+                                        .font(.caption).foregroundStyle(.secondary).monospacedDigit()
+                                    if model.preferences.networkActivityVisible && key != .network {
                                         Text("↓ " + Display.networkRate(app.network?.receiveRate) +
                                              "  ↑ " + Display.networkRate(app.network?.sendRate))
                                             .font(.caption2).foregroundStyle(.secondary).monospacedDigit()
                                     }
                                 }
                             }
-                        }.padding(.vertical, 6).tag(app.id)
+                        }
+                        .padding(.vertical, 8).padding(.horizontal, 8)
+                        .background(UsageFill(fraction: app.isRunning ? AppUsage.fraction(app, key, scale: model.preferences.cpuScale) : nil))
+                        .contentShape(Rectangle()).pointingHand()
+                        .listRowSeparator(.hidden)
+                        .tag(app.id)
                     }
                 }.listStyle(.inset)
             }
         }
+    }
+
+    private var listPicker: some View {
+        Picker("应用列表", selection: Binding(get: { model.applicationList }, set: { model.setApplicationList($0) })) {
+            ForEach(ApplicationList.allCases, id: \.self) { Text($0.title).tag($0) }
+        }.selectionRail().labelsHidden().fixedSize()
+            .accessibilityIdentifier("application-list")
+    }
+
+    private var searchField: some View {
+        HStack(spacing: 6) {
+            Image(systemName: "magnifyingglass").foregroundStyle(.secondary)
+            TextField("搜索 \(model.filteredApps.count) 个应用", text: $model.search).textFieldStyle(.plain)
+                .focused($searchFocused)
+                .accessibilityIdentifier("app-search")
+            if !model.search.isEmpty {
+                Button("清除搜索", systemImage: "xmark.circle.fill") { model.search = "" }
+                    .labelStyle(.iconOnly).buttonStyle(.plain).foregroundStyle(.secondary).pointingHand()
+            }
+        }
+        .padding(.horizontal, 9).frame(height: 30)
+        .background(Color(nsColor: .controlBackgroundColor), in: RoundedRectangle(cornerRadius: 8))
+        .overlay(RoundedRectangle(cornerRadius: 8)
+            .strokeBorder(searchFocused ? Color.accentColor.opacity(0.6) : Color(nsColor: .separatorColor), lineWidth: 1))
+        .contentShape(Rectangle())
+        .onTapGesture { searchFocused = true }
     }
 
     @ViewBuilder private var emptyList: some View {
@@ -156,4 +178,21 @@ struct ContentView: View {
     let model = AppModel(preview: true)
     model.updatePreferences { $0.theme = .dark }
     return ContentView(model: model)
+}
+
+/// 透明标题栏的实测尺寸：页眉与标题栏同高，红绿灯和品牌标识共用一条竖直中线。
+struct TitlebarMetrics: Equatable {
+    var height: CGFloat
+    /// 红绿灯右边缘距窗口左侧的距离。
+    var leading: CGFloat
+
+    /// 以红绿灯中心为准：页眉高度取其到顶边距离的两倍，不依赖各系统版本的工具栏高度。
+    @MainActor static func measure(_ window: NSWindow) -> TitlebarMetrics {
+        guard let close = window.standardWindowButton(.closeButton), let bar = close.superview,
+              let zoom = window.standardWindowButton(.zoomButton) else {
+            return TitlebarMetrics(height: 52, leading: 68)
+        }
+        let center = bar.isFlipped ? close.frame.midY : bar.bounds.height - close.frame.midY
+        return TitlebarMetrics(height: max(2 * center, 44), leading: zoom.frame.maxX)
+    }
 }

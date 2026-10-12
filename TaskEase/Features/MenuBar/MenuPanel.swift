@@ -14,17 +14,24 @@ struct MenuPanel: View {
                 BackgroundControlToggle(model: model).controlSize(.small)
             }.padding(16)
             Divider()
-            SystemStrip(reading: model.system).padding(.horizontal, -4)
+            SystemStrip(reading: model.system, style: model.preferences.metricStyle).padding(.horizontal, -4)
             Divider()
-            VStack(spacing: 12) {
-                ForEach(Array(model.visibleRunningApps.prefix(5))) { app in
+            VStack(spacing: 4) {
+                HStack {
+                    Text("占用最高").font(.caption).foregroundStyle(.secondary)
+                    Spacer()
+                    SortMenu(model: model)
+                }
+                let key = model.effectiveSortKey
+                ForEach(Array(AppModel.sorted(model.visibleRunningApps, by: key).prefix(5))) { app in
                     HStack(spacing: 9) {
                         AppIcon(app: app, size: 24)
                         Text(app.name).lineLimit(1)
                         Spacer()
-                        Text(Display.percent(app.cpuPercent)).monospacedDigit()
-                            .foregroundStyle(MetricSeverity.applicationCPU(app.cpuPercent).color)
+                        Text(AppUsage.value(app, key, scale: model.preferences.cpuScale)).monospacedDigit()
                     }
+                    .padding(.vertical, 5).padding(.horizontal, 6)
+                    .background(UsageFill(fraction: AppUsage.fraction(app, key, scale: model.preferences.cpuScale)))
                 }
                 if model.visibleRunningApps.isEmpty {
                     Text(model.isRefreshing ? "正在读取应用占用…" : "当前没有可显示的应用")
@@ -33,16 +40,15 @@ struct MenuPanel: View {
             }.padding(16)
             Divider()
             HStack {
-                Button("应用管理") { model.showManagement() }
+                Button("应用管理") { model.showManagement() }.pointingHand()
                 Button("设置", systemImage: "gearshape") { model.showUtility(.settings) }
-                    .labelStyle(.iconOnly).help("设置")
+                    .labelStyle(.iconOnly).help("设置").pointingHand()
                 Spacer()
                 Text("\(model.managedCount) 个生效").font(.caption).foregroundStyle(.secondary)
-                Button("退出") { NSApp.terminate(nil) }
+                Button("退出") { NSApp.terminate(nil) }.pointingHand()
             }.padding(14)
         }
         .frame(width: 420)
-        .preferredColorScheme(model.preferences.theme.colorScheme)
         .background(WindowReader { [weak model] window in model?.trackMenuWindow(window) }
             .frame(width: 0, height: 0))
     }

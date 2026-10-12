@@ -19,11 +19,14 @@ enum ThemeMode: String, Codable, CaseIterable, Sendable {
     }
 }
 
-/// 保存系统应用筛选、刷新间隔与外观偏好。
+/// 保存系统应用筛选、刷新间隔、外观、概览样式与列表排序。
 struct AppPreferences: Codable, Equatable, Sendable {
     var showSystemApps = false
     var refreshInterval: DisplayRefreshInterval = .two
     var theme: ThemeMode = .system
+    var metricStyle: MetricDisplayStyle = .number
+    var sortKey: AppSortKey = .cpu
+    var cpuScale: CPUScale = .core
     var refreshOnlyInForeground = true
     var networkFeaturesEnabled = false
     var showNetworkActivity = true
@@ -39,6 +42,9 @@ extension AppPreferences {
         showSystemApps = try values.decodeIfPresent(Bool.self, forKey: .showSystemApps) ?? false
         refreshInterval = try values.decodeIfPresent(DisplayRefreshInterval.self, forKey: .refreshInterval) ?? .two
         theme = try values.decodeIfPresent(ThemeMode.self, forKey: .theme) ?? .system
+        metricStyle = try values.decodeIfPresent(MetricDisplayStyle.self, forKey: .metricStyle) ?? .number
+        sortKey = try values.decodeIfPresent(AppSortKey.self, forKey: .sortKey) ?? .cpu
+        cpuScale = try values.decodeIfPresent(CPUScale.self, forKey: .cpuScale) ?? .core
         refreshOnlyInForeground = try values.decodeIfPresent(Bool.self, forKey: .refreshOnlyInForeground) ?? true
     }
 }

@@ -9,14 +9,20 @@ final class ManagementWindowController: NSWindowController, NSWindowDelegate {
     init(model: AppModel) {
         self.model = model
         let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 1000, height: 720),
-                              styleMask: [.titled, .closable, .miniaturizable, .resizable],
+                              styleMask: [.titled, .closable, .miniaturizable, .resizable, .fullSizeContentView],
                               backing: .buffered, defer: false)
         window.title = "轻程"
+        window.titleVisibility = .hidden
+        window.titlebarAppearsTransparent = true
+        window.titlebarSeparatorStyle = .none
+        // 空的 unified 工具栏加高标题栏，系统会把红绿灯放在加高后的竖直中线上，页眉再按实测尺寸对齐。
+        window.toolbar = NSToolbar(identifier: "TaskEase.ManagementToolbar")
+        window.toolbarStyle = .unified
         window.identifier = NSUserInterfaceItemIdentifier("management-window")
         window.minSize = NSSize(width: 840, height: 580)
         window.isReleasedWhenClosed = false
         window.collectionBehavior = [.moveToActiveSpace, .fullScreenAuxiliary]
-        let hosting = NSHostingController(rootView: ContentView(model: model))
+        let hosting = NSHostingController(rootView: ContentView(model: model, titlebar: .measure(window)))
         hosting.sizingOptions = .minSize
         window.contentViewController = hosting
         super.init(window: window)
