@@ -16,7 +16,16 @@ final class UsageStatisticsModel {
          loader: @escaping @Sendable (Bool) async throws -> PublicUsageSummary = { try await PublicUsageCache.shared.load(refresh: $0) }) {
         self.fixtures = fixtures
         self.loader = loader
-        if fixtures { summary = .init(activeInstallations: 1, updatedAt: nil) }
+        if fixtures {
+            let today = Calendar.current.startOfDay(for: Date())
+            let days = (0..<30).map { offset in
+                PublicUsageSummary.Day(date: today.addingTimeInterval(Double(offset - 29) * 86_400),
+                                       installations: [3, 4, 4, 5, 6, 5, 7][offset % 7] + offset / 6)
+            }
+            summary = .init(activeInstallations: 18, updatedAt: nil, days: days,
+                            regions: [.init(name: "中国", installations: 12), .init(name: "美国", installations: 4),
+                                      .init(name: "日本", installations: 2)])
+        }
     }
 
     func refresh(force: Bool = false) {

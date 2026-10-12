@@ -1,4 +1,5 @@
 import SwiftUI
+import Charts
 
 /// 使用统计窗口：公开的设备概况与本机匿名上报开关分开展示。
 struct UsageStatisticsView: View {
@@ -6,44 +7,84 @@ struct UsageStatisticsView: View {
     private var statistics: UsageStatisticsModel { model.usageStatistics }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 24) {
-            VStack(alignment: .leading, spacing: 12) {
-                Text("一起让后台更轻松").font(.title2.weight(.semibold))
-                Text("近 30 天活跃设备").font(.callout).foregroundStyle(.secondary)
-                if statistics.loading && statistics.summary == nil {
-                    ProgressView().frame(height: 58)
-                } else {
-                    Text(statistics.summary.map { "\($0.activeInstallations)" } ?? "—")
-                        .font(.system(size: 48, weight: .semibold, design: .rounded)).monospacedDigit()
-                        .accessibilityIdentifier("active-installation-count")
-                }
-                Text("按匿名安装标识估计设备数量；重新安装可能产生新的标识。")
-                    .font(.caption).foregroundStyle(.secondary)
-                if statistics.failed {
-                    Text("暂时无法读取统计，请稍后刷新。").font(.caption).foregroundStyle(.secondary)
-                } else if let updated = statistics.summary?.updatedAt {
-                    Text("数据更新于 \(updated.formatted(date: .abbreviated, time: .shortened))")
-                        .font(.caption).foregroundStyle(.secondary)
-                }
-                HStack {
-                    Link("查看趋势与地区分布", destination: ProjectLinks.statistics)
-                    Spacer()
-                    Button("刷新", systemImage: "arrow.clockwise") { statistics.refresh(force: true) }
-                        .disabled(statistics.loading).accessibilityIdentifier("refresh-public-statistics")
-                }.font(.callout)
-            }
+        VStack(alignment: .leading, spacing: 20) {
+            Text("一起让后台更轻松～").font(.title2.weight(.semibold))
+            overview
             Divider()
-            VStack(alignment: .leading, spacing: 10) {
+            VStack(alignment: .leading, spacing: 8) {
                 Toggle("匿名使用统计", isOn: Binding(get: { model.usageAnalytics.enabled },
                     set: { model.usageAnalytics.setEnabled($0) }))
                     .toggleStyle(.switch).disabled(!model.usageAnalytics.isConfigured)
                     .accessibilityIdentifier("usage-analytics-toggle")
-                Text("匿名上传使用概况，不包含个人信息或其他应用明细。")
+                Text("默认开启匿名使用统计，收集系统地区、版本等使用概况，不包含姓名、文件或其他应用明细。")
                     .font(.caption).foregroundStyle(.secondary)
-                Text("默认开启，可随时关闭。关闭后停止本机上报，仍可查看公开统计。")
+                Text("只是想看看有多少人在用轻程。上报低频且数据量很小，十分感谢！")
                     .font(.caption).foregroundStyle(.secondary)
             }
         }.padding(28).frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+    }
+
+    @ViewBuilder private var overview: some View {
+        if statistics.loading && statistics.summary == nil {
+            ProgressView().frame(maxWidth: .infinity, minHeight: 150)
+        } else if let summary = statistics.summary {
+            VStack(alignment: .leading, spacing: 12) {
+                HStack(alignment: .firstTextBaseline, spacing: 6) {
+                    Text("近 30 天").foregroundStyle(.secondary)
+                    Text("\(summary.activeInstallations)")
+                        .font(.title.weight(.semibold)).monospacedDigit()
+                        .accessibilityIdentifier("active-installation-count")
+                    Text("台设备在用轻程").foregroundStyle(.secondary)
+                }
+                if !summary.days.isEmpty { trend(summary.days) }
+                if !summary.regions.isEmpty { regions(summary.regions, total: summary.activeInstallations) }
+                footer(summary.updatedAt)
+            }
+        } else {
+            footer(nil).frame(maxWidth: .infinity, minHeight: 150)
+        }
+    }
+
+    private func trend(_ days: [PublicUsageSummary.Day]) -> some View {
+        Chart(days, id: \.date) { day in
+            BarMark(x: .value("日期", day.date, unit: .day), y: .value("设备", day.installations), width: .ratio(0.7))
+                .foregroundStyle(Color.accentColor.opacity(0.75))
+                .cornerRadius(2)
+        }
+        .chartXAxis {
+            AxisMarks(values: .stride(by: .day, count: 7)) { _ in
+                AxisValueLabel(format: .dateTime.month(.defaultDigits).day(), centered: false)
+            }
+        }
+        .chartYAxis { AxisMarks(position: .leading, values: .automatic(desiredCount: 3)) }
+        .frame(height: 90)
+        .accessibilityLabel("每日活跃设备趋势")
+    }
+
+    private func regions(_ regions: [PublicUsageSummary.Region], total: Int) -> some View {
+        HStack(spacing: 14) {
+            ForEach(regions.prefix(4), id: \.name) { region in
+                HStack(spacing: 4) {
+                    Text(region.name)
+                    Text(total > 0 ? "\(Int((Double(region.installations) / Double(total) * 100).rounded()))%" : "\(region.installations)")
+                        .foregroundStyle(.secondary).monospacedDigit()
+                }
+            }
+        }.font(.caption)
+    }
+
+    @ViewBuilder private func footer(_ updated: Date?) -> some View {
+        if statistics.failed {
+            HStack(spacing: 8) {
+                Text("暂时无法读取统计。").foregroundStyle(.secondary)
+                Button("重试", systemImage: "arrow.clockwise") { statistics.refresh(force: true) }
+                    .buttonStyle(.link).disabled(statistics.loading).pointingHand()
+                    .accessibilityIdentifier("refresh-public-statistics")
+            }.font(.caption)
+        } else if let updated {
+            Text("更新于 \(updated.formatted(date: .abbreviated, time: .shortened))")
+                .font(.caption).foregroundStyle(.tertiary)
+        }
     }
 }
 

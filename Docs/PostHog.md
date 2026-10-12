@@ -54,19 +54,19 @@ HTTP 请求通过临时 URLSession 发送，有请求和资源超时，不跟随
 
 [TaskEase 公开看板](https://us.posthog.com/shared/Do9W3574hr41SnipsKsuPGuWM_LYrw)已开启免登录访问，包含使用人数大数字、每日趋势折线图及国家/地区占比饼图。仅发布聚合数据，排除 is_test=true。每日趋势使用项目的 UTC 时区，本地上报日期仍按安装的系统时区计算。
 
-README 使用公开页面的快照 JPEG，并链接到持续更新的看板。JPEG 的内容保持为捕获时的数据；更新图片时先查看公开页面再保存新快照，保留捕获日期。网页可以使用 PostHog 提供的 iframe，GitHub README 使用图片和链接。
+README 的统计图由 `.github/workflows/usage-stats.yml` 每天运行 [usage-stats-svg.py](../Scripts/usage-stats-svg.py) 生成：读取公开看板的三张卡片（人数、每日趋势、地区占比），渲染为适配深浅色的 SVG，强制推送到独立的 `usage-stats` 分支，不在 main 上产生提交。也可在 Actions 中手动运行。脚本只用 Python 标准库，不需要 PostHog 密钥。
 
 在后台 Share 中可以关闭公开分享。以后添加看板内容时，只加入适合公开的聚合指标，不添加安装标识列表或事件明细。参考 [PostHog 公开分享与嵌入](https://posthog.com/docs/product-analytics/sharing)。
 
 ## 后台查看
 
-应用中的“使用统计”窗口从已公开页面的缓存结果读取近 30 天活跃安装数。`PublicUsageClient` 仅解析指定看板和卡片的数字，使用无 cookies 的临时会话，不附带项目令牌或私人查询密钥。此流程读取公开页面内的导出 JSON，不依赖私有管理 API；公开页面格式改变或分享关闭时显示暂不可用，并保留打开公开看板的入口。管理 API 的授权说明见 [PostHog Insights API](https://posthog.com/docs/api/insights)。
+应用中的“使用统计”窗口从已公开页面的缓存结果读取三张卡片：近 30 天活跃安装数（必需）、每日去重活跃安装和地区占比（缺失时隐藏）。`PublicUsageClient` 只取这三张卡片的数值、日期和地区名称，地区最多保留五个，其余内容不解析也不保存；使用无 cookies 的临时会话，不附带项目令牌或私人查询密钥。此流程读取公开页面内的导出 JSON（约 40 KB），不依赖私有管理 API；公开页面格式改变或分享关闭时显示暂不可用并提供重试。管理 API 的授权说明见 [PostHog Insights API](https://posthog.com/docs/api/insights)。
 
-正常打开窗口最多复用三十分钟的内存缓存；点击“刷新”可重新读取。关闭统计窗口、退出应用和清理本地数据时主动取消请求，并忽略迟到响应；没有统计窗口的后台刷新计时器。关闭匿名上报后仍可查看公开统计。测试与预览使用固定示例数据，不请求公开服务。
+正常打开窗口最多复用三十分钟的内存缓存；读取失败时可点击“重试”。关闭统计窗口、退出应用和清理本地数据时主动取消请求，并忽略迟到响应；没有统计窗口的后台刷新计时器。关闭匿名上报后仍可查看公开统计。测试与预览使用固定示例数据，不请求公开服务。
 
 已配置 [TaskEase 使用统计看板](https://us.posthog.com/project/657959/dashboard/2196112)。人数与国家占比统计包含今天的最近 30 个 UTC 日期。人数按 distinct_id 去重；饼图把每个安装归入最近一次上报的系统地区，避免地区变更使同一安装出现在多个扇区。国家与地区标签来自系统设置，不是实际定位。
 
-人数与国家占比查询分别保存在 [posthog-active-installations.sql](../Scripts/posthog-active-installations.sql) 和 [posthog-country-share.sql](../Scripts/posthog-country-share.sql)。每日趋势使用原生 TrendsQuery，按天计算去重活跃安装。公开看板自动刷新，README 的 JPEG 保持捕获时的快照。
+人数与国家占比查询分别保存在 [posthog-active-installations.sql](../Scripts/posthog-active-installations.sql) 和 [posthog-country-share.sql](../Scripts/posthog-country-share.sql)。每日趋势使用原生 TrendsQuery，按天计算去重活跃安装。公开看板自动刷新。
 
 Activity 中可以查看 taskease daily active 的接收记录与属性。正式统计必须筛选 is_test=false。安装核验事件设置 is_test=true，系统地区为 example，仅用于证明真实应用客户端与接收项目已接通。
 
