@@ -1,14 +1,22 @@
 import SwiftUI
 
+/// 原始值只作为界面标识，显示名称通过本地化获取。
 enum SystemMetric: String {
-    case cpu = "CPU", gpu = "GPU", memory = "内存", temperature = "温度"
+    case cpu, gpu, memory, temperature
 
-    var shortTitle: String { rawValue }
+    var title: String {
+        switch self {
+        case .cpu: String(localized: "metric.cpu")
+        case .gpu: String(localized: "metric.gpu")
+        case .memory: String(localized: "metric.memory")
+        case .temperature: String(localized: "metric.temperature")
+        }
+    }
 
-    /// 概览数值槽的宽度模板：取可能出现的最长文本。
+    /// 概览数值槽的宽度模板：取可能出现的最长文本，包括各语言的热状态名称。
     var widestValues: [String] {
         switch self {
-        case .temperature: ["100.0°C", "轻度升温"]
+        case .temperature: ["100.0°C"] + ThermalLevel.allCases.map(\.title)
         default: ["100.0%"]
         }
     }
@@ -33,29 +41,31 @@ struct MetricDetails: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 7) {
             HStack(alignment: .firstTextBaseline) {
-                Text(metric.rawValue).font(.headline)
+                Text(metric.title).font(.headline)
                 Spacer()
                 Text(primaryValue).font(.title3.weight(.semibold)).monospacedDigit().foregroundStyle(primaryColor)
             }
             switch metric {
             case .cpu:
-                if let model = hardware.cpuModel { row("型号", model) }
-                row("核心", "\(hardware.physicalCores) 核")
-                ForEach(hardware.clusters, id: \.self) { row($0.name, "\($0.cores) 核") }
+                if let model = hardware.cpuModel { row(Text("detail.model"), model) }
+                row(Text("detail.cores"), String(localized: "detail.coreCount \(hardware.physicalCores)"))
+                ForEach(hardware.clusters, id: \.self) {
+                    row(Text($0.name), String(localized: "detail.coreCount \($0.cores)"))
+                }
             case .gpu:
-                if let model = hardware.gpuModel { row("型号", model) }
-                if let cores = hardware.gpuCores { row("核心", "\(cores) 核") }
-                row("显存", "与 CPU 共用 \(Display.gigabytes(hardware.memoryBytes)) GB")
+                if let model = hardware.gpuModel { row(Text("detail.model"), model) }
+                if let cores = hardware.gpuCores { row(Text("detail.cores"), String(localized: "detail.coreCount \(cores)")) }
+                row(Text("detail.vram"), String(localized: "detail.sharedMemory \(Display.gigabytes(hardware.memoryBytes))"))
             case .memory:
-                row("已用", "\(Display.gigabytes(reading.memory?.usedBytes)) / \(Display.gigabytes(reading.memory?.totalBytes)) GB")
-                row("压缩", "\(Display.gigabytes(reading.memory?.compressedBytes)) GB")
-                row("交换", "\(Display.gigabytes(reading.memory?.swapBytes)) GB")
+                row(Text("detail.used"), "\(Display.gigabytes(reading.memory?.usedBytes)) / \(Display.gigabytes(reading.memory?.totalBytes)) GB")
+                row(Text("detail.compressed"), "\(Display.gigabytes(reading.memory?.compressedBytes)) GB")
+                row(Text("detail.swap"), "\(Display.gigabytes(reading.memory?.swapBytes)) GB")
             case .temperature:
-                row("热状态", reading.thermalLabel)
-                note("芯片传感器最高值，仅作参考")
+                row(Text("detail.thermal"), reading.thermal.title)
+                note("detail.sensorNote")
             }
-            if isPaused { note("刷新已暂停") }
-        }.font(.caption).padding(12).frame(width: 220)
+            if isPaused { note("detail.paused") }
+        }.font(.caption).padding(12).frame(width: 240)
     }
 
     private var primaryValue: String {
@@ -72,19 +82,19 @@ struct MetricDetails: View {
         case .cpu: MetricPalette.percent(reading.cpuPercent)
         case .gpu: MetricPalette.percent(reading.gpuPercent)
         case .memory: MetricPalette.percent(reading.memory?.percent)
-        case .temperature: MetricPalette.thermal(celsius: reading.temperatureCelsius, label: reading.thermalLabel)
+        case .temperature: MetricPalette.thermal(celsius: reading.temperatureCelsius, level: reading.thermal)
         }
     }
 
-    private func row(_ title: String, _ value: String) -> some View {
+    private func row(_ title: Text, _ value: String) -> some View {
         HStack(alignment: .firstTextBaseline) {
-            Text(title).foregroundStyle(.secondary)
+            title.foregroundStyle(.secondary)
             Spacer(minLength: 14)
             Text(value).monospacedDigit().multilineTextAlignment(.trailing)
         }
     }
 
-    private func note(_ text: String) -> some View {
+    private func note(_ text: LocalizedStringKey) -> some View {
         Text(text).foregroundStyle(.tertiary).fixedSize(horizontal: false, vertical: true)
     }
 }

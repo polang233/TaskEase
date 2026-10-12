@@ -75,3 +75,29 @@ enum MetricSeverity: Int, Equatable, Sendable {
         utilization(value.map { $0 / Double(max(1, coreCount)) })
     }
 }
+
+/// 系统热状态。逻辑只依赖枚举值，显示名称在界面层本地化。
+enum ThermalLevel: String, Equatable, Sendable, CaseIterable {
+    case nominal, fair, serious, critical, unknown
+
+    var title: String {
+        switch self {
+        case .nominal: String(localized: "thermal.nominal")
+        case .fair: String(localized: "thermal.fair")
+        case .serious: String(localized: "thermal.serious")
+        case .critical: String(localized: "thermal.critical")
+        case .unknown: String(localized: "thermal.unknown")
+        }
+    }
+
+    /// 用于配色的严重程度，0...1；未知时为 nil。
+    var severity: Double? {
+        switch self {
+        case .nominal: 0
+        case .fair: 0.45
+        case .serious: 0.75
+        case .critical: 1
+        case .unknown: nil
+        }
+    }
+}

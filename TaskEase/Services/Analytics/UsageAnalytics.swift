@@ -8,7 +8,7 @@ import Observation
 final class UsageAnalytics {
     private(set) var enabled = false
     private(set) var lastSuccess: Date?
-    private(set) var message = "未开启"
+    private(set) var message = String(localized: "analytics.off")
     var isConfigured: Bool { sender != nil }
 
     @ObservationIgnored private let defaults: UserDefaults
@@ -42,7 +42,7 @@ final class UsageAnalytics {
         // 夹具与开发构建不读取生产同意状态，也不自动发送。
         guard !self.fixtures else {
             enabled = true
-            message = "启动及运行期间低频发送"
+            message = String(localized: "analytics.on")
             return
         }
         if let data = defaults.data(forKey: Self.stateKey), let stored = try? JSONDecoder().decode(DailyUsageState.self, from: data) {
@@ -57,10 +57,10 @@ final class UsageAnalytics {
     func setEnabled(_ value: Bool) {
         guard value != enabled else { return }
         enabled = value
-        if fixtures { message = value ? "启动及运行期间低频发送" : "未开启"; return }
+        if fixtures { message = value ? String(localized: "analytics.on") : String(localized: "analytics.off"); return }
         defaults.set(value, forKey: Self.enabledKey)
         if value { start() }
-        else { stop(); message = "未开启" }
+        else { stop(); message = String(localized: "analytics.off") }
     }
 
     /// 等规则与偏好读取完成，再采集功能概况并恢复已同意的统计。
@@ -70,7 +70,7 @@ final class UsageAnalytics {
     }
 
     private func start() {
-        guard sender != nil else { message = "统计服务尚未配置"; return }
+        guard sender != nil else { message = String(localized: "analytics.notConfigured"); return }
         running = true
         suspended = false
         if state.installationID == nil { state.installationID = UUID(); persist() }
@@ -94,7 +94,7 @@ final class UsageAnalytics {
         let calendar = DailyUsageSchedule.calendar()
         switch DailyUsageSchedule.action(now: now, state: state, calendar: calendar) {
         case .wait(let next):
-            message = "等待下次上报"
+            message = String(localized: "analytics.waiting")
             schedule(next, now: now)
         case .send:
             guard let installationID = state.installationID else { return }
@@ -107,7 +107,7 @@ final class UsageAnalytics {
             state.attempts += 1
             state.retryAfter = now.addingTimeInterval(DailyUsageSchedule.retryInterval)
             persist()
-            message = "正在发送"
+            message = String(localized: "analytics.sending")
             let requestGeneration = generation
             task = Task { [weak self] in
                 do {
@@ -125,7 +125,7 @@ final class UsageAnalytics {
                     guard !Task.isCancelled, let self, self.generation == requestGeneration, self.enabled else { return }
                     self.task = nil
                     self.reconcile()
-                    self.message = "发送未完成，稍后重试"
+                    self.message = String(localized: "analytics.retry")
                 }
             }
         }

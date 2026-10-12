@@ -8,78 +8,90 @@ struct SettingsView: View {
 
     var body: some View {
         Form {
-            Section("显示") {
-                Picker("外观", selection: Binding(get: { model.preferences.theme },
+            Section("settings.display") {
+                VStack(alignment: .leading, spacing: 6) {
+                    Picker("settings.language", selection: Binding(get: { model.language }, set: { model.setLanguage($0) })) {
+                        ForEach(AppLanguage.allCases) { Text(verbatim: $0.title).tag($0) }
+                    }.accessibilityIdentifier("app-language")
+                    if model.languageNeedsRestart {
+                        HStack(spacing: 8) {
+                            Text("settings.language.restart").foregroundStyle(.secondary)
+                            Button("settings.language.restartNow") { model.relaunch() }
+                                .buttonStyle(.link).pointingHand()
+                        }.font(.caption)
+                    }
+                }
+                Picker("settings.theme", selection: Binding(get: { model.preferences.theme },
                                                  set: { theme in model.updatePreferences { $0.theme = theme } })) {
                     ForEach(ThemeMode.allCases, id: \.self) { Text($0.title).tag($0) }
                 }.selectionRail().accessibilityIdentifier("theme-mode")
-                Picker("概览样式", selection: Binding(get: { model.preferences.metricStyle },
+                Picker("settings.metricStyle", selection: Binding(get: { model.preferences.metricStyle },
                     set: { style in model.updatePreferences { $0.metricStyle = style } })) {
                     ForEach(MetricDisplayStyle.allCases, id: \.self) { Text($0.title).tag($0) }
                 }.selectionRail().accessibilityIdentifier("metric-style")
                 VStack(alignment: .leading, spacing: 6) {
-                    Picker("应用 CPU 口径", selection: Binding(get: { model.preferences.cpuScale },
+                    Picker("settings.cpuScale", selection: Binding(get: { model.preferences.cpuScale },
                         set: { scale in model.updatePreferences { $0.cpuScale = scale } })) {
                         ForEach(CPUScale.allCases, id: \.self) { Text($0.title).tag($0) }
                     }.selectionRail().accessibilityIdentifier("cpu-scale")
-                    Text(model.preferences.cpuScale == .core ? "100% 为一个核心满载，与活动监视器一致。" : "占全部核心的比例，所有应用合计不超过 100%。")
+                    (model.preferences.cpuScale == .core ? Text("settings.cpuScale.core.note") : Text("settings.cpuScale.machine.note"))
                         .font(.caption).foregroundStyle(.secondary)
                 }
-                Picker("数据刷新间隔", selection: Binding(get: { model.preferences.refreshInterval },
+                Picker("settings.refreshInterval", selection: Binding(get: { model.preferences.refreshInterval },
                                                        set: { interval in model.updatePreferences { $0.refreshInterval = interval } })) {
                     ForEach(DisplayRefreshInterval.allCases, id: \.self) { Text($0.title).tag($0) }
                 }.accessibilityIdentifier("display-refresh-interval")
                 VStack(alignment: .leading, spacing: 6) {
-                    Toggle("管理窗口仅在前台刷新", isOn: Binding(get: { model.preferences.refreshOnlyInForeground },
+                    Toggle("settings.foregroundOnly", isOn: Binding(get: { model.preferences.refreshOnlyInForeground },
                         set: { value in model.updatePreferences { $0.refreshOnlyInForeground = value } }))
                         .toggleStyle(.checkbox).accessibilityIdentifier("foreground-display-only")
-                    Text("不影响后台规则执行。")
+                    Text("settings.foregroundOnly.note")
                         .font(.caption).foregroundStyle(.secondary)
                 }
-                Toggle("显示系统应用", isOn: Binding(get: { model.preferences.showSystemApps },
+                Toggle("settings.showSystemApps", isOn: Binding(get: { model.preferences.showSystemApps },
                                                    set: { value in model.updatePreferences { $0.showSystemApps = value } }))
                     .toggleStyle(.checkbox)
             }
-            Section("后台规则") {
-                LabeledContent("已保存", value: "\(model.savedRuleCount) 个应用")
-                LabeledContent("已启用", value: "\(model.configuredCount) 条规则")
-                Button("管理后台规则") {
+            Section("settings.rules") {
+                LabeledContent("settings.rules.saved", value: String(localized: "settings.rules.savedCount \(model.savedRuleCount)"))
+                LabeledContent("settings.rules.enabled", value: String(localized: "settings.rules.enabledCount \(model.configuredCount)"))
+                Button("settings.rules.manage") {
                     model.setApplicationList(.configured)
                     model.showManagement()
                 }.accessibilityIdentifier("open-configured-rules")
             }
-            Section("实验功能") {
-                Toggle("网络功能（测试）", isOn: Binding(get: { model.preferences.networkFeaturesEnabled },
+            Section("settings.experimental") {
+                Toggle("settings.network", isOn: Binding(get: { model.preferences.networkFeaturesEnabled },
                     set: { value in model.updatePreferences { $0.networkFeaturesEnabled = value } }))
                     .toggleStyle(.checkbox).accessibilityIdentifier("network-features-enabled")
-                Text("显示应用网速与网络规则配置；阻断和限速尚未生效。")
+                Text("settings.network.note")
                     .font(.caption).foregroundStyle(.secondary)
                 if model.preferences.networkFeaturesEnabled {
-                    Toggle("显示应用网络速度", isOn: Binding(get: { model.preferences.showNetworkActivity },
+                    Toggle("settings.network.showSpeed", isOn: Binding(get: { model.preferences.showNetworkActivity },
                         set: { value in model.updatePreferences { $0.showNetworkActivity = value } }))
                         .toggleStyle(.checkbox).accessibilityIdentifier("show-network-activity")
                 }
             }
-            Section("帮助与信息") {
+            Section("settings.helpInfo") {
                 HStack(spacing: 12) {
-                    Button("使用帮助") { model.showUtility(.help) }
-                    Button("关于轻程") { model.showUtility(.about) }
+                    Button("common.help") { model.showUtility(.help) }
+                    Button("menu.about") { model.showUtility(.about) }
                     Spacer()
-                    Button("清除数据并退出…", role: .destructive) { confirmErase = true }
+                    Button("settings.erase", role: .destructive) { confirmErase = true }
                         .accessibilityIdentifier("erase-app-data")
                 }
             }
         }
         .formStyle(.grouped)
         .padding(12)
-        .alert("清除数据并退出？", isPresented: $confirmErase) {
-            Button("取消", role: .cancel) { }
-            Button("清除并退出", role: .destructive) { eraseError = model.eraseDataAndQuit() }
+        .alert("settings.erase.title", isPresented: $confirmErase) {
+            Button("common.cancel", role: .cancel) { }
+            Button("settings.erase.confirm", role: .destructive) { eraseError = model.eraseDataAndQuit() }
         } message: {
-            Text("将删除后台规则、显示设置及本地应用数据，并解除正在执行的限制。退出后可在访达中将轻程移到废纸篓。")
+            Text("settings.erase.message")
         }
-        .alert("数据清理未完成", isPresented: Binding(get: { eraseError != nil }, set: { if !$0 { eraseError = nil } })) {
-            Button("好", role: .cancel) { eraseError = nil }
+        .alert("settings.erase.failed", isPresented: Binding(get: { eraseError != nil }, set: { if !$0 { eraseError = nil } })) {
+            Button("common.ok", role: .cancel) { eraseError = nil }
         } message: { Text(eraseError ?? "") }
     }
 }

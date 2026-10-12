@@ -4,7 +4,7 @@ enum DisplayRefreshInterval: Int, Codable, CaseIterable, Sendable {
     case one = 1, two = 2, five = 5, ten = 10
 
     var seconds: TimeInterval { TimeInterval(rawValue) }
-    var title: String { "\(rawValue) 秒" }
+    var title: String { String(localized: "interval.seconds \(rawValue)") }
 }
 
 enum ThemeMode: String, Codable, CaseIterable, Sendable {
@@ -12,9 +12,9 @@ enum ThemeMode: String, Codable, CaseIterable, Sendable {
 
     var title: String {
         switch self {
-        case .system: "跟随系统"
-        case .light: "浅色"
-        case .dark: "深色"
+        case .system: String(localized: "theme.system")
+        case .light: String(localized: "theme.light")
+        case .dark: String(localized: "theme.dark")
         }
     }
 }

@@ -29,11 +29,11 @@ final class UpdateChecker {
                     result = .noRelease
                 }
             } catch GitHubClient.Failure.rateLimited {
-                result = .failed("GitHub 请求过于频繁，请稍后再试。")
+                result = .failed(String(localized: "update.rateLimited"))
             } catch is CancellationError {
                 return
             } catch {
-                result = .failed("暂时无法连接 GitHub。")
+                result = .failed(String(localized: "update.offline"))
             }
             guard let self, !Task.isCancelled else { return }
             self.state = result

@@ -30,17 +30,10 @@ enum MetricPalette {
     }
 
     /// 温度按 35–95°C 映射；系统热状态更高时取较高档，避免传感器缺失时误显示为绿色。
-    static func thermal(celsius: Double?, label: String) -> Color {
-        let state: Double? = switch label {
-        case "严重": 1
-        case "较高": 0.75
-        case "轻度升温": 0.45
-        case "正常": 0
-        default: nil
-        }
+    static func thermal(celsius: Double?, level: ThermalLevel) -> Color {
         let sensor = celsius.map { ($0 - 35) / 60 }
-        guard state != nil || sensor != nil else { return .secondary }
-        return color(max(state ?? 0, sensor ?? 0))
+        guard level.severity != nil || sensor != nil else { return .secondary }
+        return color(max(level.severity ?? 0, sensor ?? 0))
     }
 
     static func thermalFraction(celsius: Double?) -> Double? {

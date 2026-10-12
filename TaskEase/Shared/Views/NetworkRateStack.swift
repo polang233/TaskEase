@@ -11,9 +11,9 @@ struct NetworkRateStack: View {
             line("arrow.down", reading?.receiveRate, color: .blue)
         }.font(.system(size: compact ? 9.5 : 10.5).monospacedDigit())
             .frame(width: compact ? 64 : 76, height: 24, alignment: .leading)
-            .help("整机 Wi-Fi 与以太网的上传、下载速度")
+            .help("strip.network.help")
             .accessibilityElement(children: .ignore)
-            .accessibilityLabel("上传 \(Display.compactRate(reading?.sendRate))，下载 \(Display.compactRate(reading?.receiveRate))")
+            .accessibilityLabel("strip.network.a11y \(Display.compactRate(reading?.sendRate)) \(Display.compactRate(reading?.receiveRate))")
             .accessibilityIdentifier("system-network-rate")
     }
 

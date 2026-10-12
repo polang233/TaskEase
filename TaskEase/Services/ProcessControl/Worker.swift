@@ -22,7 +22,7 @@ enum NativeWorker {
         let lock = open(lockURL.path, O_CREAT | O_RDWR | O_CLOEXEC, 0o600)
         guard lock >= 0, flock(lock, LOCK_EX | LOCK_NB) == 0 else {
             if lock >= 0 { close(lock) }
-            emit(WorkerEvent(kind: "error", message: "已有控制进程正在恢复，请稍后重试。"))
+            emit(WorkerEvent(kind: "error", message: String(localized: "worker.busy")))
             return
         }
         defer { flock(lock, LOCK_UN); close(lock) }
@@ -110,11 +110,11 @@ enum NativeWorker {
             try saveOwnership()
         }
 
-        emit(WorkerEvent(kind: "ready", message: "控制进程已就绪"))
+        emit(WorkerEvent(kind: "ready", message: String(localized: "worker.ready")))
         defer {
             // 以持久归属记录恢复，包含异常发生前已记录的暂停。
             _ = Recovery.restore(testing: testing, force: true)
-            emit(WorkerEvent(kind: "restored", message: "已解除本工具的限制"))
+            emit(WorkerEvent(kind: "restored", message: String(localized: "worker.restored")))
         }
         while !closing && !failed && te_worker_should_exit() == 0 {
             if NativeProcess.seconds(since: lastMessage) > 3 || !NativeProcess.isAlive(controllerID) { break }
@@ -136,7 +136,7 @@ enum NativeWorker {
                     input.removeSubrange(...newline)
                     do { try apply(decoder.decode(ControlMessage.self, from: line)) }
                     catch {
-                        emit(WorkerEvent(kind: "error", message: "控制计划无法应用，已恢复限制。"))
+                        emit(WorkerEvent(kind: "error", message: String(localized: "worker.planFailed")))
                         failed = true; break
                     }
                 }
@@ -165,7 +165,7 @@ enum NativeWorker {
                             if NativeProcess.signal(target, number: SIGSTOP) {
                                 stopped.insert(target.identity)
                             } else if NativeProcess.identity(target.identity.pid) == target.identity {
-                                emit(WorkerEvent(kind: "error", message: "该应用不允许进程暂停，已解除限制。"))
+                                emit(WorkerEvent(kind: "error", message: String(localized: "worker.suspendDenied")))
                                 failed = true; break
                             }
                         }
@@ -175,7 +175,7 @@ enum NativeWorker {
                             do { try saveOwnership() } catch { failed = true; break }
                             if !NativeProcess.background(target, enabled: true) {
                                 lowered.removeValue(forKey: target.identity)
-                                emit(WorkerEvent(kind: "error", message: "部分进程不允许后台调度，请检查该应用规则。"))
+                                emit(WorkerEvent(kind: "error", message: String(localized: "worker.backgroundDenied")))
                             }
                         }
                     } else {
@@ -202,7 +202,7 @@ enum NativeWorker {
                             if NativeProcess.signal(target, number: SIGSTOP) {
                                 stopped.insert(target.identity)
                             } else if NativeProcess.identity(target.identity.pid) == target.identity {
-                                emit(WorkerEvent(kind: "error", message: "该应用不允许进程暂停，已解除限制。"))
+                                emit(WorkerEvent(kind: "error", message: String(localized: "worker.suspendDenied")))
                                 failed = true; break
                             }
                         } else if !shouldStop && stopped.contains(target.identity) {
@@ -268,7 +268,7 @@ final class WorkerController {
                 output = outgoing.fileHandleForReading
             } catch {
                 outgoing.fileHandleForReading.readabilityHandler = nil
-                onError?("控制进程无法启动：\(error.localizedDescription)")
+                onError?(String(localized: "worker.launchFailed \(error.localizedDescription)"))
                 return
             }
         }
@@ -290,7 +290,7 @@ final class WorkerController {
         data.append(10)
         do { try input?.write(contentsOf: data) }
         catch {
-            onError?("控制连接中断，正在恢复进程。")
+            onError?(String(localized: "worker.disconnected"))
             if !stopping { stop() }
         }
     }
@@ -304,7 +304,7 @@ final class WorkerController {
         output?.readabilityHandler = nil
         input = nil; output = nil; process = nil; outputData.removeAll()
         _ = Recovery.restore(testing: testing)
-        if !stopping { onError?("控制进程已结束，限制已恢复。重新开启后台限制可重试。") }
+        if !stopping { onError?(String(localized: "worker.ended")) }
     }
 
     /// 发送关闭消息并断开连接，退出由终止回调收尾；超时后依次结束、强制结束。

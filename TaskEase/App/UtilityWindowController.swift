@@ -6,11 +6,11 @@ enum UtilityWindowKind: String {
 
     var title: String {
         switch self {
-        case .settings: "轻程设置"
-        case .help: "轻程帮助"
-        case .about: "关于轻程"
-        case .license: "开源许可证"
-        case .statistics: "使用统计"
+        case .settings: String(localized: "window.settings")
+        case .help: String(localized: "menu.help")
+        case .about: String(localized: "menu.about")
+        case .license: String(localized: "window.license")
+        case .statistics: String(localized: "window.statistics")
         }
     }
 

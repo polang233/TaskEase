@@ -6,7 +6,7 @@ struct LicenseView: View {
     private let licenseText: String = {
         guard let url = Bundle.main.url(forResource: "LICENSE", withExtension: "txt"),
               let text = try? String(contentsOf: url, encoding: .utf8) else {
-            return "许可证文本读取失败。"
+            return String(localized: "license.loadFailed")
         }
         return text
     }()
@@ -14,8 +14,8 @@ struct LicenseView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             VStack(alignment: .leading, spacing: 6) {
-                Text("GNU GENERAL PUBLIC LICENSE").font(.headline)
-                Text("GPL-3.0-only").font(.caption).foregroundStyle(.secondary)
+                Text(verbatim: "GNU GENERAL PUBLIC LICENSE").font(.headline)
+                Text(verbatim: "GPL-3.0-only").font(.caption).foregroundStyle(.secondary)
             }.padding(20)
             Divider()
             ScrollView {

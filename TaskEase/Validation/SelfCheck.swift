@@ -20,7 +20,7 @@ enum SelfCheck {
         let report: [String: Any] = ["scope": "read_only_snapshot",
             "appCount": apps.count, "apps": rows,
             "systemCPU": system.cpuPercent ?? -1, "gpuDriverPercent": system.gpuPercent ?? -1,
-            "thermal": system.thermalLabel,
+            "thermal": system.thermal.rawValue,
             "temperatureCelsius": system.temperatureCelsius ?? -1,
             "systemMemoryUsedBytes": system.memory?.usedBytes ?? 0,
             "systemMemoryTotalBytes": system.memory?.totalBytes ?? 0,

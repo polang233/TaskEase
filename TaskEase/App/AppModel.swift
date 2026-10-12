@@ -12,6 +12,7 @@ final class AppModel {
     private(set) var networkRules: [String: NetworkRule] = [:]
     private(set) var networkRuleError: String?
     private(set) var preferences = AppPreferences()
+    private(set) var language = AppLanguage.saved
     private(set) var enabled = false
     private(set) var applicationList: ApplicationList = .running
     var search = ""
@@ -53,7 +54,7 @@ final class AppModel {
         updates = UpdateChecker(fixtures: preview)
         if preview {
             apps = Self.exampleApps
-            system = SystemReading(cpuPercent: 18, gpuPercent: 24, thermalLabel: "正常",
+            system = SystemReading(cpuPercent: 18, gpuPercent: 24, thermal: .nominal,
                 memory: .init(usedBytes: 14 * 1_073_741_824, totalBytes: 24 * 1_073_741_824, compressedBytes: 1_073_741_824, swapBytes: 512 * 1_048_576),
                 network: .init(receiveRate: 12_345_678, sendRate: 123_456), temperatureCelsius: 54.3)
             foregroundID = "example.editor"
@@ -236,7 +237,7 @@ final class AppModel {
             let data = try JSONEncoder().encode(networkRules)
             defaults.set(data, forKey: "networkRules.v1")
             networkRuleError = nil
-        } catch { networkRuleError = "网络规则保存失败：\(error.localizedDescription)" }
+        } catch { networkRuleError = String(localized: "error.networkRules.save \(error.localizedDescription)") }
     }
 
     func updatePreferences(_ update: (inout AppPreferences) -> Void) {
@@ -258,20 +259,39 @@ final class AppModel {
         NSApp?.appearance = preferences.theme.appearance
     }
 
+    /// 语言在重新启动后生效；预览与测试不写入真实偏好。
+    func setLanguage(_ value: AppLanguage) {
+        language = value
+        if !preview { value.save(to: defaults) }
+    }
+
+    var languageNeedsRestart: Bool { language != AppLanguage.launched }
+
+    /// 等当前进程退出后再打开应用包，避免单实例检查把新进程当成重复启动。
+    func relaunch() {
+        guard !preview else { return }
+        let restart = Process()
+        restart.executableURL = URL(fileURLWithPath: "/bin/sh")
+        restart.arguments = ["-c", "while kill -0 \"$1\" 2>/dev/null; do sleep 0.2; done; /usr/bin/open \"$0\"",
+                             Bundle.main.bundlePath, String(getpid())]
+        do { try restart.run() } catch { return }
+        NSApp.terminate(nil)
+    }
+
     /// 读取旧规则与独立显示元数据；损坏数据保留备份供恢复。
     private func loadStoredState() {
         if let data = defaults.data(forKey: "rules.v1") {
             do { rules = try StoredRules.decode(data) }
             catch {
                 defaults.set(data, forKey: "rules.v1.invalid-backup")
-                errorMessage = "保存的规则无法读取，已保留备份并关闭后台限制。"
+                errorMessage = String(localized: "error.rules.load")
             }
         }
         if let data = defaults.data(forKey: "networkRules.v1") {
             do { networkRules = try JSONDecoder().decode([String: NetworkRule].self, from: data).mapValues { $0.validated() } }
             catch {
                 defaults.set(data, forKey: "networkRules.v1.invalid-backup")
-                networkRuleError = "网络规则无法读取，已保留备份。"
+                networkRuleError = String(localized: "error.networkRules.load")
             }
         }
         if let data = defaults.data(forKey: "ruleApplications.v1") {
@@ -304,7 +324,7 @@ final class AppModel {
             defaults.set(ruleData, forKey: "rules.v1")
             defaults.set(metadata, forKey: "ruleApplications.v1")
         } catch {
-            errorMessage = "规则保存失败：\(error.localizedDescription)"
+            errorMessage = String(localized: "error.rules.save \(error.localizedDescription)")
         }
     }
 
@@ -618,9 +638,9 @@ final class AppModel {
 
     static var exampleApps: [AppReading] {
         [
-            AppReading(id: "example.editor", name: "代码编辑器", bundlePaths: [], primaryPIDs: [], targets: [], samples: [],
+            AppReading(id: "example.editor", name: String(localized: "preview.app.editor"), bundlePaths: [], primaryPIDs: [], targets: [], samples: [],
                        cpuPercent: 12.8, memoryBytes: 712_000_000, readRate: 0, writeRate: 0, canControl: true, isHidden: false),
-            AppReading(id: "example.browser", name: "网页浏览器", bundlePaths: [], primaryPIDs: [], targets: [], samples: [],
+            AppReading(id: "example.browser", name: String(localized: "preview.app.browser"), bundlePaths: [], primaryPIDs: [], targets: [], samples: [],
                        cpuPercent: 36.2, memoryBytes: 1_480_000_000, readRate: 1024, writeRate: 8192, canControl: true, isHidden: false,
                        wakeupRate: 18.4),
             AppReading(id: "com.apple.finder", name: "Finder", bundlePaths: [], primaryPIDs: [], targets: [], samples: [],
