@@ -27,6 +27,10 @@ int te_system_memory(TESystemMemory *out) {
     out->totalBytes = total;
     out->usedBytes = used < total ? used : total;
     out->compressedBytes = (uint64_t)vm.compressor_page_count * page_size;
+    struct xsw_usage swap = {0};
+    length = sizeof(swap);
+    out->swapAvailable = sysctlbyname("vm.swapusage", &swap, &length, NULL, 0) == 0;
+    out->swapUsedBytes = out->swapAvailable ? swap.xsu_used : 0;
     return 1;
 }
 

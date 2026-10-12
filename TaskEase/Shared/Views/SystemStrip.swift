@@ -1,132 +1,146 @@
 import SwiftUI
 import AppKit
 
-/// 数字在浅色外观使用更深的色值，保持绿色到红色的提示同时保证可读性。
-private enum MetricPalette {
-    static let green = adaptive(light: 0x267B36, dark: 0x30D158)
-    static let yellow = adaptive(light: 0x8A6500, dark: 0xFFD60A)
-    static let orange = adaptive(light: 0xAD5700, dark: 0xFF9F0A)
-    static let red = adaptive(light: 0xBA2525, dark: 0xFF453A)
-
-    private static func adaptive(light: UInt32, dark: UInt32) -> Color {
-        Color(nsColor: NSColor(name: nil) { appearance in
-            let rgb = appearance.bestMatch(from: [.aqua, .darkAqua]) == .darkAqua ? dark : light
-            return NSColor(srgbRed: CGFloat((rgb >> 16) & 255) / 255,
-                           green: CGFloat((rgb >> 8) & 255) / 255,
-                           blue: CGFloat(rgb & 255) / 255, alpha: 1)
-        })
-    }
-}
-
-extension MetricSeverity {
-    var color: Color {
-        switch self {
-        case .unknown: .secondary
-        case .normal: MetricPalette.green
-        case .elevated: MetricPalette.yellow
-        case .high: MetricPalette.orange
-        case .critical: MetricPalette.red
-        }
-    }
-}
-
-/// 根据可用宽度切换一行或两行概览，静态颜色提示不会产生动画或额外采样。
+/// 系统指标保持单行；指针移到 CPU、GPU、内存或温度上打开无箭头卡片，离开指标和卡片后立即关闭。
 struct SystemStrip: View {
     let reading: SystemReading
     var isPaused = false
+    var style: MetricDisplayStyle = .number
+    @State private var active: SystemMetric?
+    @State private var cards = HoverCardCoordinator()
+    @State private var anchors: [SystemMetric: WeakAnchor] = [:]
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            ViewThatFits(in: .horizontal) {
-                HStack(spacing: 22) {
-                    cpu; gpu; memory; network
-                    Spacer(minLength: 8)
-                    temperature
-                }.fixedSize(horizontal: true, vertical: false)
-                VStack(spacing: 12) {
-                    HStack { cpu; Spacer(minLength: 12); gpu; Spacer(minLength: 12); temperature }
-                    HStack(alignment: .top) { memory; Spacer(minLength: 16); network }
-                }
-            }
-            if isPaused {
-                Label("已暂停刷新", systemImage: "snowflake")
-                    .font(.caption).foregroundStyle(.blue)
-                    .help("当前显示上次采样的数据。切回前台后更新，后台规则继续执行。")
-                    .accessibilityIdentifier("display-paused")
-            }
-        }.font(.callout).monospacedDigit()
-            .padding(.horizontal, 20).padding(.vertical, 12)
+        ViewThatFits(in: .horizontal) {
+            row(compact: false)
+            row(compact: true)
+        }.monospacedDigit().padding(.horizontal, 14).padding(.vertical, 7)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(isPaused ? Color.blue.opacity(0.04) : Color.clear)
+            .onAppear { cards.onClose = { active = nil } }
+            .onDisappear { cards.close() }
+            .onExitCommand { cards.close() }
+            .onChange(of: reading) { refreshCard() }
+            .onChange(of: isPaused) { refreshCard() }
+            .onReceive(NotificationCenter.default.publisher(for: NSApplication.didResignActiveNotification)) { _ in cards.close() }
     }
 
-    private var cpu: some View {
-        Label {
-            HStack(spacing: 5) {
-                Text("CPU")
-                Text(Display.percent(reading.cpuPercent)).foregroundStyle(MetricSeverity.utilization(reading.cpuPercent).color)
+    private func row(compact: Bool) -> some View {
+        HStack(spacing: compact ? 10 : 20) {
+            metric(.cpu, compact: compact, value: Display.percent(reading.cpuPercent),
+                   fraction: reading.cpuPercent.map { $0 / 100 })
+            metric(.gpu, compact: compact, value: Display.percent(reading.gpuPercent),
+                   fraction: reading.gpuPercent.map { $0 / 100 })
+            metric(.memory, compact: compact, value: Display.percent(reading.memory?.percent),
+                   fraction: reading.memory?.percent.map { $0 / 100 })
+            metric(.temperature, compact: compact,
+                   value: reading.temperatureCelsius == nil ? reading.thermalLabel : Display.temperature(reading.temperatureCelsius),
+                   fraction: MetricPalette.thermalFraction(celsius: reading.temperatureCelsius),
+                   color: MetricPalette.thermal(celsius: reading.temperatureCelsius, label: reading.thermalLabel))
+            NetworkRateStack(reading: reading.network, compact: compact)
+            if isPaused {
+                Image(systemName: "snowflake").font(.caption).foregroundStyle(.blue)
+                    .help("已暂停刷新，切回前台后更新")
+                    .accessibilityLabel("已暂停刷新").accessibilityIdentifier("display-paused")
             }
-        } icon: { Image(systemName: "cpu").foregroundStyle(.secondary) }
-            .fixedSize().help("整机全部 CPU 核心的总体占用，满载为 100%。应用列表另按单核时间计算。")
+        }.fixedSize(horizontal: true, vertical: false)
     }
 
-    private var gpu: some View {
-        Label {
-            HStack(spacing: 5) {
-                Text("GPU")
-                Text(Display.percent(reading.gpuPercent)).foregroundStyle(MetricSeverity.utilization(reading.gpuPercent).color)
-            }
-        } icon: { Image(systemName: "square.3.layers.3d").foregroundStyle(.secondary) }
-            .fixedSize().help("整机 GPU 驱动利用率估计值；缺失时显示 —。")
-    }
-
-    private var memory: some View {
-        VStack(alignment: .leading, spacing: 3) {
-            Label {
-                Text("内存 \(Display.gigabytes(reading.memory?.usedBytes)) / \(Display.gigabytes(reading.memory?.totalBytes)) GB")
-                    .foregroundStyle(MetricSeverity.utilization(reading.memory?.percent).color)
-            } icon: { Image(systemName: "memorychip").foregroundStyle(.secondary) }
-            Text("压缩 \(Display.gigabytes(reading.memory?.compressedBytes)) GB")
-                .font(.caption).foregroundStyle(.secondary)
-        }.fixedSize().help("整机物理内存占用与总容量。压缩内存表示压缩器实际占用，已包含在已用内存内。颜色表示占用比例，不等同于系统内存压力。")
-    }
-
-    private var network: some View {
-        VStack(alignment: .leading, spacing: 3) {
-            Text("↓ \(Display.megabytesPerSecond(reading.network?.receiveRate)) MB/s")
-            Text("↑ \(Display.megabytesPerSecond(reading.network?.sendRate)) MB/s")
-                .font(.caption).foregroundStyle(.secondary)
-        }.fixedSize().help("整机活动 Wi-Fi 和以太网接口的下载、上传流量。MB/s 为每秒百万字节；不重复累加 VPN 和回环虚拟接口。首次采样需等待速度基线。")
-            .accessibilityElement(children: .combine).accessibilityLabel("全局网速")
-    }
-
-    private var temperature: some View {
-        VStack(alignment: .trailing, spacing: 3) {
-            Label(reading.temperatureCelsius == nil ? reading.thermalLabel : Display.temperature(reading.temperatureCelsius),
-                  systemImage: "thermometer.medium")
-                .foregroundStyle(thermalColor)
-            if reading.temperatureCelsius != nil {
-                Text("芯片最高 · \(reading.thermalLabel)").font(.caption).foregroundStyle(.secondary)
-            }
-        }.fixedSize().help("可读芯片传感器的最高摄氏度，最快每 4 秒读取一次。显示到 0.1°C，不代表测量误差为 0.1°C；读取失败时显示系统热状态。")
-    }
-
-    private var thermalColor: Color {
-        let system: MetricSeverity = switch reading.thermalLabel {
-        case "严重": .critical
-        case "较高": .high
-        case "轻度升温": .elevated
-        case "正常": .normal
-        default: .unknown
+    private func metric(_ kind: SystemMetric, compact: Bool, value: String, fraction: Double?, color: Color? = nil) -> some View {
+        Button { active == kind && cards.isOpen ? cards.close() : open(kind) } label: {
+            MetricGauge(kind: kind, value: value, fraction: fraction, color: color ?? MetricPalette.color(fraction),
+                        style: style, compact: compact)
+                .contentShape(Rectangle())
         }
-        let sensor = MetricSeverity.temperature(reading.temperatureCelsius)
-        return (system.rawValue > sensor.rawValue ? system : sensor).color
+        .buttonStyle(.plain).pointingHand()
+        .accessibilityLabel("\(kind.rawValue) \(value)")
+        .accessibilityHint("显示详细信息")
+        .accessibilityIdentifier("system-\(kind.rawValue)")
+        .background(AnchorReader { view in
+            if anchors[kind]?.view !== view { anchors[kind] = WeakAnchor(view) }
+        })
+        .onHover { inside in
+            if inside { open(kind) }
+            cards.anchorHover(inside)
+        }
+    }
+
+    private func open(_ kind: SystemMetric) {
+        guard active != kind || !cards.isOpen, let anchor = anchors[kind]?.view else { return }
+        active = kind
+        cards.show(anchor: anchor, content: details(kind))
+    }
+
+    private func refreshCard() {
+        guard let active, cards.isOpen else { return }
+        cards.update(content: details(active))
+    }
+
+    private func details(_ kind: SystemMetric) -> AnyView {
+        AnyView(MetricDetails(metric: kind, reading: reading, isPaused: isPaused))
     }
 }
 
-#Preview("概览") {
-    SystemStrip(reading: SystemReading(cpuPercent: 18, gpuPercent: 24, thermalLabel: "正常",
-        memory: .init(usedBytes: 14 * 1_073_741_824, totalBytes: 24 * 1_073_741_824, compressedBytes: 1_073_741_824),
-        network: .init(receiveRate: 12_345_678, sendRate: 123_456), temperatureCelsius: 54.3))
-        .frame(width: 420)
+/// 单个指标的三种外观：数字、圆环（中心为指标图标）、进度条。数值槽按最长内容预留宽度，避免数字变化时整行左右移动。
+private struct MetricGauge: View {
+    let kind: SystemMetric
+    let value: String
+    let fraction: Double?
+    let color: Color
+    let style: MetricDisplayStyle
+    let compact: Bool
+
+    var body: some View {
+        HStack(spacing: 5) {
+            switch style {
+            case .number:
+                Image(systemName: kind.symbol).foregroundStyle(.secondary)
+                if !compact { Text(kind.shortTitle) }
+            case .ring:
+                ring
+                if !compact { Text(kind.shortTitle) }
+            case .bar:
+                Text(kind.shortTitle).foregroundStyle(compact ? .secondary : .primary)
+                bar
+            }
+            ZStack(alignment: .leading) {
+                ForEach(kind.widestValues, id: \.self) { Text($0).hidden() }
+                Text(value).foregroundStyle(color)
+            }
+        }.font(compact ? .caption : .callout).frame(height: 24).fixedSize()
+    }
+
+    private var ring: some View {
+        let size: CGFloat = compact ? 18 : 21
+        return ZStack {
+            Circle().stroke(.quaternary, lineWidth: 2.5)
+            Circle().trim(from: 0, to: min(1, max(0, fraction ?? 0)))
+                .stroke(color, style: StrokeStyle(lineWidth: 2.5, lineCap: .round))
+                .rotationEffect(.degrees(-90))
+            Image(systemName: kind.symbol)
+                .font(.system(size: size * 0.42, weight: .medium))
+                .foregroundStyle(.secondary)
+        }.frame(width: size, height: size)
+    }
+
+    private var bar: some View {
+        Capsule().fill(.quaternary)
+            .frame(width: compact ? 26 : 36, height: 5)
+            .overlay(alignment: .leading) {
+                GeometryReader { proxy in
+                    Capsule().fill(color).frame(width: proxy.size.width * min(1, max(0, fraction ?? 0)))
+                }
+            }
+    }
+}
+
+#Preview("单行概览") {
+    VStack(spacing: 0) {
+        ForEach(MetricDisplayStyle.allCases, id: \.self) { style in
+            SystemStrip(reading: SystemReading(cpuPercent: 18, gpuPercent: 64, thermalLabel: "正常",
+                memory: .init(usedBytes: 14 * 1_073_741_824, totalBytes: 24 * 1_073_741_824, compressedBytes: 1_073_741_824, swapBytes: 512 * 1_048_576),
+                network: .init(receiveRate: 12_345_678, sendRate: 123_456), temperatureCelsius: 74.3), style: style)
+            Divider()
+        }
+    }.frame(width: 720)
 }

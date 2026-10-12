@@ -41,6 +41,14 @@ enum Display {
         return String(format: megabytes < 100 ? "%.2f" : "%.1f", megabytes)
     }
 
+    /// 概览网速：1 MB/s 以下用 KB/s，减少小数位；1 MB 为 1,000,000 字节。
+    static func compactRate(_ value: Double?) -> String {
+        guard let value, value.isFinite, value >= 0 else { return "—" }
+        if value < 1_000_000 { return String(format: "%.0f KB/s", value / 1000) }
+        let megabytes = value / 1_000_000
+        return String(format: megabytes < 100 ? "%.1f MB/s" : "%.0f MB/s", megabytes)
+    }
+
     static func temperature(_ value: Double?) -> String {
         guard let value, value.isFinite else { return "—" }
         return String(format: "%.1f°C", value)

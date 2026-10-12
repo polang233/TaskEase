@@ -5,6 +5,7 @@ struct SystemMemoryReading: Equatable, Sendable {
     let usedBytes: UInt64
     let totalBytes: UInt64
     let compressedBytes: UInt64
+    var swapBytes: UInt64? = nil
     var percent: Double? { totalBytes > 0 ? 100 * Double(usedBytes) / Double(totalBytes) : nil }
 }
 

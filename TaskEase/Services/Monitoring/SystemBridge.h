@@ -5,6 +5,8 @@ typedef struct {
     uint64_t totalBytes;
     uint64_t usedBytes;
     uint64_t compressedBytes;
+    uint64_t swapUsedBytes;
+    uint8_t swapAvailable;
 } TESystemMemory;
 typedef struct {
     uint32_t interfaceIndex;
