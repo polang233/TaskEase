@@ -53,6 +53,7 @@ final class UpdateChecker {
         task = Task { [weak self] in
             let next: Phase
             var found: GitHubClient.Release?
+            var answered = false
             do {
                 if let latest = try await GitHubClient.shared.latestRelease() {
                     if VersionOrder.isNewer(latest.version, than: AppVersion.short) {
@@ -64,6 +65,7 @@ final class UpdateChecker {
                 } else {
                     next = .noRelease
                 }
+                answered = true
             } catch GitHubClient.Failure.rateLimited {
                 next = automatic ? previous : .failed(String(localized: "update.rateLimited"))
             } catch is CancellationError {
@@ -73,7 +75,8 @@ final class UpdateChecker {
             }
             guard let self, !Task.isCancelled else { return }
             self.task = nil
-            self.release = found
+            // 只在查询成功时更新结果；失败时保留之前发现的新版本，提示不会因为一次断网消失。
+            if answered { self.release = found }
             self.phase = next
         }
     }
