@@ -9,7 +9,7 @@
 <p align="center">叠层双叶呈现前后台任务，菜单栏使用随系统外观变化的单色标识。</p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-1.4.5-30BBA9" alt="版本 1.4.5">
+  <img src="https://img.shields.io/badge/version-1.4.7-30BBA9" alt="版本 1.4.7">
   <img src="https://img.shields.io/badge/macOS-14%2B-24292f?logo=apple" alt="macOS 14 及以上">
   <img src="https://img.shields.io/badge/platform-Apple%20Silicon-24292f" alt="Apple Silicon">
   <img src="https://img.shields.io/badge/Swift-6-F05138?logo=swift&logoColor=white" alt="Swift 6">
