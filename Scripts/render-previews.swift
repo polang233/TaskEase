@@ -29,6 +29,15 @@ struct PreviewRenderer {
                  appearance: .darkAqua, to: destination.appendingPathComponent("about-preview.png"))
         try save(UsageStatisticsView(model: model), size: NSSize(width: 580, height: 460),
                  appearance: .darkAqua, to: destination.appendingPathComponent("statistics-preview.png"))
+        let sample = Data("""
+        {"tag_name": "v9.9.0", "html_url": "https://github.com/polang233/TaskEase/releases", "body":
+         "## 新功能\\n\\n- 示例更新内容一\\n- 示例更新内容二\\n\\n## 修复\\n\\n- 示例修复\\n\\n## 安装\\n\\n打开 DMG",
+         "assets": [{"name": "TaskEase-9.9.0.dmg", "size": 3000000,
+          "browser_download_url": "https://github.com/polang233/TaskEase/releases", "digest": "sha256:\(String(repeating: "0", count: 64))"}]}
+        """.utf8)
+        model.updates.showPreview(try JSONDecoder().decode(GitHubClient.Release.self, from: sample))
+        try save(UpdateView(model: model), size: NSSize(width: 480, height: 400),
+                 appearance: .darkAqua, to: destination.appendingPathComponent("update-preview.png"))
         try save(HStack(alignment: .top, spacing: 16) {
             MetricDetails(metric: .cpu, reading: model.system)
             MetricDetails(metric: .gpu, reading: model.system)

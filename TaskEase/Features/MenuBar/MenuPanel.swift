@@ -10,6 +10,7 @@ struct MenuPanel: View {
             HStack(spacing: 12) {
                 BrandMark(size: 22)
                 Text("app.name").font(.headline)
+                UpdateBadge(model: model)
                 Spacer()
                 BackgroundControlToggle(model: model).controlSize(.small)
             }.padding(16)

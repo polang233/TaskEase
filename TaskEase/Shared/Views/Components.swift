@@ -73,6 +73,36 @@ struct StatusLabel: View {
     }
 }
 
+/// 有新版本时显示的蓝色胶囊；指针移上去稍微放大，点击打开更新窗口。没有新版本时不占位。
+struct UpdateBadge: View {
+    @Bindable var model: AppModel
+    @State private var hovering = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    var body: some View {
+        if model.updates.showsBadge, let release = model.updates.release {
+            Button { model.showUtility(.update) } label: {
+                HStack(spacing: 5) {
+                    Image(systemName: "arrow.down.circle.fill")
+                    Text("update.badge \(release.version)")
+                }
+                .font(.caption.weight(.semibold)).lineLimit(1).fixedSize()
+                .padding(.horizontal, 9).padding(.vertical, 4)
+                .background(Color.accentColor.opacity(hovering ? 0.22 : 0.15), in: Capsule())
+                .foregroundStyle(Color.accentColor)
+                .scaleEffect(hovering ? 1.08 : 1)
+                .contentShape(Capsule())
+            }
+            .buttonStyle(.plain).pointingHand()
+            .onHover { inside in
+                if reduceMotion { hovering = inside }
+                else { withAnimation(.spring(response: 0.28, dampingFraction: 0.75)) { hovering = inside } }
+            }
+            .accessibilityHint("update.badge.hint").accessibilityIdentifier("update-badge")
+        }
+    }
+}
+
 /// 总开关在没有规则时置灰；点击后用无箭头卡片提示，指针离开开关和卡片即关闭。
 struct BackgroundControlToggle: View {
     @Bindable var model: AppModel
@@ -81,7 +111,7 @@ struct BackgroundControlToggle: View {
 
     var body: some View {
         Toggle("toggle.enable", isOn: Binding(get: { model.enabled }, set: { model.setEnabled($0) }))
-            .toggleStyle(.switch)
+            .toggleStyle(.switch).lineLimit(1).fixedSize()
             .disabled(!model.canEnable)
             .accessibilityIdentifier("management-toggle")
             .background(AnchorReader { view in

@@ -1503,19 +1503,19 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Turn on “Enable Background Limits” at the top."
+            "value" : "Turn on “Enable Limits” at the top."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "打开顶部“启用后台限制”。"
+            "value" : "打开顶部“启用限制”。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "打開最上方的「啟用背景限制」。"
+            "value" : "打開最上方的「啟用限制」。"
           }
         }
       }
@@ -5309,24 +5309,24 @@
       }
     },
     "toggle.enable" : {
-      "comment" : "Master switch for all background rules",
+      "comment" : "Master switch for all background rules; keep it short",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Enable Background Limits"
+            "value" : "Enable Limits"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "启用后台限制"
+            "value" : "启用限制"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "啟用背景限制"
+            "value" : "啟用限制"
           }
         }
       }
@@ -5360,19 +5360,19 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Why background limits are unavailable"
+            "value" : "Why limits are unavailable"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "启用后台限制的配置提示"
+            "value" : "启用限制的配置提示"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "啟用背景限制的設定提示"
+            "value" : "啟用限制的設定提示"
           }
         }
       }
@@ -5396,6 +5396,52 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "有新版本 %@"
+          }
+        }
+      }
+    },
+    "update.badge %@" : {
+      "comment" : "Badge shown when a new version is available; %@ is the version",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Update %@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "新版本 %@"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "新版本 %@"
+          }
+        }
+      }
+    },
+    "update.badge.hint" : {
+      "comment" : "Shown when hovering the new-version badge; also its VoiceOver hint",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "See What's New"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "查看更新内容"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "查看更新內容"
           }
         }
       }
@@ -5446,6 +5492,29 @@
         }
       }
     },
+    "update.connecting" : {
+      "comment" : "Shown before any download data arrives",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Connecting to GitHub…"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在连接 GitHub…"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在連線到 GitHub…"
+          }
+        }
+      }
+    },
     "update.download" : {
       "comment" : "Link to the release page",
       "localizations" : {
@@ -5465,6 +5534,213 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "前往下載"
+          }
+        }
+      }
+    },
+    "update.downloading %lld" : {
+      "comment" : "Download progress; %lld is a percentage",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Downloading… %lld%%"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在下载… %lld%%"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在下載… %lld%%"
+          }
+        }
+      }
+    },
+    "update.error.checksum" : {
+      "comment" : "Update error",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The download didn't pass verification and was discarded."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "下载的文件未通过校验，已丢弃。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "下載的檔案沒有通過驗證，已刪除。"
+          }
+        }
+      }
+    },
+    "update.error.copy" : {
+      "comment" : "Update error",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't prepare the new version."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无法准备新版本。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無法準備新版本。"
+          }
+        }
+      }
+    },
+    "update.error.download" : {
+      "comment" : "Update error",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't download the update."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "下载更新失败。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "下載更新失敗。"
+          }
+        }
+      }
+    },
+    "update.error.package" : {
+      "comment" : "Update error",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The update package doesn't look right. Please download it manually."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "更新包内容异常，请手动下载。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "更新包內容有問題，請手動下載。"
+          }
+        }
+      }
+    },
+    "update.install" : {
+      "comment" : "Starts the one-click update",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Update Now"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "立即更新"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "立即更新"
+          }
+        }
+      }
+    },
+    "update.installing" : {
+      "comment" : "Shown while the new version is being installed",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Installing… TaskEase will reopen when it's done."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在安装，完成后会自动重新打开。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在安裝，完成後會自動重新開啟。"
+          }
+        }
+      }
+    },
+    "update.later" : {
+      "comment" : "Closes the update window",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Later"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "稍后"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "稍後"
+          }
+        }
+      }
+    },
+    "update.manual.note" : {
+      "comment" : "Shown when TaskEase can't replace itself, e.g. when running from the disk image",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "TaskEase can't update itself from its current location. Download the new version and install it manually."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "当前位置无法直接更新，请下载新版本后手动安装。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "目前的位置無法直接更新，請下載新版本後手動安裝。"
           }
         }
       }
@@ -5492,6 +5768,29 @@
         }
       }
     },
+    "update.notes" : {
+      "comment" : "Heading above the release notes",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What's New"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "更新内容"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "更新內容"
+          }
+        }
+      }
+    },
     "update.offline" : {
       "comment" : "Error",
       "localizations" : {
@@ -5511,6 +5810,52 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "暫時連不上 GitHub。"
+          }
+        }
+      }
+    },
+    "update.prompt.current %@" : {
+      "comment" : "Update window subtitle; %@ is the installed version",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You have version %@."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "当前版本 %@"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "目前版本 %@"
+          }
+        }
+      }
+    },
+    "update.prompt.title %@" : {
+      "comment" : "Update window title; %@ is the new version",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "TaskEase %@ Is Available"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "轻程 %@ 可以更新了"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "輕程 %@ 可以更新了"
           }
         }
       }
@@ -5538,6 +5883,29 @@
         }
       }
     },
+    "update.skip" : {
+      "comment" : "Stops showing the update window for this version",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Skip This Version"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "跳过此版本"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "略過這個版本"
+          }
+        }
+      }
+    },
     "update.upToDate" : {
       "comment" : "Result",
       "localizations" : {
@@ -5557,6 +5925,29 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "已經是最新版本"
+          }
+        }
+      }
+    },
+    "update.view" : {
+      "comment" : "Button in About that opens the update window",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "View"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "查看"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "查看"
           }
         }
       }
@@ -5672,6 +6063,29 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "使用統計"
+          }
+        }
+      }
+    },
+    "window.update" : {
+      "comment" : "Software update window title and badge tooltip",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Software Update"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "软件更新"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "軟體更新"
           }
         }
       }

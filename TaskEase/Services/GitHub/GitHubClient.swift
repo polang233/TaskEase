@@ -5,18 +5,53 @@ struct GitHubClient: Sendable {
     static let shared = GitHubClient()
     static let repository = "polang233/TaskEase"
 
-    struct Release: Decodable, Sendable {
+    struct Release: Decodable, Sendable, Equatable {
         let tagName: String
         let name: String?
         let htmlURL: URL
         let publishedAt: Date?
+        let body: String?
+        let assets: [Asset]
 
         enum CodingKeys: String, CodingKey {
-            case tagName = "tag_name", name, htmlURL = "html_url", publishedAt = "published_at"
+            case tagName = "tag_name", name, htmlURL = "html_url", publishedAt = "published_at", body, assets
+        }
+
+        init(from decoder: Decoder) throws {
+            let values = try decoder.container(keyedBy: CodingKeys.self)
+            tagName = try values.decode(String.self, forKey: .tagName)
+            name = try values.decodeIfPresent(String.self, forKey: .name)
+            htmlURL = try values.decode(URL.self, forKey: .htmlURL)
+            publishedAt = try values.decodeIfPresent(Date.self, forKey: .publishedAt)
+            body = try values.decodeIfPresent(String.self, forKey: .body)
+            assets = try values.decodeIfPresent([Asset].self, forKey: .assets) ?? []
         }
 
         /// 去掉标签前缀 v，便于与 CFBundleShortVersionString 比较。
         var version: String { tagName.hasPrefix("v") || tagName.hasPrefix("V") ? String(tagName.dropFirst()) : tagName }
+
+        /// 发布页附带的安装镜像；同时要求 GitHub 提供 SHA-256 摘要，缺少时不做一键更新。
+        var diskImage: Asset? {
+            assets.first { $0.name.lowercased().hasSuffix(".dmg") && $0.sha256 != nil && $0.size > 0 }
+        }
+    }
+
+    struct Asset: Decodable, Sendable, Equatable {
+        let name: String
+        let size: Int
+        let downloadURL: URL
+        let digest: String?
+
+        enum CodingKeys: String, CodingKey {
+            case name, size, downloadURL = "browser_download_url", digest
+        }
+
+        /// GitHub 返回 "sha256:十六进制"，统一为小写十六进制。
+        var sha256: String? {
+            guard let digest, digest.lowercased().hasPrefix("sha256:") else { return nil }
+            let hex = digest.dropFirst(7).lowercased()
+            return hex.count == 64 && hex.allSatisfy(\.isHexDigit) ? String(hex) : nil
+        }
     }
 
     enum Failure: Error { case unavailable, rateLimited }
