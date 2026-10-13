@@ -5469,6 +5469,29 @@
         }
       }
     },
+    "update.connecting" : {
+      "comment" : "Shown before any download data arrives",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Connecting to GitHub…"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在连接 GitHub…"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在連線到 GitHub…"
+          }
+        }
+      }
+    },
     "update.download" : {
       "comment" : "Link to the release page",
       "localizations" : {

@@ -24,6 +24,24 @@ enum UpdateInstaller {
     }
 
     /// 当前应用能否原地替换：在 DMG、App Translocation 隔离目录或不可写目录中运行时不能。
+    /// 清理上次更新中途退出留下的文件：应用旁边的暂存版本、替换时的备份，以及临时下载目录。
+    /// 只匹配本工具生成的名称，启动时在后台执行。
+    static func removeLeftovers() {
+        let fileManager = FileManager.default
+        let target = Bundle.main.bundleURL.resolvingSymlinksInPath()
+        let parent = target.deletingLastPathComponent()
+        let siblings = (try? fileManager.contentsOfDirectory(atPath: parent.path)) ?? []
+        for name in siblings where name.hasPrefix(".TaskEase-") && name.hasSuffix("-update.app") {
+            try? fileManager.removeItem(at: parent.appendingPathComponent(name))
+        }
+        try? fileManager.removeItem(at: URL(fileURLWithPath: target.path + ".previous"))
+        let temporary = fileManager.temporaryDirectory
+        let entries = (try? fileManager.contentsOfDirectory(atPath: temporary.path)) ?? []
+        for name in entries where name.hasPrefix("TaskEaseUpdate-") {
+            try? fileManager.removeItem(at: temporary.appendingPathComponent(name))
+        }
+    }
+
     static var canReplaceInPlace: Bool {
         let target = Bundle.main.bundleURL.resolvingSymlinksInPath()
         let parent = target.deletingLastPathComponent().path
@@ -139,7 +157,8 @@ private final class Download: NSObject, URLSessionDownloadDelegate, @unchecked S
                      progress: @escaping @Sendable (Double) -> Void) async throws {
         let download = Download(destination: destination, expectedBytes: expectedBytes, progress: progress)
         let configuration = URLSessionConfiguration.ephemeral
-        configuration.timeoutIntervalForRequest = 30
+        // 15 秒内没有收到任何数据即判定失败，避免界面长时间停在 0%。
+        configuration.timeoutIntervalForRequest = 15
         configuration.timeoutIntervalForResource = 600
         configuration.urlCache = nil
         let session = URLSession(configuration: configuration, delegate: download, delegateQueue: nil)

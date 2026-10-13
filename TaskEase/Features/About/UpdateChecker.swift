@@ -7,7 +7,8 @@ import Observation
 final class UpdateChecker {
     enum Phase: Equatable {
         case idle, checking, upToDate, noRelease, failed(String)
-        case available, downloading(Double), installing, installFailed(String)
+        /// downloading 的进度为 nil 时表示还在连接，尚未收到数据。
+        case available, downloading(Double?), installing, installFailed(String)
     }
 
     private(set) var phase: Phase = .idle
@@ -79,7 +80,7 @@ final class UpdateChecker {
     func install() {
         guard let release, task == nil else { return }
         guard canInstall else { NSWorkspace.shared.open(release.htmlURL); return }
-        phase = .downloading(0)
+        phase = .downloading(nil)
         let report: @Sendable (Double) -> Void = { value in
             Task { @MainActor in self.reportProgress(value) }
         }

@@ -59,10 +59,15 @@ struct UpdateView: View {
 
     @ViewBuilder private var status: some View {
         switch updates.phase {
-        case .downloading(let value):
+        case .downloading(let value?):
             VStack(alignment: .leading, spacing: 6) {
                 ProgressView(value: value)
                 Text("update.downloading \(Int((value * 100).rounded()))").font(.caption).foregroundStyle(.secondary)
+            }
+        case .downloading(nil):
+            VStack(alignment: .leading, spacing: 6) {
+                ProgressView().progressViewStyle(.linear)
+                Text("update.connecting").font(.caption).foregroundStyle(.secondary)
             }
         case .installing:
             HStack(spacing: 8) {
