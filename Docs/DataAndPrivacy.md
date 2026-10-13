@@ -21,6 +21,10 @@ macOS 的应用移除并不保证清除应用生成的全部文件。应用自�
 
 参考 [Apple 应用删除说明](https://support.apple.com/en-gb/102610)、[UserDefaults](https://developer.apple.com/documentation/foundation/userdefaults) 和 [Application Support 目录](https://developer.apple.com/documentation/foundation/url/applicationsupportdirectory)。
 
+## 更新检查
+
+每次启动时向 GitHub 公开接口请求一次最新发布信息，手动点“检查更新”时也会请求。请求不登录、不携带安装标识，只附带应用版本作为 User-Agent；GitHub 会看到请求来源 IP。一键更新从 GitHub 下载安装镜像到系统临时目录，安装后删除；“跳过此版本”的选择保存在偏好域的 updates.skippedVersion。
+
 ## 使用统计
 
 使用统计接入 PostHog Product Analytics，默认开启，可在“关于轻程 → 使用统计”中关闭。在启动及运行期间低频发送环境与本应用的配置概况，用随机安装标识去重。调度、关闭、清理范围和后台查看方法见 [PostHog 文档](PostHog.md)。

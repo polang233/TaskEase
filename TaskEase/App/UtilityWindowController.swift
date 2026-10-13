@@ -2,7 +2,7 @@ import AppKit
 import SwiftUI
 
 enum UtilityWindowKind: String {
-    case settings, help, about, license, statistics
+    case settings, help, about, license, statistics, update
 
     var title: String {
         switch self {
@@ -11,6 +11,7 @@ enum UtilityWindowKind: String {
         case .about: String(localized: "menu.about")
         case .license: String(localized: "window.license")
         case .statistics: String(localized: "window.statistics")
+        case .update: String(localized: "window.update")
         }
     }
 
@@ -21,6 +22,7 @@ enum UtilityWindowKind: String {
         case .about: NSSize(width: 580, height: 430)
         case .license: NSSize(width: 680, height: 600)
         case .statistics: NSSize(width: 580, height: 460)
+        case .update: NSSize(width: 480, height: 400)
         }
     }
 
@@ -32,6 +34,7 @@ enum UtilityWindowKind: String {
         case .about: size
         case .license: NSSize(width: 480, height: 360)
         case .statistics: size
+        case .update: size
         }
     }
 }
@@ -46,7 +49,7 @@ final class UtilityWindowController: NSWindowController, NSWindowDelegate {
         self.kind = kind
         self.model = model
         var style: NSWindow.StyleMask = [.titled, .closable, .miniaturizable]
-        if kind != .about { style.insert(.resizable) }
+        if kind != .about && kind != .update { style.insert(.resizable) }
         let window = NSWindow(contentRect: NSRect(origin: .zero, size: kind.size),
                               styleMask: style, backing: .buffered, defer: false)
         window.title = kind.title
@@ -88,6 +91,7 @@ private struct UtilityRoot: View {
             case .about: AboutView(model: model)
             case .license: LicenseView()
             case .statistics: UsageStatisticsView(model: model)
+            case .update: UpdateView(model: model)
             }
         }
         // 托管视图的最小布局约束与窗口最小尺寸一致，防止关于窗口被压缩，其余窗口内容可滚动。

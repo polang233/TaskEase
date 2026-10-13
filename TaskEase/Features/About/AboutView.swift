@@ -33,10 +33,10 @@ struct AboutView: View {
         }.padding(28).frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
-    /// 版本号旁的检查按钮与结果，只在点击时联网。
+    /// 版本号旁的检查按钮与结果；有新版本时打开更新窗口。
     @ViewBuilder private var updateStatus: some View {
         HStack(spacing: 8) {
-            switch model.updates.state {
+            switch model.updates.phase {
             case .checking:
                 ProgressView().controlSize(.small)
                 Text("update.checking").foregroundStyle(.secondary)
@@ -46,13 +46,16 @@ struct AboutView: View {
                 Text("update.noRelease").foregroundStyle(.secondary)
             case .failed(let message):
                 Text(message).foregroundStyle(.secondary)
-            case .available(let version, let url):
-                Label("update.available \(version)", systemImage: "arrow.down.circle").foregroundStyle(.tint)
-                Link("update.download", destination: url).pointingHand()
+            case .available, .downloading, .installing, .installFailed:
+                if let release = model.updates.release {
+                    Label("update.available \(release.version)", systemImage: "arrow.down.circle").foregroundStyle(.tint)
+                    Button("update.view") { model.showUtility(.update) }
+                        .buttonStyle(.link).pointingHand()
+                }
             case .idle:
                 EmptyView()
             }
-            if model.updates.state != .checking {
+            if !model.updates.isBusy && !model.updates.hasUpdate {
                 Button("update.check") { model.updates.check() }
                     .buttonStyle(.link).pointingHand()
                     .accessibilityIdentifier("check-updates")

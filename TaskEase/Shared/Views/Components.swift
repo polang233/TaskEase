@@ -73,6 +73,25 @@ struct StatusLabel: View {
     }
 }
 
+/// 有新版本时显示的小胶囊，点击打开更新窗口；没有新版本时不占位。
+struct UpdateBadge: View {
+    @Bindable var model: AppModel
+
+    var body: some View {
+        if let release = model.updates.release {
+            Button { model.showUtility(.update) } label: {
+                Label("update.badge \(release.version)", systemImage: "arrow.down.circle.fill")
+                    .font(.caption.weight(.semibold))
+                    .padding(.horizontal, 9).padding(.vertical, 4)
+                    .background(Color.accentColor.opacity(0.15), in: Capsule())
+                    .foregroundStyle(Color.accentColor)
+            }
+            .buttonStyle(.plain).pointingHand()
+            .help("window.update").accessibilityIdentifier("update-badge")
+        }
+    }
+}
+
 /// 总开关在没有规则时置灰；点击后用无箭头卡片提示，指针离开开关和卡片即关闭。
 struct BackgroundControlToggle: View {
     @Bindable var model: AppModel
