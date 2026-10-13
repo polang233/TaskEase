@@ -21,11 +21,11 @@ struct ContentView: View {
                 if model.managedCount > 0 {
                     Text("header.activeLimits \(model.managedCount)").font(.callout).foregroundStyle(.secondary)
                 }
+                UpdateBadge(model: model).padding(.trailing, 6)
                 BackgroundControlToggle(model: model)
                 Button("common.settings", systemImage: "gearshape") { model.showUtility(.settings) }
                     .labelStyle(.iconOnly).buttonStyle(.borderless).font(.title3)
                     .help("common.settings").pointingHand().accessibilityIdentifier("open-settings")
-                UpdateBadge(model: model)
             }.padding(.leading, titlebar.map { $0.leading + 16 } ?? 20)
                 .padding(.trailing, 20).padding(.vertical, titlebar == nil ? 14 : 0)
                 .frame(height: titlebar?.height)
