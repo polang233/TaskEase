@@ -73,7 +73,7 @@ struct StatusLabel: View {
     }
 }
 
-/// 有新版本时显示的蓝色胶囊；指针移上去稍微放大并展开说明，点击打开更新窗口。没有新版本时不占位。
+/// 有新版本时显示的蓝色胶囊；指针移上去稍微放大，点击打开更新窗口。没有新版本时不占位。
 struct UpdateBadge: View {
     @Bindable var model: AppModel
     @State private var hovering = false
@@ -85,17 +85,12 @@ struct UpdateBadge: View {
                 HStack(spacing: 5) {
                     Image(systemName: "arrow.down.circle.fill")
                     Text("update.badge \(release.version)")
-                    if hovering {
-                        Text(verbatim: "·").opacity(0.6)
-                        Text("update.badge.hint")
-                            .transition(.opacity.combined(with: .move(edge: .trailing)))
-                    }
                 }
                 .font(.caption.weight(.semibold)).lineLimit(1).fixedSize()
-                .padding(.horizontal, hovering ? 11 : 9).padding(.vertical, hovering ? 5 : 4)
+                .padding(.horizontal, 9).padding(.vertical, 4)
                 .background(Color.accentColor.opacity(hovering ? 0.22 : 0.15), in: Capsule())
                 .foregroundStyle(Color.accentColor)
-                .scaleEffect(hovering ? 1.06 : 1)
+                .scaleEffect(hovering ? 1.08 : 1)
                 .contentShape(Capsule())
             }
             .buttonStyle(.plain).pointingHand()
@@ -116,7 +111,7 @@ struct BackgroundControlToggle: View {
 
     var body: some View {
         Toggle("toggle.enable", isOn: Binding(get: { model.enabled }, set: { model.setEnabled($0) }))
-            .toggleStyle(.switch)
+            .toggleStyle(.switch).lineLimit(1).fixedSize()
             .disabled(!model.canEnable)
             .accessibilityIdentifier("management-toggle")
             .background(AnchorReader { view in

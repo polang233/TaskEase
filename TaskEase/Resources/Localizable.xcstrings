@@ -1503,19 +1503,19 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Turn on “Enable Background Limits” at the top."
+            "value" : "Turn on “Enable Limits” at the top."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "打开顶部“启用后台限制”。"
+            "value" : "打开顶部“启用限制”。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "打開最上方的「啟用背景限制」。"
+            "value" : "打開最上方的「啟用限制」。"
           }
         }
       }
@@ -5309,24 +5309,24 @@
       }
     },
     "toggle.enable" : {
-      "comment" : "Master switch for all background rules",
+      "comment" : "Master switch for all background rules; keep it short",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Enable Background Limits"
+            "value" : "Enable Limits"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "启用后台限制"
+            "value" : "启用限制"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "啟用背景限制"
+            "value" : "啟用限制"
           }
         }
       }
@@ -5360,19 +5360,19 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Why background limits are unavailable"
+            "value" : "Why limits are unavailable"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "启用后台限制的配置提示"
+            "value" : "启用限制的配置提示"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "啟用背景限制的設定提示"
+            "value" : "啟用限制的設定提示"
           }
         }
       }
@@ -5406,7 +5406,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Version %@ Available"
+            "value" : "Update %@"
           }
         },
         "zh-Hans" : {
