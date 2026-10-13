@@ -16,12 +16,13 @@ struct ContentView: View {
                     Text("header.version \(AppVersion.short)").font(.caption).foregroundStyle(.secondary)
                         .padding(.top, 2)
                 }.modifier(WindowHeaderDrag(enabled: titlebar != nil))
+                // 放在拖动区之外，避免点击被窗口拖动层拦截。
+                UpdateBadge(model: model)
                 Color.clear.frame(maxWidth: .infinity).frame(height: 32)
                     .modifier(WindowHeaderDrag(enabled: titlebar != nil))
                 if model.managedCount > 0 {
                     Text("header.activeLimits \(model.managedCount)").font(.callout).foregroundStyle(.secondary)
                 }
-                UpdateBadge(model: model).padding(.trailing, 6)
                 BackgroundControlToggle(model: model)
                 Button("common.settings", systemImage: "gearshape") { model.showUtility(.settings) }
                     .labelStyle(.iconOnly).buttonStyle(.borderless).font(.title3)
