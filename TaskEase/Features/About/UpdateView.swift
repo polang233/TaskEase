@@ -1,7 +1,7 @@
 import SwiftUI
 import AppKit
 
-/// 新版本提示：版本、更新内容与一键更新进度。启动检查发现新版本时自动打开，也可从页眉、菜单栏或关于窗口进入。
+/// 新版本详情：版本、更新内容与一键更新进度。从页眉、菜单栏的新版本提示或关于窗口进入。
 struct UpdateView: View {
     @Bindable var model: AppModel
     private var updates: UpdateChecker { model.updates }

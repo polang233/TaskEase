@@ -5423,6 +5423,29 @@
         }
       }
     },
+    "update.badge.hint" : {
+      "comment" : "Shown when hovering the new-version badge; also its VoiceOver hint",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "See What's New"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "查看更新内容"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "查看更新內容"
+          }
+        }
+      }
+    },
     "update.check" : {
       "comment" : "Button",
       "localizations" : {

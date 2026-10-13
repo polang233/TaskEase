@@ -3,6 +3,7 @@ import Foundation
 import Observation
 
 /// 检查 GitHub 最新发布并执行一键更新。启动时自动检查一次，之后只在用户点击时检查；没有周期定时器。
+/// 发现新版本时只在页眉和菜单栏显示提示，不主动弹出窗口。
 @MainActor @Observable
 final class UpdateChecker {
     enum Phase: Equatable {
@@ -14,8 +15,8 @@ final class UpdateChecker {
     private(set) var phase: Phase = .idle
     /// 比当前版本新的发布；没有新版本时为 nil。
     private(set) var release: GitHubClient.Release?
-    /// 自动检查发现新版本且用户没有跳过该版本时调用，由应用决定在哪里提示。
-    @ObservationIgnored var onAvailable: (() -> Void)?
+    /// 用户选择跳过的版本；跳过后该版本不再显示提示，仍可在关于窗口手动查看。
+    private(set) var skippedVersion: String?
     @ObservationIgnored private let fixtures: Bool
     @ObservationIgnored private let defaults: UserDefaults
     @ObservationIgnored private var task: Task<Void, Never>?
@@ -24,6 +25,7 @@ final class UpdateChecker {
     init(fixtures: Bool = false, defaults: UserDefaults = .standard) {
         self.fixtures = fixtures
         self.defaults = defaults
+        skippedVersion = fixtures ? nil : defaults.string(forKey: Self.skippedKey)
     }
 
     var isBusy: Bool {
@@ -36,10 +38,13 @@ final class UpdateChecker {
     /// 发现新版本后在界面上保留入口，直到用户更新或退出。
     var hasUpdate: Bool { release != nil }
 
+    /// 页眉与菜单栏的新版本提示：有新版本且没有被跳过。
+    var showsBadge: Bool { release.map { $0.version != skippedVersion } ?? false }
+
     /// 一键更新需要发布页带有可校验的安装镜像，且当前应用所在位置可写。
     var canInstall: Bool { release?.diskImage != nil && UpdateInstaller.canReplaceInPlace }
 
-    /// `automatic` 为启动检查：失败时不显示错误，发现被跳过的版本不弹出提示。
+    /// `automatic` 为启动检查：失败时保留原状态，不显示错误。
     func check(automatic: Bool = false) {
         guard task == nil, !isBusy else { return }
         if fixtures { phase = .upToDate; return }
@@ -70,9 +75,6 @@ final class UpdateChecker {
             self.task = nil
             self.release = found
             self.phase = next
-            if let found, automatic, self.defaults.string(forKey: Self.skippedKey) != found.version {
-                self.onAvailable?()
-            }
         }
     }
 
@@ -115,7 +117,8 @@ final class UpdateChecker {
 
     func skipCurrentRelease() {
         guard let release else { return }
-        defaults.set(release.version, forKey: Self.skippedKey)
+        skippedVersion = release.version
+        if !fixtures { defaults.set(release.version, forKey: Self.skippedKey) }
     }
 
     func cancel() {

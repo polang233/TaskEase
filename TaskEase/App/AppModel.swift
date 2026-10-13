@@ -64,9 +64,8 @@ final class AppModel {
         _ = Recovery.restore()
         loadStoredState()
         applyAppearance()
-        // 每次启动先清理上次更新中途退出的残留，再稍后检查一次更新，避开首轮采样；发现新版本时弹出更新窗口。
+        // 每次启动先清理上次更新中途退出的残留，再稍后检查一次更新，避开首轮采样；发现新版本只显示提示，不弹窗。
         Task.detached(priority: .utility) { UpdateInstaller.removeLeftovers() }
-        updates.onAvailable = { [weak self] in self?.showUtility(.update) }
         Task { @MainActor [weak self] in
             try? await Task.sleep(for: .seconds(3))
             self?.updates.check(automatic: true)

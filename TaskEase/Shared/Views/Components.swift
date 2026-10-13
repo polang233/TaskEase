@@ -73,21 +73,37 @@ struct StatusLabel: View {
     }
 }
 
-/// 有新版本时显示的小胶囊，点击打开更新窗口；没有新版本时不占位。
+/// 有新版本时显示的蓝色胶囊；指针移上去稍微放大并展开说明，点击打开更新窗口。没有新版本时不占位。
 struct UpdateBadge: View {
     @Bindable var model: AppModel
+    @State private var hovering = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
-        if let release = model.updates.release {
+        if model.updates.showsBadge, let release = model.updates.release {
             Button { model.showUtility(.update) } label: {
-                Label("update.badge \(release.version)", systemImage: "arrow.down.circle.fill")
-                    .font(.caption.weight(.semibold))
-                    .padding(.horizontal, 9).padding(.vertical, 4)
-                    .background(Color.accentColor.opacity(0.15), in: Capsule())
-                    .foregroundStyle(Color.accentColor)
+                HStack(spacing: 5) {
+                    Image(systemName: "arrow.down.circle.fill")
+                    Text("update.badge \(release.version)")
+                    if hovering {
+                        Text(verbatim: "·").opacity(0.6)
+                        Text("update.badge.hint")
+                            .transition(.opacity.combined(with: .move(edge: .trailing)))
+                    }
+                }
+                .font(.caption.weight(.semibold)).lineLimit(1).fixedSize()
+                .padding(.horizontal, hovering ? 11 : 9).padding(.vertical, hovering ? 5 : 4)
+                .background(Color.accentColor.opacity(hovering ? 0.22 : 0.15), in: Capsule())
+                .foregroundStyle(Color.accentColor)
+                .scaleEffect(hovering ? 1.06 : 1)
+                .contentShape(Capsule())
             }
             .buttonStyle(.plain).pointingHand()
-            .help("window.update").accessibilityIdentifier("update-badge")
+            .onHover { inside in
+                if reduceMotion { hovering = inside }
+                else { withAnimation(.spring(response: 0.28, dampingFraction: 0.75)) { hovering = inside } }
+            }
+            .accessibilityHint("update.badge.hint").accessibilityIdentifier("update-badge")
         }
     }
 }
