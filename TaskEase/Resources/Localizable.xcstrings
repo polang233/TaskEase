@@ -622,6 +622,29 @@
         }
       }
     },
+    "detail.compositingNote" : {
+      "comment" : "GPU details note explaining compositing attribution",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apps showing live video (remote desktops, players) make WindowServer redraw the screen constantly. That work is estimated from WindowServer and split by visible window area."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在显示视频画面的应用（远程桌面、播放器等）会让 WindowServer 不停合成屏幕。这部分从 WindowServer 中估算，按可见窗口面积分给对应应用。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在顯示影片畫面的 App（遠端桌面、播放器等）會讓 WindowServer 不斷合成螢幕。這部分從 WindowServer 估算，依可見視窗面積分給對應的 App。"
+          }
+        }
+      }
+    },
     "detail.compressed" : {
       "comment" : "Memory details row",
       "localizations" : {
@@ -722,6 +745,75 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "下載"
+          }
+        }
+      }
+    },
+    "detail.gpuCompositing %@" : {
+      "comment" : "GPU details: estimated WindowServer compositing included in the app row above",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Incl. ~%@ screen compositing (est.)"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "含画面合成约 %@（估算）"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "含畫面合成約 %@（估算）"
+          }
+        }
+      }
+    },
+    "detail.gpuSources" : {
+      "comment" : "GPU details section header listing the processes using the GPU",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Top GPU Users"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "占用来源"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "主要使用者"
+          }
+        }
+      }
+    },
+    "detail.gpuUnattributed" : {
+      "comment" : "GPU details row: utilization not attributed to any process",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not Attributed"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "未归属到进程"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無法歸到程序"
           }
         }
       }
@@ -929,6 +1021,29 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "顯示記憶體"
+          }
+        }
+      }
+    },
+    "detail.windowServerNote" : {
+      "comment" : "GPU details note when WindowServer is the top GPU user",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "WindowServer draws everything on screen. Screen sharing, recording, remote control and heavy animations are counted here, not under the app that asked for them."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "WindowServer 负责合成整个屏幕。屏幕共享、录屏、远程控制和大量动画的 GPU 开销都记在它名下，不会算到发起的应用上。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "WindowServer 負責合成整個螢幕。螢幕共享、錄影、遠端控制和大量動畫用到的 GPU 都會記在它身上，不會算到發起的 App。"
           }
         }
       }
@@ -6040,6 +6155,29 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "讀 %1$@  寫 %2$@"
+          }
+        }
+      }
+    },
+    "usage.gpuCompositing %@" : {
+      "comment" : "App list secondary line when sorting by GPU: estimated WindowServer compositing included in the value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Incl. %@ compositing"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "含画面合成 %@"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "含畫面合成 %@"
           }
         }
       }

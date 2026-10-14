@@ -56,7 +56,8 @@ final class AppModel {
             apps = Self.exampleApps
             system = SystemReading(cpuPercent: 18, gpuPercent: 24, thermal: .nominal,
                 memory: .init(usedBytes: 14 * 1_073_741_824, totalBytes: 24 * 1_073_741_824, compressedBytes: 1_073_741_824, swapBytes: 512 * 1_048_576),
-                network: .init(receiveRate: 12_345_678, sendRate: 123_456), temperatureCelsius: 54.3)
+                network: .init(receiveRate: 12_345_678, sendRate: 123_456), temperatureCelsius: 54.3,
+                gpuSources: [GPUSource(name: String(localized: "preview.app.browser"), percent: 15.3, compositing: 12.6), GPUSource(name: "WindowServer", percent: 4.2)])
             foregroundID = "example.editor"
             selectedID = apps.first?.id
             return
@@ -143,7 +144,7 @@ final class AppModel {
             switch key {
             case .cpu: return app.cpuPercent
             case .memory: return Double(app.memoryBytes)
-            case .gpu: return app.gpuPercent
+            case .gpu: return app.totalGPUPercent
             case .disk: return app.readRate + app.writeRate
             case .network: return app.network.map { ($0.receiveRate ?? 0) + ($0.sendRate ?? 0) }
             case .name: return nil
@@ -419,6 +420,7 @@ final class AppModel {
                 next.processNetwork = old.processNetwork
                 next.cpuPercent = old.cpuPercent
                 next.gpuPercent = old.gpuPercent
+                next.compositingGPUPercent = old.compositingGPUPercent
                 next.memoryBytes = old.memoryBytes
                 next.readRate = old.readRate
                 next.writeRate = old.writeRate

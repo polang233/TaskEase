@@ -1,5 +1,6 @@
 import AppKit
 import Foundation
+import CoreGraphics
 import Darwin
 
 /// 在主 actor 上复制 AppKit 应用信息，再传递给采样 actor。
@@ -86,6 +87,8 @@ actor ProcessMonitor {
 struct ProcessSampler {
     private var previous: [ProcessIdentity: ProcessSample] = [:]
     private var previousGPU: [ProcessIdentity: UInt64] = [:]
+    /// 全部 GPU 客户端按 PID 的上次累计时间，用于列出占用来源（含其他用户的进程）。
+    private var previousGPUByPID: [Int32: (name: String, time: UInt64)] = [:]
     private var previousWall: UInt64?
     private var previousCPU: TECPUTicks?
     private var paths: [ProcessIdentity: String] = [:]
@@ -98,6 +101,7 @@ struct ProcessSampler {
     mutating func reset() {
         previous.removeAll()
         previousGPU.removeAll()
+        previousGPUByPID.removeAll()
         previousWall = nil
         previousCPU = nil
         systemNetwork.reset()
@@ -130,6 +134,8 @@ struct ProcessSampler {
         let gpuTimes = includeSystem ? Self.gpuTimes() : [:]
         var nextGPU: [ProcessIdentity: UInt64] = [:]
         var gpuComparable: Set<String> = []
+        var gpuAppPIDs: Set<Int32> = []
+        var pidOwners: [Int32: String] = [:]
         var next: [ProcessIdentity: ProcessSample] = [:]
         var nextPaths: [ProcessIdentity: String] = [:]
         var comparable: Set<String> = []
@@ -144,12 +150,14 @@ struct ProcessSampler {
             }?.id
             guard let id = owner, let reading = NativeProcess.sample(pid), reading.identity == identity else { continue }
             next[identity] = reading
+            pidOwners[pid] = id
             apps[id]?.samples.append(reading)
             apps[id]?.memoryBytes += reading.memoryBytes
             if let root = apps[id]?.bundlePaths.first(where: { executable.hasPrefix($0 + "/Contents/") }) {
                 apps[id]?.targets.append(ControlTarget(identity: identity, executablePath: executable, bundlePath: root))
             }
-            if let gpu = gpuTimes[pid] {
+            if let gpu = gpuTimes[pid]?.time {
+                gpuAppPIDs.insert(pid)
                 nextGPU[identity] = gpu
                 if let elapsed, elapsed > 0, let old = previousGPU[identity], gpu >= old {
                     let seconds = elapsed / NativeProcess.ticksPerSecond
@@ -173,11 +181,16 @@ struct ProcessSampler {
             if let gpu = apps[id]?.gpuPercent { apps[id]?.gpuPercent = min(100, gpu) }
             if apps[id]?.samples.isEmpty == true { apps[id]?.canControl = false }
         }
+        var system = includeSystem ? sampleSystem(now: now) : nil
+        if includeSystem, let elapsed, elapsed > 0 {
+            system?.gpuSources = Self.gpuSources(apps: &apps, owners: pidOwners, times: gpuTimes, previous: previousGPUByPID,
+                                                 excluding: gpuAppPIDs, seconds: elapsed / NativeProcess.ticksPerSecond)
+        }
         previous = next
         previousGPU = nextGPU
+        previousGPUByPID = gpuTimes
         previousWall = now
         paths = nextPaths
-        let system = includeSystem ? sampleSystem(now: now) : nil
         let sorted = apps.values.sorted {
             if $0.cpuPercent == $1.cpuPercent { return $0.name.localizedStandardCompare($1.name) == .orderedAscending }
             return ($0.cpuPercent ?? -1) > ($1.cpuPercent ?? -1)
@@ -186,13 +199,70 @@ struct ProcessSampler {
     }
 
     /// 同一进程可能持有多个 GPU 客户端，按 PID 合并累计时间。
-    private static func gpuTimes() -> [Int32: UInt64] {
+    private static func gpuTimes() -> [Int32: (name: String, time: UInt64)] {
         var buffer = [TEProcessGPU](repeating: TEProcessGPU(), count: 512)
         let count = te_gpu_process_times(&buffer, Int32(buffer.count))
         guard count > 0 else { return [:] }
-        var result: [Int32: UInt64] = [:]
-        for item in buffer.prefix(Int(count)) { result[item.pid, default: 0] &+= item.gpuNanoseconds }
+        var result: [Int32: (name: String, time: UInt64)] = [:]
+        for var item in buffer.prefix(Int(count)) {
+            let name = withUnsafeBytes(of: &item.name) { raw in
+                String(decoding: raw.prefix { $0 != 0 }, as: UTF8.self)
+            }
+            result[item.pid] = (name, (result[item.pid]?.time ?? 0) &+ item.gpuNanoseconds)
+        }
         return result
+    }
+
+    /// 已识别应用按应用合并；不属于任何应用的进程（WindowServer 等系统进程）按进程名合并。只保留前五个且不低于 0.5%。
+    /// 正在显示视频画面的应用会让 WindowServer 持续合成，这部分按估算移到应用名下，见 `compositingShares`。
+    private static func gpuSources(apps: inout [String: AppReading], owners: [Int32: String],
+                                   times: [Int32: (name: String, time: UInt64)],
+                                   previous: [Int32: (name: String, time: UInt64)], excluding appPIDs: Set<Int32>,
+                                   seconds: Double) -> [GPUSource] {
+        var processes: [String: Double] = [:]
+        for (pid, current) in times where !appPIDs.contains(pid) {
+            guard let old = previous[pid], old.name == current.name, current.time >= old.time, !current.name.isEmpty else { continue }
+            processes[current.name, default: 0] += Double(current.time - old.time) / 1e9 / seconds * 100
+        }
+        let windowServer = processes[windowServerName] ?? 0
+        let shares = compositingShares(windowServer: windowServer, owners: owners)
+        for (id, share) in shares { apps[id]?.compositingGPUPercent = share }
+        if !shares.isEmpty { processes[windowServerName] = max(0, windowServer - shares.values.reduce(0, +)) }
+
+        var sources = processes.map { GPUSource(name: $0.key, percent: min(100, $0.value)) }
+        for app in apps.values {
+            guard let total = app.totalGPUPercent, total > 0 else { continue }
+            sources.append(GPUSource(name: app.name, percent: total, compositing: app.compositingGPUPercent ?? 0))
+        }
+        return Array(sources.filter { $0.percent >= 0.5 }.sorted { $0.percent > $1.percent }.prefix(5))
+    }
+
+    private static let windowServerName = "WindowServer"
+    /// 没有视频画面时 WindowServer 自身的合成开销，不归到任何应用。
+    private static let compositingFloor = 5.0
+
+    /// 系统不提供按窗口拆分的合成开销。实测正在显示视频画面（使用硬件解码器）的应用窗口在屏幕上时，
+    /// WindowServer 的 GPU 明显升高，隐藏窗口后回落，因此把超出底线的部分按这些应用的可见窗口面积分摊。
+    /// 没有应用在解码时不读取窗口列表。
+    private static func compositingShares(windowServer: Double, owners: [Int32: String]) -> [String: Double] {
+        guard windowServer > compositingFloor else { return [:] }
+        var buffer = [Int32](repeating: 0, count: 32)
+        let count = te_video_decoder_owners(&buffer, Int32(buffer.count))
+        let decoding = Set(buffer.prefix(max(0, Int(count))).compactMap { owners[$0] })
+        guard !decoding.isEmpty,
+              let windows = CGWindowListCopyWindowInfo([.optionOnScreenOnly, .excludeDesktopElements], kCGNullWindowID) as? [[String: Any]]
+        else { return [:] }
+        var areas: [String: Double] = [:]
+        for window in windows {
+            guard (window[kCGWindowLayer as String] as? Int) == 0,
+                  let pid = window[kCGWindowOwnerPID as String] as? Int32, let id = owners[pid], decoding.contains(id),
+                  let bounds = window[kCGWindowBounds as String] as? [String: Double] else { continue }
+            areas[id, default: 0] += (bounds["Width"] ?? 0) * (bounds["Height"] ?? 0)
+        }
+        let total = areas.values.reduce(0, +)
+        guard total > 0 else { return [:] }
+        let attributable = windowServer - compositingFloor
+        return areas.mapValues { attributable * $0 / total }
     }
 
     private mutating func sampleSystem(now: UInt64) -> SystemReading {

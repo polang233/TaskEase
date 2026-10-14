@@ -26,9 +26,12 @@ int te_set_background(int32_t pid, uint64_t seconds, uint64_t microseconds, int 
 int te_get_background(int32_t pid);
 int te_signal_process(int32_t pid, uint64_t seconds, uint64_t microseconds, int signal_number);
 int te_cpu_ticks(TECPUTicks *result);
-typedef struct { int32_t pid; uint64_t gpuNanoseconds; } TEProcessGPU;
+/* name 为 GPU 客户端创建者的进程名（IOUserClientCreator 中逗号后的部分），可能被截断。 */
+typedef struct { int32_t pid; uint64_t gpuNanoseconds; char name[32]; } TEProcessGPU;
 double te_gpu_percent(void);
 int te_gpu_process_times(TEProcessGPU *results, int capacity);
+/* 正在使用硬件视频解码器的应用：解码服务按系统记录的责任进程归到发起它的应用，结果已去重。 */
+int te_video_decoder_owners(int32_t *results, int capacity);
 int te_gpu_info(char *model, uint32_t length, int32_t *cores);
 void te_install_worker_signals(void);
 int te_worker_should_exit(void);

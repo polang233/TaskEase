@@ -58,6 +58,7 @@ struct MetricDetails: View {
                 if let model = hardware.gpuModel { row(Text("detail.model"), model) }
                 if let cores = hardware.gpuCores { row(Text("detail.cores"), String(localized: "detail.coreCount \(cores)")) }
                 row(Text("detail.vram"), String(localized: "detail.sharedMemory \(Display.gigabytes(hardware.memoryBytes))"))
+                gpuSources
             case .memory:
                 row(Text("detail.used"), "\(Display.gigabytes(reading.memory?.usedBytes)) / \(Display.gigabytes(reading.memory?.totalBytes)) GB")
                 row(Text("detail.compressed"), "\(Display.gigabytes(reading.memory?.compressedBytes)) GB")
@@ -72,6 +73,31 @@ struct MetricDetails: View {
             }
             if isPaused { note("detail.paused") }
         }.font(.caption).padding(12).frame(width: 240)
+    }
+
+    /// 占用来源：各进程 GPU 执行时间占比，整机利用率高出合计较多时补一行未归属的差额。
+    @ViewBuilder private var gpuSources: some View {
+        let sources = reading.gpuSources
+        if !sources.isEmpty {
+            Divider().padding(.vertical, 2)
+            Text("detail.gpuSources").foregroundStyle(.secondary)
+            ForEach(sources, id: \.name) { source in
+                row(Text(verbatim: source.name), Display.percent(source.percent))
+                if source.compositing > 0 {
+                    Text("detail.gpuCompositing \(Display.percent(source.compositing))")
+                        .foregroundStyle(.tertiary).padding(.leading, 10)
+                }
+            }
+            if let total = reading.gpuPercent {
+                let gap = total - sources.reduce(0) { $0 + $1.percent }
+                if gap >= 5 { row(Text("detail.gpuUnattributed"), Display.percent(gap)) }
+            }
+            if sources.contains(where: { $0.compositing > 0 }) {
+                note("detail.compositingNote")
+            } else if let top = sources.first, top.isWindowServer, top.percent >= 10 {
+                note("detail.windowServerNote")
+            }
+        }
     }
 
     private var primaryValue: String {

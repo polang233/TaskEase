@@ -10,6 +10,7 @@
 #include <unistd.h>
 #include <errno.h>
 #include <string.h>
+#include <dlfcn.h>
 #include <stdio.h>
 
 int te_list_pids(int32_t *pids, int bytes) { return proc_listallpids(pids, bytes); }
@@ -117,7 +118,13 @@ static int gpu_client_time(io_registry_entry_t entry, TEProcessGPU *out) {
     if (creator) CFRelease(creator);
     if (usage) CFRelease(usage);
     if (total == 0) return 0;
-    *out = (TEProcessGPU){ pid, total };
+    *out = (TEProcessGPU){ pid, total, {0} };
+    const char *comma = strchr(text, ',');
+    if (comma) {
+        comma++;
+        while (*comma == ' ') comma++;
+        strlcpy(out->name, comma, sizeof(out->name));
+    }
     return 1;
 }
 
@@ -145,6 +152,53 @@ int te_gpu_process_times(TEProcessGPU *out, int capacity) {
     IOObjectRelease(accelerators);
     return found;
 }
+/* 解码服务 VTDecoderXPCService 由 launchd 启动，父进程不是应用；系统的责任进程记录指向发起解码的应用。
+   该函数不在公开头文件中，取不到时按解码服务自身计。 */
+static int responsible_pid(int pid) {
+    static int (*lookup)(int) = NULL;
+    static int resolved = 0;
+    if (!resolved) {
+        lookup = (int (*)(int))dlsym(RTLD_DEFAULT, "responsibility_get_pid_responsible_for_pid");
+        resolved = 1;
+    }
+    int owner = lookup ? lookup(pid) : -1;
+    return owner > 0 ? owner : pid;
+}
+
+/* 解码器用户客户端同样挂在 AppleAVD 服务下，不能直接匹配，遍历服务的子节点。 */
+int te_video_decoder_owners(int32_t *out, int capacity) {
+    if (!out || capacity <= 0) return -1;
+    io_iterator_t services = 0;
+    if (IOServiceGetMatchingServices(kIOMainPortDefault, IOServiceMatching("AppleAVD"), &services) != KERN_SUCCESS) return -1;
+    int found = 0;
+    io_registry_entry_t service;
+    while ((service = IOIteratorNext(services))) {
+        io_iterator_t children = 0;
+        if (IORegistryEntryGetChildIterator(service, kIOServicePlane, &children) == KERN_SUCCESS) {
+            io_registry_entry_t child;
+            while ((child = IOIteratorNext(children))) {
+                CFTypeRef creator = IOObjectConformsTo(child, "IOUserClient")
+                    ? IORegistryEntryCreateCFProperty(child, CFSTR("IOUserClientCreator"), kCFAllocatorDefault, 0) : NULL;
+                char text[64] = {0};
+                int pid = 0;
+                if (creator && CFGetTypeID(creator) == CFStringGetTypeID() &&
+                    CFStringGetCString((CFStringRef)creator, text, sizeof(text), kCFStringEncodingUTF8) &&
+                    sscanf(text, "pid %d", &pid) == 1 && pid > 0) {
+                    int owner = responsible_pid(pid), duplicate = 0;
+                    for (int index = 0; index < found; index++) duplicate |= out[index] == owner;
+                    if (!duplicate && found < capacity) out[found++] = owner;
+                }
+                if (creator) CFRelease(creator);
+                IOObjectRelease(child);
+            }
+            IOObjectRelease(children);
+        }
+        IOObjectRelease(service);
+    }
+    IOObjectRelease(services);
+    return found;
+}
+
 /* 读取 GPU 型号与核心数；只在第一次打开详情时调用。 */
 int te_gpu_info(char *model, uint32_t length, int32_t *cores) {
     if (!model || length == 0 || !cores) return 0;

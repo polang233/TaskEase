@@ -31,7 +31,7 @@ struct AppUsage {
     func value(_ app: AppReading) -> String {
         switch key {
         case .memory: Display.memory(app)
-        case .gpu: Display.percent(app.gpuPercent)
+        case .gpu: Display.percent(app.totalGPUPercent)
         case .disk: Display.rate(Self.disk(app))
         case .network: Display.networkRate(Self.network(app))
         case .cpu, .name: Display.percent(Self.cpu(app, scale: scale))
@@ -43,7 +43,12 @@ struct AppUsage {
         switch key {
         case .cpu, .name: Display.memory(app)
         case .memory: String(localized: "usage.memoryShare \(Display.percent(fraction(app).map { $0 * 100 }))")
-        case .gpu: "CPU " + Display.percent(Self.cpu(app, scale: scale))
+        case .gpu:
+            if let compositing = app.compositingGPUPercent {
+                String(localized: "usage.gpuCompositing \(Display.percent(compositing))")
+            } else {
+                "CPU " + Display.percent(Self.cpu(app, scale: scale))
+            }
         case .disk: String(localized: "usage.diskReadWrite \(Display.rate(app.readRate)) \(Display.rate(app.writeRate))")
         case .network: "↓ " + Display.networkRate(app.network?.receiveRate) + "  ↑ " + Display.networkRate(app.network?.sendRate)
         }
@@ -56,7 +61,7 @@ struct AppUsage {
         case .memory:
             let total = Double(ProcessInfo.processInfo.physicalMemory)
             return total > 0 && app.memoryBytes > 0 ? Double(app.memoryBytes) / total : nil
-        case .gpu: return app.gpuPercent.map { $0 / 100 }
+        case .gpu: return app.totalGPUPercent.map { $0 / 100 }
         case .disk: return Self.disk(app) / max(diskTotal, Self.diskFloor)
         case .network: return Self.network(app).map { $0 / max(networkTotal, Self.networkFloor) }
         }
