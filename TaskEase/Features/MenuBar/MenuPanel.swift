@@ -13,8 +13,7 @@ struct MenuPanel: View {
                 UpdateBadge(model: model)
                 Spacer()
                 BackgroundControlToggle(model: model).controlSize(.small)
-            }.padding(16)
-            Divider()
+            }.padding(.horizontal, 16).padding(.top, 16).padding(.bottom, 6)
             SystemStrip(reading: model.system, style: model.preferences.metricStyle).padding(.horizontal, -4)
             Divider()
             VStack(spacing: 4) {

@@ -30,7 +30,6 @@ struct ContentView: View {
             }.padding(.leading, titlebar.map { $0.leading + 16 } ?? 20)
                 .padding(.trailing, 20).padding(.vertical, titlebar == nil ? 14 : 0)
                 .frame(height: titlebar?.height)
-            Divider()
             SystemStrip(reading: model.system, isPaused: model.managementDisplayPaused, style: model.preferences.metricStyle)
             Divider()
             if let error = model.errorMessage {
@@ -75,6 +74,7 @@ struct ContentView: View {
                     let key = model.effectiveSortKey
                     let usage = AppUsage(key, scale: model.preferences.cpuScale, apps: model.apps)
                     ForEach(model.filteredApps) { app in
+                        let selected = model.selectedID == app.id
                         HStack(spacing: 10) {
                             AppIcon(app: app, size: 30)
                             VStack(alignment: .leading, spacing: 5) {
@@ -100,9 +100,28 @@ struct ContentView: View {
                                 }
                             }
                         }
+                        .foregroundStyle(Color(nsColor: .labelColor))
                         .padding(.vertical, 8).padding(.horizontal, 8)
                         .background(UsageFill(fraction: usage.fraction(app)))
+                        .overlay {
+                            if selected {
+                                RoundedRectangle(cornerRadius: 7, style: .continuous)
+                                    .strokeBorder(Color.accentColor.opacity(0.65), lineWidth: 1.5)
+                                    .allowsHitTesting(false)
+                                    .accessibilityHidden(true)
+                            }
+                        }
+                        .overlay(alignment: .leading) {
+                            if selected {
+                                Capsule().fill(Color.accentColor)
+                                    .frame(width: 3, height: 24).padding(.leading, 2)
+                                    .allowsHitTesting(false)
+                                    .accessibilityHidden(true)
+                            }
+                        }
                         .contentShape(Rectangle()).pointingHand()
+                        // 覆盖原生整行选中底色，让占用渐变与选择标记分别表达状态。
+                        .listRowBackground(Color(nsColor: .controlBackgroundColor))
                         .listRowSeparator(.visible)
                         .tag(app.id)
                     }

@@ -11,10 +11,7 @@ struct NetworkRateStack: View {
             line("arrow.down", reading?.receiveRate, color: .blue)
         }.font(.system(size: compact ? 9.5 : 10.5).monospacedDigit())
             .frame(width: compact ? 64 : 76, height: 24, alignment: .leading)
-            .help("strip.network.help")
-            .accessibilityElement(children: .ignore)
-            .accessibilityLabel("strip.network.a11y \(Display.compactRate(reading?.sendRate)) \(Display.compactRate(reading?.receiveRate))")
-            .accessibilityIdentifier("system-network-rate")
+            .accessibilityHidden(true)
     }
 
     private func line(_ icon: String, _ rate: Double?, color: Color) -> some View {

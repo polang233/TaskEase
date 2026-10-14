@@ -1,5 +1,6 @@
 import SwiftUI
 import AppKit
+import UniformTypeIdentifiers
 
 /// 界面共用的品牌标记，尺寸以逻辑点计。
 struct BrandMark: View {
@@ -15,6 +16,12 @@ struct BrandMark: View {
 private enum ApplicationIcons {
     static let pixels = 96
     static var images: [String: NSImage] = [:]
+
+    /// 没有应用包路径时使用系统通用应用图标，与访达中的外观一致。
+    static let generic: NSImage = {
+        let source = NSWorkspace.shared.icon(for: .applicationBundle)
+        return downscaled(source) ?? source
+    }()
 
     static func image(at path: String) -> NSImage {
         if let cached = images[path] { return cached }
@@ -50,26 +57,52 @@ struct AppIcon: View {
             if let path = app.bundlePaths.first {
                 Image(nsImage: ApplicationIcons.image(at: path)).resizable()
             } else {
-                Image(systemName: "app").resizable().scaledToFit().padding(5).foregroundStyle(.secondary)
+                Image(nsImage: ApplicationIcons.generic).resizable()
             }
         }.frame(width: size, height: size).accessibilityHidden(true)
     }
 }
 
+/// 规则生效相关的状态用浅色胶囊标签突出，其余状态保持次要文字。
 struct StatusLabel: View {
     let status: RuleStatus
 
-    private var color: Color {
+    private var tint: Color? {
         switch status {
         case .gentle, .budget: .green
         case .suspended: .blue
         case .waiting: .orange
-        default: .secondary
+        default: nil
         }
     }
 
     var body: some View {
-        Text(status.title).font(.caption).foregroundStyle(color)
+        if let tint {
+            Text(status.title).font(.caption2.weight(.semibold)).foregroundStyle(tint)
+                .padding(.horizontal, 6).padding(.vertical, 1.5)
+                .background(tint.opacity(0.13), in: Capsule())
+        } else {
+            Text(status.title).font(.caption).foregroundStyle(.secondary)
+        }
+    }
+}
+
+/// 详情区的分组卡片，与设置窗口的分组表单观感一致：浅底色、细描边、可选小标题。
+struct SectionCard<Content: View>: View {
+    var title: LocalizedStringKey?
+    @ViewBuilder var content: Content
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            if let title {
+                Text(title).font(.subheadline.weight(.semibold)).foregroundStyle(.secondary).padding(.leading, 4)
+            }
+            VStack(alignment: .leading, spacing: 14) { content }
+                .padding(14).frame(maxWidth: .infinity, alignment: .leading)
+                .background(Color.primary.opacity(0.035), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+                .overlay(RoundedRectangle(cornerRadius: 10, style: .continuous)
+                    .strokeBorder(Color.primary.opacity(0.07), lineWidth: 0.5))
+        }
     }
 }
 

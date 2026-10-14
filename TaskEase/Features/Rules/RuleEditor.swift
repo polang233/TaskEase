@@ -14,11 +14,11 @@ struct RuleEditor: View {
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 22) {
+            VStack(alignment: .leading, spacing: 18) {
                 HStack(spacing: 12) {
-                    AppIcon(app: app, size: 44)
+                    AppIcon(app: app, size: 48)
                     VStack(alignment: .leading, spacing: 5) {
-                        Text(app.name).font(.title3.weight(.semibold))
+                        Text(app.name).font(.title3.weight(.semibold)).lineLimit(1)
                         StatusLabel(status: app.status)
                     }
                     Spacer()
@@ -29,41 +29,43 @@ struct RuleEditor: View {
                     }
                 }
                 if app.isRunning {
-                    HStack(spacing: 30) {
-                        metric("metric.cpu", value: Display.percent(AppUsage.cpu(app, scale: model.preferences.cpuScale)))
-                        metric("metric.memory", value: Display.memory(app))
+                    let cpu = AppUsage.cpu(app, scale: model.preferences.cpuScale)
+                    HStack(spacing: 10) {
+                        statTile("metric.cpu", value: Display.percent(cpu),
+                                 color: model.preferences.cpuScale == .machine ? MetricPalette.percent(cpu) : MetricPalette.applicationCPU(cpu))
+                        statTile("metric.memory", value: Display.memory(app))
                     }
                 } else {
                     Text("rule.notRunning").font(.callout).foregroundStyle(.secondary)
                 }
-                Divider()
-                ruleControls.disabled(!model.allowsRuleEditing(app))
-                if !model.allowsRuleEditing(app) {
-                    Label(title: { app.isSystemApp ? Text("rule.readOnly.system") : Text("rule.readOnly.other") }, icon: { Image(systemName: "lock") })
-                        .font(.callout).foregroundStyle(.secondary)
+                SectionCard {
+                    ruleControls.disabled(!model.allowsRuleEditing(app))
+                    if !model.allowsRuleEditing(app) {
+                        Label(title: { app.isSystemApp ? Text("rule.readOnly.system") : Text("rule.readOnly.other") }, icon: { Image(systemName: "lock") })
+                            .font(.callout).foregroundStyle(.secondary)
+                    }
                 }
                 if model.preferences.networkFeaturesEnabled {
-                    Divider()
-                    NetworkRuleEditor(model: model, app: app)
+                    SectionCard { NetworkRuleEditor(model: model, app: app) }
                 }
                 if app.isRunning {
-                    Divider()
                     if model.preferences.networkActivityVisible {
-                        VStack(alignment: .leading, spacing: 10) {
-                            Text("rule.network.title").font(.headline)
-                            readingRow("rule.network.receive", value: Display.networkRate(app.network?.receiveRate))
-                            readingRow("rule.network.send", value: Display.networkRate(app.network?.sendRate))
-                            Text(app.network?.sampledProcesses == 0 ? String(localized: "rule.network.none") : model.networkMonitorStatus.message)
-                                .font(.caption).foregroundStyle(.secondary)
+                        SectionCard(title: "rule.network.title") {
+                            VStack(alignment: .leading, spacing: 10) {
+                                readingRow("rule.network.receive", value: Display.networkRate(app.network?.receiveRate))
+                                readingRow("rule.network.send", value: Display.networkRate(app.network?.sendRate))
+                                Text(app.network?.sampledProcesses == 0 ? String(localized: "rule.network.none") : model.networkMonitorStatus.message)
+                                    .font(.caption).foregroundStyle(.secondary)
+                            }
                         }.help("rule.network.help")
-                        Divider()
                     }
-                    VStack(alignment: .leading, spacing: 10) {
-                        Text("rule.disk.title").font(.headline)
-                        readingRow("rule.disk.read", value: Display.rate(app.readRate))
-                        readingRow("rule.disk.write", value: Display.rate(app.writeRate))
-                        readingRow("rule.wakeups", value: Display.wakeups(app.wakeupRate))
-                            .help("rule.wakeups.help")
+                    SectionCard(title: "rule.disk.title") {
+                        VStack(alignment: .leading, spacing: 10) {
+                            readingRow("rule.disk.read", value: Display.rate(app.readRate))
+                            readingRow("rule.disk.write", value: Display.rate(app.writeRate))
+                            readingRow("rule.wakeups", value: Display.wakeups(app.wakeupRate))
+                                .help("rule.wakeups.help")
+                        }
                     }
                 }
                 DisclosureGroup("rule.processInfo") {
@@ -85,20 +87,26 @@ struct RuleEditor: View {
                         }
                     }.padding(.top, 8)
                 }.disclosureGroupStyle(FullRowDisclosureStyle()).foregroundStyle(.secondary).pointingHand()
-            }.padding(24)
+                    .padding(.horizontal, 4)
+            }.padding(20)
         }
     }
 
     private var ruleControls: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Toggle("rule.toggle", isOn: Binding(get: { rule.isActive },
-                                                set: { value in update { $0.mode = value ? .budget : .off } }))
-                .toggleStyle(.switch).font(.headline).accessibilityIdentifier("app-rule-toggle")
+            HStack {
+                Text("rule.toggle").font(.headline)
+                Spacer()
+                Toggle("rule.toggle", isOn: Binding(get: { rule.isActive },
+                                                    set: { value in update { $0.mode = value ? .budget : .off } }))
+                    .toggleStyle(.switch).labelsHidden().accessibilityIdentifier("app-rule-toggle")
+            }
             if rule.isActive {
                 VStack(alignment: .leading, spacing: 8) {
+                    Text("rule.mode")
                     Picker("rule.mode", selection: Binding(get: { rule.mode }, set: { setMode($0) })) {
                         ForEach(ControlMode.limits, id: \.self) { Text($0.title).tag($0) }
-                    }.selectionRail().accessibilityIdentifier("control-mode")
+                    }.selectionRail().labelsHidden().accessibilityIdentifier("control-mode")
                     Text(modeNote).font(.caption).foregroundStyle(rule.mode == .suspend ? .orange : .secondary)
                         .fixedSize(horizontal: false, vertical: true)
                 }
@@ -122,8 +130,13 @@ struct RuleEditor: View {
                             Spacer()
                             Text(verbatim: "\(Int(rule.cpuPercent))%").monospacedDigit()
                         }
-                        Slider(value: Binding(get: { rule.cpuPercent }, set: { percent in update { $0.cpuPercent = percent } }),
-                               in: 5...200, step: 5).accessibilityIdentifier("cpu-budget")
+                        // 不设 step，避免 40 个刻度点；取值仍按 5% 取整。
+                        Slider(value: Binding(get: { rule.cpuPercent }, set: { percent in
+                            let rounded = (percent / 5).rounded() * 5
+                            if rounded != rule.cpuPercent { update { $0.cpuPercent = rounded } }
+                        }), in: 5...200)
+                            .accessibilityIdentifier("cpu-budget")
+                            .accessibilityValue(Text(verbatim: "\(Int(rule.cpuPercent))%"))
                         Text("rule.cpuCap.note")
                             .font(.caption).foregroundStyle(.secondary)
                     }
@@ -179,14 +192,20 @@ struct RuleEditor: View {
         }
     }
 
-    private func metric(_ title: LocalizedStringKey, value: String, color: Color = .primary) -> some View {
-        VStack(alignment: .leading, spacing: 5) {
+    /// 运行指标卡片：小标题加圆体大数字，与下方分组卡片同一底色。
+    private func statTile(_ title: LocalizedStringKey, value: String, color: Color = .primary) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
             Text(title).font(.caption).foregroundStyle(.secondary)
-            Text(value).font(.title2).monospacedDigit().foregroundStyle(color)
+            Text(value).font(.system(.title2, design: .rounded).weight(.semibold)).monospacedDigit()
+                .foregroundStyle(color).contentTransition(.numericText())
         }
+        .padding(.horizontal, 14).padding(.vertical, 10)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color.primary.opacity(0.035), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: 10, style: .continuous).strokeBorder(Color.primary.opacity(0.07), lineWidth: 0.5))
     }
 
     private func readingRow(_ title: LocalizedStringKey, value: String) -> some View {
-        HStack { Text(title); Spacer(); Text(value).monospacedDigit() }.font(.callout)
+        HStack { Text(title).foregroundStyle(.secondary); Spacer(); Text(value).monospacedDigit() }.font(.callout)
     }
 }

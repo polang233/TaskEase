@@ -703,6 +703,29 @@
         }
       }
     },
+    "detail.download" : {
+      "comment" : "Network details row: download speed",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Download"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "下载"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "下載"
+          }
+        }
+      }
+    },
     "detail.model" : {
       "comment" : "Chip details row",
       "localizations" : {
@@ -837,6 +860,29 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "熱狀態"
+          }
+        }
+      }
+    },
+    "detail.upload" : {
+      "comment" : "Network details row: upload speed",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Upload"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "上传"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "上傳"
           }
         }
       }
@@ -2116,6 +2162,29 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "記憶體"
+          }
+        }
+      }
+    },
+    "metric.network" : {
+      "comment" : "Network metric title in the overview strip and its detail card",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Network"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "网络"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "網路"
           }
         }
       }

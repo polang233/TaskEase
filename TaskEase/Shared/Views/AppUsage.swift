@@ -69,7 +69,7 @@ struct AppUsage {
     }
 }
 
-/// 整行背景的占用填充：从左向右按占比铺开，颜色由绿渐变到对应档位，尾部转淡。
+/// 整行背景的占用填充：从左向右按占比铺开，颜色由绿渐变到对应档位，尾部柔和淡出，不留硬边。
 struct UsageFill: View {
     let fraction: Double?
 
@@ -78,10 +78,13 @@ struct UsageFill: View {
             let value = min(1, max(0, fraction ?? 0))
             if fraction != nil && value > 0 {
                 let colors = MetricPalette.gradient(upTo: value)
-                RoundedRectangle(cornerRadius: 7)
-                    .fill(LinearGradient(colors: colors.map { $0.opacity(0.24) } + [colors.last!.opacity(0.08)],
+                RoundedRectangle(cornerRadius: 7, style: .continuous)
+                    .fill(LinearGradient(colors: colors.map { $0.opacity(0.2) }, startPoint: .leading, endPoint: .trailing))
+                    .mask(LinearGradient(stops: [.init(color: .black, location: 0), .init(color: .black, location: 0.55),
+                                                 .init(color: .clear, location: 1)],
                                          startPoint: .leading, endPoint: .trailing))
-                    .frame(width: max(8, proxy.size.width * value))
+                    .frame(width: max(28, proxy.size.width * value))
+                    .animation(.easeOut(duration: 0.35), value: value)
             }
         }.allowsHitTesting(false).accessibilityHidden(true)
     }

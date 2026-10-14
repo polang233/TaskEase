@@ -2,7 +2,7 @@ import SwiftUI
 
 /// 原始值只作为界面标识，显示名称通过本地化获取。
 enum SystemMetric: String {
-    case cpu, gpu, memory, temperature
+    case cpu, gpu, memory, temperature, network
 
     var title: String {
         switch self {
@@ -10,6 +10,7 @@ enum SystemMetric: String {
         case .gpu: String(localized: "metric.gpu")
         case .memory: String(localized: "metric.memory")
         case .temperature: String(localized: "metric.temperature")
+        case .network: String(localized: "metric.network")
         }
     }
 
@@ -27,6 +28,7 @@ enum SystemMetric: String {
         case .gpu: "square.3.layers.3d"
         case .memory: "memorychip"
         case .temperature: "thermometer.medium"
+        case .network: "network"
         }
     }
 }
@@ -63,6 +65,10 @@ struct MetricDetails: View {
             case .temperature:
                 row(Text("detail.thermal"), reading.thermal.title)
                 note("detail.sensorNote")
+            case .network:
+                row(Text("detail.upload"), Display.networkRate(reading.network?.sendRate))
+                row(Text("detail.download"), Display.networkRate(reading.network?.receiveRate))
+                note("strip.network.help")
             }
             if isPaused { note("detail.paused") }
         }.font(.caption).padding(12).frame(width: 240)
@@ -74,6 +80,7 @@ struct MetricDetails: View {
         case .gpu: Display.percent(reading.gpuPercent)
         case .memory: Display.percent(reading.memory?.percent)
         case .temperature: Display.temperature(reading.temperatureCelsius)
+        case .network: Display.networkRate(reading.network.map { ($0.sendRate ?? 0) + ($0.receiveRate ?? 0) })
         }
     }
 
@@ -83,6 +90,7 @@ struct MetricDetails: View {
         case .gpu: MetricPalette.percent(reading.gpuPercent)
         case .memory: MetricPalette.percent(reading.memory?.percent)
         case .temperature: MetricPalette.thermal(celsius: reading.temperatureCelsius, level: reading.thermal)
+        case .network: .primary
         }
     }
 

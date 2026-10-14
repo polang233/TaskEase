@@ -1,7 +1,7 @@
 import SwiftUI
 import AppKit
 
-/// 系统指标保持单行；指针移到 CPU、GPU、内存或温度上打开无箭头卡片，离开指标和卡片后立即关闭。
+/// 系统指标保持单行；指针移到 CPU、GPU、内存、温度或网络上时稍微放大并打开无箭头卡片，离开指标和卡片后立即关闭。
 /// 点击指标把卡片固定在该指标下，固定期间悬停其他指标不再切换；再次点击、点到别处或窗口失焦时解除。
 struct SystemStrip: View {
     let reading: SystemReading
@@ -9,8 +9,10 @@ struct SystemStrip: View {
     var style: MetricDisplayStyle = .number
     @State private var active: SystemMetric?
     @State private var pinned: SystemMetric?
+    @State private var hovered: SystemMetric?
     @State private var cards = HoverCardCoordinator()
     @State private var anchors: [SystemMetric: WeakAnchor] = [:]
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         ViewThatFits(in: .horizontal) {
@@ -29,17 +31,19 @@ struct SystemStrip: View {
 
     private func row(compact: Bool) -> some View {
         HStack(spacing: compact ? 10 : 20) {
-            metric(.cpu, compact: compact, value: Display.percent(reading.cpuPercent),
-                   fraction: reading.cpuPercent.map { $0 / 100 })
-            metric(.gpu, compact: compact, value: Display.percent(reading.gpuPercent),
-                   fraction: reading.gpuPercent.map { $0 / 100 })
-            metric(.memory, compact: compact, value: Display.percent(reading.memory?.percent),
-                   fraction: reading.memory?.percent.map { $0 / 100 })
-            metric(.temperature, compact: compact,
-                   value: reading.temperatureCelsius == nil ? reading.thermal.title : Display.temperature(reading.temperatureCelsius),
-                   fraction: MetricPalette.thermalFraction(celsius: reading.temperatureCelsius),
-                   color: MetricPalette.thermal(celsius: reading.temperatureCelsius, level: reading.thermal))
-            NetworkRateStack(reading: reading.network, compact: compact)
+            gauge(.cpu, compact: compact, value: Display.percent(reading.cpuPercent),
+                  fraction: reading.cpuPercent.map { $0 / 100 })
+            gauge(.gpu, compact: compact, value: Display.percent(reading.gpuPercent),
+                  fraction: reading.gpuPercent.map { $0 / 100 })
+            gauge(.memory, compact: compact, value: Display.percent(reading.memory?.percent),
+                  fraction: reading.memory?.percent.map { $0 / 100 })
+            gauge(.temperature, compact: compact,
+                  value: reading.temperatureCelsius == nil ? reading.thermal.title : Display.temperature(reading.temperatureCelsius),
+                  fraction: MetricPalette.thermalFraction(celsius: reading.temperatureCelsius),
+                  color: MetricPalette.thermal(celsius: reading.temperatureCelsius, level: reading.thermal))
+            cell(.network, label: Text("strip.network.a11y \(Display.compactRate(reading.network?.sendRate)) \(Display.compactRate(reading.network?.receiveRate))")) { _ in
+                NetworkRateStack(reading: reading.network, compact: compact)
+            }
             if isPaused {
                 Image(systemName: "snowflake").font(.caption).foregroundStyle(.blue)
                     .help("strip.paused.help")
@@ -48,21 +52,32 @@ struct SystemStrip: View {
         }.fixedSize(horizontal: true, vertical: false)
     }
 
-    private func metric(_ kind: SystemMetric, compact: Bool, value: String, fraction: Double?, color: Color? = nil) -> some View {
-        let isPinned = pinned == kind
-        return Button { isPinned ? cards.close() : pin(kind) } label: {
+    private func gauge(_ kind: SystemMetric, compact: Bool, value: String, fraction: Double?, color: Color? = nil) -> some View {
+        cell(kind, label: Text(kind.title) + Text(verbatim: " \(value)")) { isPinned in
             MetricGauge(kind: kind, value: value, fraction: fraction, color: color ?? MetricPalette.color(fraction),
                         style: style, compact: compact, emphasized: isPinned)
+        }
+    }
+
+    /// 指标的公共外壳：悬停稍微放大并加浅底，固定时底色加深；点击固定或解除卡片。
+    private func cell<Content: View>(_ kind: SystemMetric, label: Text,
+                                     @ViewBuilder content: (Bool) -> Content) -> some View {
+        let isPinned = pinned == kind
+        let isHovered = hovered == kind
+        return Button { isPinned ? cards.close() : pin(kind) } label: {
+            content(isPinned)
                 .padding(.horizontal, 5)
                 .background(RoundedRectangle(cornerRadius: 7, style: .continuous)
-                    .fill(Color.primary.opacity(isPinned ? 0.07 : 0)))
-                .scaleEffect(isPinned ? 1.04 : 1)
-                .animation(.spring(response: 0.3, dampingFraction: 0.62), value: isPinned)
+                    .fill(Color.primary.opacity(isPinned ? 0.07 : isHovered ? 0.045 : 0)))
+                .scaleEffect(isPinned || isHovered ? 1.06 : 1)
+                .animation(reduceMotion ? nil : .spring(response: 0.28, dampingFraction: 0.68), value: isPinned)
+                .animation(reduceMotion ? nil : .spring(response: 0.28, dampingFraction: 0.68), value: isHovered)
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain).pointingHand()
         .padding(.horizontal, -5)
-        .accessibilityLabel(Text(kind.title) + Text(verbatim: " \(value)"))
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(label)
         .accessibilityHint(isPinned ? Text("strip.unpinHint") : Text("strip.pinHint"))
         .accessibilityAddTraits(isPinned ? .isSelected : [])
         .accessibilityIdentifier("system-\(kind.rawValue)")
@@ -70,6 +85,7 @@ struct SystemStrip: View {
             if anchors[kind]?.view !== view { anchors[kind] = WeakAnchor(view) }
         })
         .onHover { inside in
+            if inside { hovered = kind } else if hovered == kind { hovered = nil }
             if inside && pinned == nil { open(kind) }
             cards.anchorHover(inside, id: kind)
         }

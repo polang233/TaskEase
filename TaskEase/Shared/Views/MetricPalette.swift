@@ -29,15 +29,17 @@ enum MetricPalette {
         color(value.map { $0 / 100 / Double(max(1, cores)) })
     }
 
-    /// 温度按 35–95°C 映射；系统热状态更高时取较高档，避免传感器缺失时误显示为绿色。
+    /// 温度按 40–85°C 映射，日常 45–60°C 落在绿到黄绿，持续高负载接近红色；系统热状态更高时取较高档，避免传感器缺失时误显示为绿色。
     static func thermal(celsius: Double?, level: ThermalLevel) -> Color {
-        let sensor = celsius.map { ($0 - 35) / 60 }
+        let sensor = thermalFraction(celsius: celsius)
         guard level.severity != nil || sensor != nil else { return .secondary }
         return color(max(level.severity ?? 0, sensor ?? 0))
     }
 
+    static let thermalRange = 40.0...85.0
+
     static func thermalFraction(celsius: Double?) -> Double? {
-        celsius.map { min(1, max(0, ($0 - 35) / 60)) }
+        celsius.map { min(1, max(0, ($0 - thermalRange.lowerBound) / (thermalRange.upperBound - thermalRange.lowerBound))) }
     }
 
     private static func adaptive(light: UInt32, dark: UInt32) -> Color {
