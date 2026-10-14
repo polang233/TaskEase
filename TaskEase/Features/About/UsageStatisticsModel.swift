@@ -23,8 +23,8 @@ final class UsageStatisticsModel {
                                        installations: [3, 4, 4, 5, 6, 5, 7][offset % 7] + offset / 6)
             }
             summary = .init(activeInstallations: 18, updatedAt: nil, days: days,
-                            regions: [.init(name: "中国", installations: 12), .init(name: "美国", installations: 4),
-                                      .init(name: "日本", installations: 2)])
+                            regions: [.init(name: "China", installations: 12), .init(name: "United States", installations: 4),
+                                      .init(name: "Japan", installations: 2)])
         }
     }
 

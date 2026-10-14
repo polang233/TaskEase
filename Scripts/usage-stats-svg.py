@@ -16,6 +16,32 @@ DASHBOARD_ID = 2196112
 COUNT, TREND, REGIONS = 'MfmaDUaP', '8r3p40Y9', 'l1yAQ9JN'
 
 
+# 兼容公开看板尚未刷新的中文标签与系统地区代码。
+REGION_NAMES = {
+    '中国': 'China', 'CN': 'China',
+    '台湾': 'Taiwan', 'TW': 'Taiwan',
+    '香港': 'Hong Kong', 'HK': 'Hong Kong',
+    '澳门': 'Macao', 'MO': 'Macao',
+    '美国': 'United States', 'US': 'United States',
+    '日本': 'Japan', 'JP': 'Japan',
+    '韩国': 'South Korea', 'KR': 'South Korea',
+    '新加坡': 'Singapore', 'SG': 'Singapore',
+    '英国': 'United Kingdom', 'GB': 'United Kingdom',
+    '德国': 'Germany', 'DE': 'Germany',
+    '法国': 'France', 'FR': 'France',
+    '加拿大': 'Canada', 'CA': 'Canada',
+    '澳大利亚': 'Australia', 'AU': 'Australia',
+    '印度': 'India', 'IN': 'India',
+    '俄罗斯': 'Russia', 'RU': 'Russia',
+    '未知': 'Unknown', 'unknown': 'Unknown',
+    '': 'Unknown',
+}
+
+
+def region_name(value):
+    return REGION_NAMES.get(value, value)
+
+
 def load():
     request = urllib.request.Request(PAGE, headers={'User-Agent': 'TaskEase-usage-card'})
     with urllib.request.urlopen(request, timeout=20) as response:
@@ -46,7 +72,7 @@ def load():
     regions = []
     for row in (insights.get(REGIONS) or {}).get('result') or []:
         if len(row) == 2 and isinstance(row[0], str) and row[0]:
-            regions.append((row[0][:20], integer(row[1])))
+            regions.append((region_name(row[0]), integer(row[1])))
     regions.sort(key=lambda item: -item[1])
     return total, days[-30:], regions[:4]
 

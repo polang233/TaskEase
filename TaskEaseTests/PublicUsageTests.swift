@@ -31,7 +31,7 @@ struct PublicUsageTests {
         let data = Data(("<script id=\"posthog-exported-data\">" + String(decoding: json, as: UTF8.self) + "</script>").utf8)
         let summary = try PublicUsageClient.parse(data)
         #expect(summary.days.map(\.installations) == [1, 2])
-        #expect(summary.regions.map(\.name) == ["中国", "日本"])
+        #expect(summary.regions.map(\.name) == ["China", "Japan"])
         #expect(try PublicUsageClient.parse(page(7)).days.isEmpty)
     }
 

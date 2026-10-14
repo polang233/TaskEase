@@ -62,10 +62,36 @@ struct PublicUsageClient: Sendable {
             summary.regions = rows.compactMap { row -> PublicUsageSummary.Region? in
                 guard row.count == 2, let name = row[0] as? String, !name.isEmpty, name.count <= 40,
                       let count = integer(row[1]) else { return nil }
-                return .init(name: name, installations: count)
+                return .init(name: regionName(name), installations: count)
             }.sorted { $0.installations > $1.installations }.prefix(5).map { $0 }
         }
         return summary
+    }
+
+    /// 地区固定使用英文，兼容看板缓存中的旧中文标签。
+    private static func regionName(_ value: String) -> String {
+        let legacyNames = [
+            "中国": "China", "CN": "China",
+            "台湾": "Taiwan", "TW": "Taiwan",
+            "香港": "Hong Kong", "HK": "Hong Kong",
+            "澳门": "Macao", "MO": "Macao",
+            "美国": "United States", "US": "United States",
+            "日本": "Japan", "JP": "Japan",
+            "韩国": "South Korea", "KR": "South Korea",
+            "新加坡": "Singapore", "SG": "Singapore",
+            "英国": "United Kingdom", "GB": "United Kingdom",
+            "德国": "Germany", "DE": "Germany",
+            "法国": "France", "FR": "France",
+            "加拿大": "Canada", "CA": "Canada",
+            "澳大利亚": "Australia", "AU": "Australia",
+            "印度": "India", "IN": "India",
+            "俄罗斯": "Russia", "RU": "Russia",
+            "未知": "Unknown",
+        ]
+        if let name = legacyNames[value] { return name }
+        if value == "unknown" { return "Unknown" }
+        let english = Locale(identifier: "en")
+        return english.localizedString(forRegionCode: value) ?? value
     }
 
     private enum Tile {

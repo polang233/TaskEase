@@ -80,10 +80,12 @@
 
 ## 开始使用
 
-1. 从 [Releases](https://github.com/polang233/TaskEase/releases/latest) 下载 DMG，把轻程拖到“应用程序”文件夹。应用暂未经过 Apple 公证，首次打开若被拦截，在“系统设置 → 隐私与安全性”中点“仍要打开”。
+1. 从 [Releases](https://github.com/polang233/TaskEase/releases/latest) 下载 DMG，把轻程拖到“应用程序”文件夹。
 2. 在“运行中的应用”里选中想限制的应用，打开“限制后台资源”。
 3. 选择限制方式和生效时机，再打开顶部的“启用限制”。
 4. 之后可以在“已配置规则”里统一修改、暂停或移除。
+
+**首次打开被拦截？** 轻程暂未经过 Apple 公证，第一次打开会提示“移到废纸篓”，即使已允许“App Store 与已知开发者”也一样。点“取消”，到“系统设置 → 隐私与安全性”底部点“仍要打开”；或在终端运行 `xattr -dr com.apple.quarantine /Applications/TaskEase.app`。只需授权一次，之后可在应用内直接更新。
 
 更详细的操作见 [使用说明](Docs/Usage.md)。
 
@@ -202,3 +204,5 @@ Artifacts/                  验证摘要和界面预览
 - [图标设计与资源](Branding/README.md)
 
 本项目采用 [GNU GPLv3](LICENSE)，SPDX 标识为 `GPL-3.0-only`。
+
+<p align="center">觉得轻程有用的话，欢迎点个 Star 🌟</p>
