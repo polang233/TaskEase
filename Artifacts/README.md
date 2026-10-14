@@ -24,6 +24,7 @@
 - paused-preview.png：管理窗口暂停刷新时的系统概览。
 - management-preview.png、menu-preview.png、settings-preview.png：实际 SwiftUI 视图的离屏渲染，使用示例模型；可通过 `Scripts/render-previews.sh` 更新。
 - about-preview.png、statistics-preview.png：关于页与独立使用统计窗口的示例数据渲染。
+- screenshots/management.jpg、screenshots/settings.jpg：2026-10-14 从本机轻程 1.4.7 截取的实际运行界面，README 使用这两张截图；繁体中文、浅色外观，应用占用为截图时的数据。
 
 测试方法与边界见 [验证文档](../Docs/Validation.md)。
 
