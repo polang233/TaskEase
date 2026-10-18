@@ -3029,6 +3029,121 @@
         }
       }
     },
+    "rule.audio" : {
+      "comment" : "Toggle title in the app rule editor",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Background Volume"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "后台音量"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "背景音量"
+          }
+        }
+      }
+    },
+    "rule.audio.failed" : {
+      "comment" : "Warning when volume control failed",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Volume control isn't working. Allow TaskEase to record system audio in System Settings."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "音量调节未生效，请在系统设置中允许轻程使用系统录音。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "音量調節未生效，請在系統設定中允許輕程使用系統錄音。"
+          }
+        }
+      }
+    },
+    "rule.audio.note" : {
+      "comment" : "Note under the background volume toggle",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plays the app at the set volume after you leave it and restores its sound when you come back. The first time, macOS asks to allow system audio recording; TaskEase only uses it to adjust sound and never records or saves anything."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "离开前台后按设定音量播放，回到前台恢复原声。首次开启时系统会请求「系统录音」权限，轻程只用它调节声音，不会录制或保存任何内容。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "離開前景後按設定音量播放，回到前景恢復原聲。首次開啟時系統會要求「系統錄音」權限，輕程只用它調節聲音，不會錄製或儲存任何內容。"
+          }
+        }
+      }
+    },
+    "rule.audio.openSettings" : {
+      "comment" : "Button that opens privacy settings",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open System Settings"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "打开系统设置"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "打開系統設定"
+          }
+        }
+      }
+    },
+    "rule.audio.unsupported" : {
+      "comment" : "Note when muting is unavailable",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Requires macOS 14.2 or later."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "需要 macOS 14.2 或更高版本。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "需要 macOS 14.2 或以上版本。"
+          }
+        }
+      }
+    },
     "rule.cpuCap" : {
       "comment" : "CPU cap slider",
       "localizations" : {
@@ -3071,6 +3186,29 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "100% 代表一顆核心滿載，包含 App 的輔助處理程序。"
+          }
+        }
+      }
+    },
+    "rule.cpuCap.pause" : {
+      "comment" : "Mark at the left end of the CPU cap slider",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pause"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "暂停"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "暫停"
           }
         }
       }
@@ -3397,6 +3535,52 @@
         }
       }
     },
+    "rule.performance" : {
+      "comment" : "Toggle title in the app rule editor",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Performance Limit"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "性能限制"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "效能限制"
+          }
+        }
+      }
+    },
+    "rule.priority.suspended" : {
+      "comment" : "Note when priority is unavailable while pausing",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not needed while the app is paused."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "暂停应用时无需降低优先级。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "暫停 App 時無需降低優先順序。"
+          }
+        }
+      }
+    },
     "rule.process.receive %@" : {
       "comment" : "Per-process receive speed",
       "localizations" : {
@@ -3716,6 +3900,52 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "限制背景資源"
+          }
+        }
+      }
+    },
+    "rule.volume" : {
+      "comment" : "Slider title for background volume",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Volume"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "音量"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "音量"
+          }
+        }
+      }
+    },
+    "rule.volume.mute" : {
+      "comment" : "Lowest background volume",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mute"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "静音"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "靜音"
           }
         }
       }
@@ -4963,6 +5193,29 @@
         }
       }
     },
+    "status.muted" : {
+      "comment" : "Rule status in the app list",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Muted"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已静音"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已靜音"
+          }
+        }
+      }
+    },
     "status.notRunning" : {
       "comment" : "App status",
       "localizations" : {
@@ -5005,6 +5258,29 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "規則已暫停"
+          }
+        }
+      }
+    },
+    "status.quieted" : {
+      "comment" : "Rule status in the app list",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Volume Lowered"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已调低音量"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已調低音量"
           }
         }
       }

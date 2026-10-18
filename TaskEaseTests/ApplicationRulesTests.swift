@@ -124,9 +124,20 @@ struct ApplicationRulesTests {
         #expect(try JSONDecoder().decode(AppPreferences.self, from: data) == preferences)
         let legacy = Data(#"{"app":{"mode":"gentle","cpuPercent":20,"delaySeconds":3}}"#.utf8)
         let rules = try StoredRules.decode(legacy)
-        #expect(rules["app"]?.mode == .gentle)
+        #expect(rules["app"]?.isEnabled == true)
+        #expect(rules["app"]?.lowersPriority == true)
+        #expect(rules["app"]?.limitsPerformance == false)
         #expect(rules["app"]?.delaySeconds == 3)
         #expect(try StoredRules.decode(StoredRules.encode(rules)) == rules)
+        // 新格式同时写入旧版 mode 字段，降级后仍能按原模式读取。
+        let combined = AppRule(isEnabled: true, limitsPerformance: true, performance: .suspend,
+                               adjustsVolume: true, lowersPriority: true)
+        let encoded = try JSONSerialization.jsonObject(with: StoredRules.encode(["app": combined])) as? [String: [String: Any]]
+        #expect(encoded?["app"]?["mode"] as? String == "suspend")
+        #expect(try StoredRules.decode(StoredRules.encode(["app": combined]))["app"] == combined.validated())
+        let suspended = Data(#"{"app":{"mode":"suspend","cpuPercent":20,"delaySeconds":5}}"#.utf8)
+        let migrated = try #require(StoredRules.decode(suspended)["app"])
+        #expect(migrated.suspends && !migrated.lowersPriority && !migrated.adjustsVolume)
         #expect(AppRule(delaySeconds: 900).validated().delaySeconds == 300)
     }
     @Test func foregroundDisplayStopsPollingButKeepsControlDeadlines() {

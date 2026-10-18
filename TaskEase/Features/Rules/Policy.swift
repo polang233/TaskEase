@@ -5,20 +5,20 @@ enum Policy {
     static func status(rule: AppRule, enabled: Bool, controllable: Bool,
                        isForeground: Bool, isHidden: Bool, backgroundSeconds: Double) -> RuleStatus {
         guard controllable else { return .unavailable }
-        guard rule.mode != .off else { return .unmanaged }
+        guard rule.isActive else { return .unmanaged }
         guard enabled else { return .paused }
         if !rule.alwaysLimit {
             guard !isForeground || isHidden else { return .foreground }
             guard backgroundSeconds >= rule.delaySeconds else { return .waiting }
         }
-        switch rule.mode {
-        case .gentle: return .gentle
-        case .suspend: return .suspended
-        default: return .budget
-        }
+        // 状态按影响程度取最强的一项显示。
+        if rule.suspends { return .suspended }
+        if rule.limitsPerformance { return .budget }
+        if rule.lowersPriority { return .gentle }
+        return rule.volumePercent > 0 ? .quieted : .muted
     }
     static func shouldControl(_ status: RuleStatus) -> Bool {
-        status == .gentle || status == .budget || status == .suspended
+        [.gentle, .budget, .suspended, .muted, .quieted].contains(status)
     }
 }
 

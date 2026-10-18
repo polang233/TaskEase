@@ -89,7 +89,7 @@ enum SelfCheck {
         let target = ControlTarget(identity: identity, executablePath: path,
                                    bundlePath: Bundle.main.bundleURL.resolvingSymlinksInPath().path)
         let budget = ControlGroup(bundleID: "TaskEase.self-check", mode: .budget, cpuPercent: 20, targets: [target])
-        let gentle = ControlGroup(bundleID: "TaskEase.self-check", mode: .gentle, cpuPercent: 20, targets: [target])
+        let gentle = ControlGroup(bundleID: "TaskEase.self-check", mode: .off, background: true, cpuPercent: 20, targets: [target])
         var results: [String: Any] = ["scope": "owned_test_child_only", "cpu_basis": "one_core"]
 
         let baseline = usage(target, seconds: 0.8)

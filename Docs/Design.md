@@ -33,7 +33,7 @@ Apple 的文件夹组织及本地包说明见 [管理项目文件与文件夹](h
 
 ## 规则保存与应用身份
 
-rules.v1 继续保存 bundle identifier 到 AppRule 的映射，off、gentle、budget 原始值保持稳定。ruleApplications.v1 独立保存应用名称和 bundle 路径，用于展示未运行的已配置应用。preferences.v1 保存外观、系统应用筛选和显示刷新间隔。
+rules.v1 继续保存 bundle identifier 到 AppRule 的映射，off、gentle、budget、suspend 原始值保持稳定；新增 enabled、limitsPerformance、performance、adjustsVolume、volumePercent、lowersPriority 字段，并继续写入旧 `mode` 字段。ruleApplications.v1 独立保存应用名称和 bundle 路径，用于展示未运行的已配置应用。preferences.v1 保存外观、系统应用筛选和显示刷新间隔。
 
 关闭某个应用的限制保留编辑记录和参数；移除规则删除该记录。没有有效规则时主开关关闭且不可启用。现有规则损坏时保留原始数据备份并关闭限制。
 
@@ -68,6 +68,8 @@ ProcessMonitor 协调 NetworkMonitor actor，只在显示刷新需要时读取�
 CPU 累计时间和墙钟使用相同 Mach 时间单位。CPU 上限以单核时间计算；总增量超额时暂停成员，额度恢复后继续。允许短时超额，空闲额度有上限，避免累积无限突发额度。
 
 高级模式采用 Darwin 背景调度。当前系统 getpriority(PRIO_DARWIN_PROCESS, otherPID) 可能返回调用者状态，因此通过公开 proc_taskinfo 的任务优先级识别已有后台状态。只解除由 TaskEase 添加的请求。
+
+后台音量不经过工作进程：主应用的 AppVolume 按应用为已登记音频对象的进程创建静音截取；非静音档位再建立以默认输出设备为主设备、以截取为输入的私有聚合设备，在 IO 回调中按增益把立体声写回输出。随控制检查更新成员、音量和输出设备，前台或规则移除时销毁。截取对象归主应用所有，主应用退出或崩溃时由音频服务自动销毁，因此不写入恢复记录。
 
 控制计划失联期限为 3 秒。标准输入 EOF、心跳到期、解析失败和退出均触发恢复。控制进程持有独占锁；恢复记录仅在控制归属改变时写入，记录完整进程身份及由本工具降低优先级或暂停的成员。
 

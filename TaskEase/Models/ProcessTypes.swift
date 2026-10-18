@@ -27,9 +27,11 @@ struct ControlTarget: Hashable, Codable, Sendable {
     let bundlePath: String
 }
 
+/// 一个应用交给工作进程的控制：`mode` 为 off、budget 或 suspend，`background` 表示降低优先级，可与 CPU 上限叠加。
 struct ControlGroup: Codable, Sendable {
     let bundleID: String
     let mode: ControlMode
+    var background: Bool = false
     let cpuPercent: Double
     let targets: [ControlTarget]
 }

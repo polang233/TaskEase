@@ -24,6 +24,30 @@
           }
         }
       }
+    },
+    "NSAudioCaptureUsageDescription" : {
+      "comment" : "Permission prompt for muting apps in the background",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "TaskEase uses system audio recording only to adjust the volume of apps in the background. It never records or saves any sound."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "轻程仅使用系统录音权限调节后台应用的音量，不会录制或保存任何声音。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "輕程僅使用系統錄音權限調節背景 App 的音量，不會錄製或儲存任何聲音。"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

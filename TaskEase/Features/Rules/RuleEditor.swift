@@ -1,4 +1,5 @@
 import SwiftUI
+import AppKit
 
 /// 编辑单个应用的后台规则，所有变更通过 AppModel 保存与执行。
 struct RuleEditor: View {
@@ -94,22 +95,10 @@ struct RuleEditor: View {
 
     private var ruleControls: some View {
         VStack(alignment: .leading, spacing: 16) {
-            HStack {
-                Text("rule.toggle").font(.headline)
-                Spacer()
-                Toggle("rule.toggle", isOn: Binding(get: { rule.isActive },
-                                                    set: { value in update { $0.mode = value ? .budget : .off } }))
-                    .toggleStyle(.switch).labelsHidden().accessibilityIdentifier("app-rule-toggle")
+            switchRow("rule.toggle", isOn: rule.isEnabled, font: .headline, identifier: "app-rule-toggle") { value in
+                update { $0.isEnabled = value }
             }
-            if rule.isActive {
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("rule.mode")
-                    Picker("rule.mode", selection: Binding(get: { rule.mode }, set: { setMode($0) })) {
-                        ForEach(ControlMode.limits, id: \.self) { Text($0.title).tag($0) }
-                    }.selectionRail().labelsHidden().accessibilityIdentifier("control-mode")
-                    Text(modeNote).font(.caption).foregroundStyle(rule.mode == .suspend ? .orange : .secondary)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
+            if rule.isEnabled {
                 VStack(alignment: .leading, spacing: 8) {
                     HStack {
                         Text("rule.timing")
@@ -123,23 +112,17 @@ struct RuleEditor: View {
                     (rule.alwaysLimit ? Text("rule.timing.always.note") : Text("rule.timing.background.note"))
                         .font(.caption).foregroundStyle(.secondary)
                 }
-                if rule.mode == .budget {
-                    VStack(alignment: .leading, spacing: 8) {
-                        HStack {
-                            Text("rule.cpuCap")
-                            Spacer()
-                            Text(verbatim: "\(Int(rule.cpuPercent))%").monospacedDigit()
-                        }
-                        // 不设 step，避免 40 个刻度点；取值仍按 5% 取整。
-                        Slider(value: Binding(get: { rule.cpuPercent }, set: { percent in
-                            let rounded = (percent / 5).rounded() * 5
-                            if rounded != rule.cpuPercent { update { $0.cpuPercent = rounded } }
-                        }), in: 5...200)
-                            .accessibilityIdentifier("cpu-budget")
-                            .accessibilityValue(Text(verbatim: "\(Int(rule.cpuPercent))%"))
-                        Text("rule.cpuCap.note")
-                            .font(.caption).foregroundStyle(.secondary)
-                    }
+                Divider()
+                performanceControls
+                Divider()
+                audioControls
+                Divider()
+                VStack(alignment: .leading, spacing: 6) {
+                    switchRow("mode.gentle", isOn: rule.lowersPriority && !rule.suspends, identifier: "priority-toggle") { value in
+                        update { $0.lowersPriority = value }
+                    }.disabled(rule.suspends)
+                    Text(rule.suspends ? "rule.priority.suspended" : "rule.mode.gentle.note")
+                        .font(.caption).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
                 }
                 if !model.enabled {
                     Text("rule.enableHint").font(.caption).foregroundStyle(.secondary)
@@ -148,24 +131,117 @@ struct RuleEditor: View {
         }
     }
 
-    private var modeNote: LocalizedStringKey {
-        switch rule.mode {
-        case .gentle: "rule.mode.gentle.note"
-        case .suspend: "rule.mode.suspend.note"
-        default: "rule.mode.budget.note"
+    private var performanceControls: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            switchRow("rule.performance", isOn: rule.limitsPerformance, identifier: "performance-toggle") { value in
+                update {
+                    $0.limitsPerformance = value
+                    if value { Self.leaveAlwaysForSuspend(&$0) }
+                }
+            }
+            if rule.limitsPerformance {
+                HStack {
+                    Text("rule.cpuCap")
+                    Spacer()
+                    Text(rule.suspends ? String(localized: "mode.suspend") : "\(Int(rule.cpuPercent))%")
+                        .monospacedDigit().foregroundStyle(rule.suspends ? .orange : .primary)
+                }.padding(.top, 4)
+                // 不设 step，避免 40 个刻度点；取值按 5% 取整，拖到最左为暂停应用。
+                Slider(value: Binding(get: { rule.suspends ? 0 : rule.cpuPercent }, set: setCPU), in: 0...200)
+                    .accessibilityIdentifier("cpu-budget")
+                    .accessibilityValue(rule.suspends ? Text("mode.suspend") : Text(verbatim: "\(Int(rule.cpuPercent))%"))
+                SliderMarks(range: 0...200, marks: [(0, String(localized: "rule.cpuCap.pause")),
+                                                    (50, "50%"), (100, "100%"), (150, "150%"), (200, "200%")])
+                Group {
+                    if rule.suspends {
+                        Text("rule.mode.suspend.note").foregroundStyle(.orange)
+                    } else {
+                        Text("rule.mode.budget.note")
+                        Text("rule.cpuCap.note")
+                    }
+                }.font(.caption).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+            }
+        }
+    }
+
+    private var audioControls: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            switchRow("rule.audio", isOn: rule.adjustsVolume && AppVolume.isSupported, identifier: "volume-toggle") { value in
+                update { $0.adjustsVolume = value }
+            }.disabled(!AppVolume.isSupported)
+            if !AppVolume.isSupported {
+                Text("rule.audio.unsupported").font(.caption).foregroundStyle(.secondary)
+            } else {
+                if rule.adjustsVolume {
+                    HStack {
+                        Text("rule.volume")
+                        Spacer()
+                        Text(volumeTitle).monospacedDigit()
+                    }.padding(.top, 4)
+                    Slider(value: Binding(get: { rule.volumePercent }, set: { percent in
+                        let rounded = (percent / 5).rounded() * 5
+                        if rounded != rule.volumePercent { update { $0.volumePercent = rounded } }
+                    }), in: 0...90)
+                        .accessibilityIdentifier("background-volume")
+                        .accessibilityValue(volumeTitle)
+                    SliderMarks(range: 0...90, marks: [(0, String(localized: "rule.volume.mute")),
+                                                       (30, "30%"), (60, "60%"), (90, "90%")])
+                }
+                if rule.adjustsVolume && model.volumeFailures.contains(app.id) {
+                    HStack(alignment: .firstTextBaseline) {
+                        Text("rule.audio.failed").font(.caption).foregroundStyle(.orange)
+                            .fixedSize(horizontal: false, vertical: true)
+                        Spacer()
+                        Button("rule.audio.openSettings") { NSWorkspace.shared.open(Self.audioSettingsURL) }
+                            .controlSize(.small)
+                    }
+                } else {
+                    Text("rule.audio.note").font(.caption).foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+        }
+    }
+
+    private var volumeTitle: String {
+        rule.volumePercent == 0 ? String(localized: "rule.volume.mute") : "\(Int(rule.volumePercent))%"
+    }
+
+    /// CPU 上限滑杆按 5% 取整，0 表示暂停应用；暂停时保留原上限，拖回后继续使用。
+    private func setCPU(_ percent: Double) {
+        let rounded = (percent / 5).rounded() * 5
+        update {
+            if rounded == 0 {
+                $0.performance = .suspend
+                Self.leaveAlwaysForSuspend(&$0)
+            } else {
+                $0.performance = .budget
+                $0.cpuPercent = rounded
+            }
+        }
+    }
+
+    private static let audioSettingsURL = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture")!
+
+    /// 左侧标题、右侧开关的一行。
+    private func switchRow(_ title: LocalizedStringKey, isOn: Bool, font: Font = .body, identifier: String,
+                           set: @escaping (Bool) -> Void) -> some View {
+        HStack {
+            Text(title).font(font)
+            Spacer()
+            Toggle(title, isOn: Binding(get: { isOn }, set: set))
+                .toggleStyle(.switch).labelsHidden().accessibilityIdentifier(identifier)
         }
     }
 
     /// 暂停应用不能在前台生效，滑块从 1 秒开始。
-    private var minimumDelayIndex: Int { rule.mode == .suspend ? 1 : 0 }
+    private var minimumDelayIndex: Int { rule.suspends ? 1 : 0 }
 
-    private func setMode(_ mode: ControlMode) {
-        update {
-            $0.mode = mode
-            if mode == .suspend && $0.alwaysLimit {
-                $0.alwaysLimit = false
-                $0.delaySeconds = 3
-            }
+    /// 暂停不能始终生效；从始终限制切到暂停时改回默认的 3 秒。
+    private static func leaveAlwaysForSuspend(_ rule: inout AppRule) {
+        if rule.suspends && rule.alwaysLimit {
+            rule.alwaysLimit = false
+            rule.delaySeconds = 3
         }
     }
 
@@ -207,5 +283,31 @@ struct RuleEditor: View {
 
     private func readingRow(_ title: LocalizedStringKey, value: String) -> some View {
         HStack { Text(title).foregroundStyle(.secondary); Spacer(); Text(value).monospacedDigit() }.font(.callout)
+    }
+}
+
+/// 滑杆下方的刻度标线与文字，按取值比例对齐；两端扣除滑块半径，首尾文字向内对齐。
+struct SliderMarks: View {
+    let range: ClosedRange<Double>
+    let marks: [(value: Double, label: String)]
+    private let inset: CGFloat = 10
+
+    var body: some View {
+        GeometryReader { geometry in
+            let width = geometry.size.width - inset * 2
+            ForEach(marks.indices, id: \.self) { index in
+                let fraction = (marks[index].value - range.lowerBound) / (range.upperBound - range.lowerBound)
+                let alignment: HorizontalAlignment = index == 0 ? .leading : index == marks.count - 1 ? .trailing : .center
+                VStack(alignment: alignment, spacing: 2) {
+                    Rectangle().frame(width: 1, height: 4)
+                    Text(marks[index].label).font(.caption2).monospacedDigit().fixedSize()
+                }
+                // 宽度为 1 的框让标线落在刻度位置，文字按对齐方式向一侧展开。
+                .frame(width: 1, alignment: Alignment(horizontal: alignment, vertical: .center))
+                .foregroundStyle(.secondary)
+                .position(x: inset + width * fraction, y: 10)
+            }
+        }
+        .frame(height: 20).padding(.top, -6).accessibilityHidden(true)
     }
 }

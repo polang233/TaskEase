@@ -18,6 +18,8 @@ final class AppModel {
     var search = ""
     var selectedID: String?
     var errorMessage: String?
+    /// 后台音量调整失败（多为未授予系统录音权限）的应用。
+    private(set) var volumeFailures: Set<String> = []
     private(set) var sampledAt = Date()
     private(set) var isRefreshing = false
     private(set) var managementIsOpen = false
@@ -35,6 +37,7 @@ final class AppModel {
     @ObservationIgnored private var lastDisplaySample: UInt64?
     @ObservationIgnored private let monitor = ProcessMonitor()
     @ObservationIgnored private let controller = WorkerController()
+    @ObservationIgnored private let volume = AppVolume()
     @ObservationIgnored private let defaults = UserDefaults.standard
     @ObservationIgnored private var timer: Timer?
     @ObservationIgnored private var refreshTask: Task<Void, Never>?
@@ -87,6 +90,10 @@ final class AppModel {
             self.defaults.set(false, forKey: "managementEnabled")
             self.controller.stop()
             self.reconcile()
+        }
+        volume.onChange = { [weak self] in
+            guard let self else { return }
+            self.volumeFailures = self.volume.failedIDs
         }
         events = WorkspaceEvents(
             onFocus: { [weak self] in self?.focusChanged() },
@@ -181,7 +188,7 @@ final class AppModel {
         enabled = value
         errorMessage = nil
         // 总开关开启时重新计时，给已经位于后台的应用完整等待期。
-        if value { backgroundSince.removeAll() }
+        if value { backgroundSince.removeAll(); volume.retry() }
         if !preview { defaults.set(value, forKey: "managementEnabled") }
         reconcile()
         refresh(force: true)
@@ -192,6 +199,7 @@ final class AppModel {
         guard let application, allowsRuleEditing(application) else { return }
         let validated = rule.validated()
         if rules[id]?.isActive != true && validated.isActive { backgroundSince[id] = nil }
+        if validated.adjustsVolume && rules[id]?.adjustsVolume != true { volume.retry() }
         rules[id] = validated
         savedApplications[id] = SavedApplication(application)
         persistRules()
@@ -462,6 +470,8 @@ final class AppModel {
             return
         }
         updateFocus()
+        // 从系统设置授权后切回本应用时，重新尝试此前失败的静音。
+        if foregroundID == Bundle.main.bundleIdentifier { volume.retry() }
         // 使用缓存计划立即恢复前台应用，再进行异步扫描。
         reconcile()
         // 切走时 reconcile 移除显示定时器；切回时强制更新可见数据。
@@ -480,6 +490,7 @@ final class AppModel {
         guard !isShutdown else { return }
         let now = NativeProcess.now
         var plan: [ControlGroup] = []
+        var volumes: [String: (pids: Set<Int32>, percent: Double)] = [:]
         for index in apps.indices {
             let id = apps[index].id
             let rule = (rules[id] ?? AppRule()).validated()
@@ -492,11 +503,18 @@ final class AppModel {
                                        isForeground: front, isHidden: apps[index].isHidden, backgroundSeconds: seconds)
             apps[index].status = status
             if Policy.shouldControl(status), !apps[index].targets.isEmpty {
-                plan.append(ControlGroup(bundleID: id, mode: rule.mode, cpuPercent: rule.cpuPercent,
-                                         targets: apps[index].targets))
+                if rule.needsWorker {
+                    // 暂停时降低优先级没有意义，只交给工作进程暂停。
+                    plan.append(ControlGroup(bundleID: id, mode: rule.limitsPerformance ? rule.performance : .off,
+                                             background: rule.lowersPriority && !rule.suspends,
+                                             cpuPercent: rule.cpuPercent, targets: apps[index].targets))
+                }
+                if rule.adjustsVolume {
+                    volumes[id] = (Set(apps[index].targets.map(\.identity.pid)), rule.volumePercent)
+                }
             }
         }
-        if !preview && !sleeping { controller.update(plan) }
+        if !preview && !sleeping { controller.update(plan); volume.update(volumes) }
         scheduleRefresh()
     }
 
@@ -591,6 +609,7 @@ final class AppModel {
         pendingRefresh = nil
         isRefreshing = false
         controller.stop()
+        volume.stop()
         backgroundSince.removeAll()
     }
 
@@ -626,7 +645,7 @@ final class AppModel {
         refreshTask?.cancel()
         refreshTask = nil
         events = nil
-        if !preview { controller.stop(); Task { await monitor.cancelNetworkSampling() } }
+        if !preview { controller.stop(); volume.stop(); Task { await monitor.cancelNetworkSampling() } }
         enabled = false
         for index in apps.indices where rules[apps[index].id]?.isActive == true { apps[index].status = .paused }
     }

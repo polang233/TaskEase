@@ -4,5 +4,7 @@
 <dict>
 	<key>LSHasLocalizedDisplayName</key>
 	<true/>
+	<key>NSAudioCaptureUsageDescription</key>
+	<string>TaskEase uses system audio recording only to adjust the volume of apps in the background. It never records or saves any sound.</string>
 </dict>
 </plist>

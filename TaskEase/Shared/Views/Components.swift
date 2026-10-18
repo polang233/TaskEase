@@ -70,6 +70,7 @@ struct StatusLabel: View {
     private var tint: Color? {
         switch status {
         case .gentle, .budget: .green
+        case .muted: .indigo
         case .suspended: .blue
         case .waiting: .orange
         default: nil

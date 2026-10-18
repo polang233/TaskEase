@@ -81,12 +81,13 @@ enum NativeWorker {
             guard message.groups.count <= 128 else { throw WorkerFailure.invalidPlan }
             var desired: [String: ControlGroup] = [:]
             for group in message.groups {
-                guard group.mode != .off, group.cpuPercent.isFinite,
+                guard group.mode != .gentle, group.mode != .off || group.background, group.cpuPercent.isFinite,
                       group.cpuPercent >= 5, group.cpuPercent <= 200,
                       group.targets.count <= 256 else { throw WorkerFailure.invalidPlan }
                 let targets = group.targets.filter(valid)
                 if !targets.isEmpty {
                     desired[group.bundleID] = ControlGroup(bundleID: group.bundleID, mode: group.mode,
+                                                          background: group.background,
                                                           cpuPercent: group.cpuPercent, targets: targets)
                 }
             }
@@ -100,6 +101,7 @@ enum NativeWorker {
             }
             for (id, config) in desired {
                 if let group = groups[id], group.config.mode == config.mode,
+                   group.config.background == config.background,
                    group.config.cpuPercent == config.cpuPercent {
                     group.config = config
                 } else {
@@ -169,16 +171,18 @@ enum NativeWorker {
                                 failed = true; break
                             }
                         }
-                    } else if group.config.mode == .gentle {
-                        if lowered[target.identity] == nil && te_get_background(target.identity.pid) == 0 {
-                            lowered[target.identity] = target
-                            do { try saveOwnership() } catch { failed = true; break }
-                            if !NativeProcess.background(target, enabled: true) {
-                                lowered.removeValue(forKey: target.identity)
-                                emit(WorkerEvent(kind: "error", message: String(localized: "worker.backgroundDenied")))
-                            }
+                        continue
+                    }
+                    if group.config.background,
+                       lowered[target.identity] == nil && te_get_background(target.identity.pid) == 0 {
+                        lowered[target.identity] = target
+                        do { try saveOwnership() } catch { failed = true; break }
+                        if !NativeProcess.background(target, enabled: true) {
+                            lowered.removeValue(forKey: target.identity)
+                            emit(WorkerEvent(kind: "error", message: String(localized: "worker.backgroundDenied")))
                         }
-                    } else {
+                    }
+                    if group.config.mode == .budget {
                         members.append(target)
                         current[target.identity] = sample.cpuTicks
                         if let before = group.previous[target.identity], sample.cpuTicks >= before {

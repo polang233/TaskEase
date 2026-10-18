@@ -21,6 +21,23 @@ struct TaskEaseTests {
         #expect(Policy.status(rule: rule, enabled: true, controllable: true,
             isForeground: true, isHidden: false, backgroundSeconds: 3) == .foreground)
     }
+    @Test func combinedLimitsReportStrongestStatus() {
+        func status(_ rule: AppRule) -> RuleStatus {
+            Policy.status(rule: rule, enabled: true, controllable: true,
+                          isForeground: false, isHidden: false, backgroundSeconds: 10)
+        }
+        #expect(status(AppRule(isEnabled: true, limitsPerformance: false, adjustsVolume: true)) == .muted)
+        #expect(status(AppRule(isEnabled: true, limitsPerformance: false, adjustsVolume: true, lowersPriority: true)) == .gentle)
+        #expect(status(AppRule(isEnabled: true, adjustsVolume: true, lowersPriority: true)) == .budget)
+        #expect(status(AppRule(isEnabled: true, performance: .suspend, adjustsVolume: true)) == .suspended)
+        #expect(status(AppRule(isEnabled: true, limitsPerformance: false)) == .unmanaged)
+        #expect(status(AppRule(isEnabled: true, limitsPerformance: false, adjustsVolume: true, volumePercent: 30)) == .quieted)
+        #expect(AppVolume.gain(percent: 0) == 0 && AppVolume.gain(percent: 50) == 0.25)
+        #expect(AppRule(volumePercent: 300).validated().volumePercent == 90)
+        #expect(Policy.shouldControl(.muted))
+        // 暂停不允许始终生效。
+        #expect(!AppRule(isEnabled: true, alwaysLimit: true, performance: .suspend).validated().alwaysLimit)
+    }
     @Test func disabledAndProtectedAppsNeverControl() {
         let rule = AppRule(mode: .gentle)
         #expect(Policy.status(rule: rule, enabled: false, controllable: true,

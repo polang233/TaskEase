@@ -79,7 +79,7 @@ struct NetworkingTests {
         model.updatePreferences { $0.networkFeaturesEnabled = true }
         model.setNetworkRule("example.browser", rule: .init(mode: .block))
         model.removeNetworkRule("example.browser")
-        #expect(model.rules["example.browser"]?.mode == .budget)
+        #expect(model.rules["example.browser"] == AppRule(mode: .budget))
         #expect(model.savedRuleCount == 1)
         #expect(model.networkRules.isEmpty)
     }
