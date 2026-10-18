@@ -12,6 +12,9 @@ private final class WorkerGroup {
 
 /// 独立执行控制计划，失联、关闭或解析失败时恢复本工具施加的状态。
 enum NativeWorker {
+    /// 控制计划的失联期限。主应用每 2 秒续约，留出余量容忍系统节能推迟定时器或主线程短暂卡顿。
+    static let leaseSeconds: Double = 10
+
     static func run(testing: Bool = false) {
         te_install_worker_signals()
         guard let workerID = NativeProcess.identity(getpid()),
@@ -119,7 +122,7 @@ enum NativeWorker {
             emit(WorkerEvent(kind: "restored", message: String(localized: "worker.restored")))
         }
         while !closing && !failed && te_worker_should_exit() == 0 {
-            if NativeProcess.seconds(since: lastMessage) > 3 || !NativeProcess.isAlive(controllerID) { break }
+            if NativeProcess.seconds(since: lastMessage) > leaseSeconds || !NativeProcess.isAlive(controllerID) { break }
             var descriptor = pollfd(fd: inputFD, events: Int16(POLLIN | POLLHUP), revents: 0)
             let result = poll(&descriptor, 1, groups.values.contains { $0.config.mode == .budget } ? 50 : 150)
             if result > 0 {
@@ -241,6 +244,10 @@ final class WorkerController {
     private let testing: Bool
     init(testing: Bool = false) { self.testing = testing }
     var onError: ((String) -> Void)?
+    /// 工作进程意外退出、限制已恢复后调用；返回 true 表示调用方会重新下发计划，不再报告错误。
+    var onUnexpectedExit: (() -> Bool)?
+    /// 有工作进程时阻止 App Nap，避免菜单栏应用在后台被推迟心跳定时器。
+    private var activity: NSObjectProtocol?
     var helperPID: Int32? { process?.isRunning == true ? process?.processIdentifier : nil }
 
     /// 有控制需求才启动工作进程；空计划让工作进程自行恢复并退出，主线程不等待。
@@ -270,6 +277,7 @@ final class WorkerController {
                 try child.run()
                 process = child; input = incoming.fileHandleForWriting
                 output = outgoing.fileHandleForReading
+                holdActivity(true)
             } catch {
                 outgoing.fileHandleForReading.readabilityHandler = nil
                 onError?(String(localized: "worker.launchFailed \(error.localizedDescription)"))
@@ -307,8 +315,19 @@ final class WorkerController {
         guard generation == expected, process != nil else { return }
         output?.readabilityHandler = nil
         input = nil; output = nil; process = nil; outputData.removeAll()
+        holdActivity(false)
         _ = Recovery.restore(testing: testing)
-        if !stopping { onError?(String(localized: "worker.ended")) }
+        if !stopping && onUnexpectedExit?() != true { onError?(String(localized: "worker.ended")) }
+    }
+
+    private func holdActivity(_ hold: Bool) {
+        if hold, activity == nil {
+            activity = ProcessInfo.processInfo.beginActivity(options: .userInitiatedAllowingIdleSystemSleep,
+                                                             reason: "Background limits")
+        } else if !hold, let current = activity {
+            ProcessInfo.processInfo.endActivity(current)
+            activity = nil
+        }
     }
 
     /// 发送关闭消息并断开连接，退出由终止回调收尾；超时后依次结束、强制结束。
@@ -321,6 +340,7 @@ final class WorkerController {
         try? input?.close()
         output?.readabilityHandler = nil
         process = nil; input = nil; output = nil; outputData.removeAll()
+        holdActivity(false)
         generation += 1
         retiring = child
         Task { @MainActor [weak self] in
@@ -356,6 +376,7 @@ final class WorkerController {
         output?.readabilityHandler = nil
         finish(child)
         process = nil; input = nil; output = nil; outputData.removeAll()
+        holdActivity(false)
         generation += 1
         stopping = false
     }

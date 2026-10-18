@@ -40,6 +40,8 @@ final class AppModel {
     @ObservationIgnored private let volume = AppVolume()
     @ObservationIgnored private let defaults = UserDefaults.standard
     @ObservationIgnored private var timer: Timer?
+    /// 最近几次工作进程意外退出的时间，用于限制自动重启次数。
+    @ObservationIgnored private var workerExits: [UInt64] = []
     @ObservationIgnored private var refreshTask: Task<Void, Never>?
     @ObservationIgnored private var pendingRefresh: Bool?
     @ObservationIgnored private var events: WorkspaceEvents?
@@ -94,6 +96,15 @@ final class AppModel {
         volume.onChange = { [weak self] in
             guard let self else { return }
             self.volumeFailures = self.volume.failedIDs
+        }
+        controller.onUnexpectedExit = { [weak self] in
+            // 限制已由恢复记录撤销；10 分钟内最多自动重启 3 次，反复退出再关闭总开关并提示。
+            guard let self, self.enabled, !self.sleeping, !self.isShutdown else { return false }
+            self.workerExits = self.workerExits.filter { NativeProcess.seconds(since: $0) < 600 }
+            guard self.workerExits.count < 3 else { return false }
+            self.workerExits.append(NativeProcess.now)
+            self.reconcile()
+            return true
         }
         events = WorkspaceEvents(
             onFocus: { [weak self] in self?.focusChanged() },

@@ -32,8 +32,9 @@ enum SelfCheck {
            let text = String(data: data, encoding: .utf8) { print(text) }
     }
 
+    /// 测试用满载子进程；按墙钟最长运行 40 秒，覆盖含 10 秒失联期限在内的全部自检步骤。
     static func burn() {
-        let finish = NativeProcess.now + UInt64(NativeProcess.ticksPerSecond * 20)
+        let finish = NativeProcess.now + UInt64(NativeProcess.ticksPerSecond * 40)
         var value: UInt64 = 17
         while NativeProcess.now < finish {
             for _ in 0..<8192 { value = value &* 6364136223846793005 &+ 1 }
@@ -125,7 +126,7 @@ enum SelfCheck {
 
         // An alive controller without renewals models a stalled main app.
         controller.update([budget])
-        pump(3.7)
+        pump(NativeWorker.leaseSeconds + 0.7)
         let leaseRecovered = NativeProcess.sample(identity.pid)?.status != 4 &&
             controller.helperPID == nil && Recovery.read(testing: true) == nil
         results["lease_timeout_restored"] = leaseRecovered
