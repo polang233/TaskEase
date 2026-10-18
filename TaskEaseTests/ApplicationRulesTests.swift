@@ -172,4 +172,13 @@ struct ApplicationRulesTests {
         #expect(try JSONDecoder().decode(AppPreferences.self, from: JSONEncoder().encode(changed)) == changed)
     }
 
+    @Test func menuBarIconDefaultsOnAndKeepsTheUsersChoice() throws {
+        // 旧配置没有该字段，按默认显示读取；关闭后保存并原样读回。
+        let legacy = Data(#"{"showSystemApps":true,"theme":"dark"}"#.utf8)
+        #expect(try JSONDecoder().decode(AppPreferences.self, from: legacy).showMenuBarIcon)
+        var hidden = AppPreferences()
+        hidden.showMenuBarIcon = false
+        #expect(try JSONDecoder().decode(AppPreferences.self, from: JSONEncoder().encode(hidden)).showMenuBarIcon == false)
+    }
+
 }

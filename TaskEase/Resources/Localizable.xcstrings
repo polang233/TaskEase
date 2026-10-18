@@ -4387,6 +4387,54 @@
         }
       }
     },
+    "settings.menuBarIcon" : {
+      "comment" : "Checkbox",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show Menu Bar Icon"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在菜单栏显示图标"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在選單列顯示圖示"
+          }
+        }
+      }
+    },
+    "settings.menuBarIcon.note" : {
+      "comment" : "Checkbox note, shown only when the icon is hidden",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Background rules keep running. To open the window again, launch TaskEase from Launchpad or Spotlight."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "后台规则继续执行。需要再次打开窗口时，从启动台或 Spotlight 启动轻程即可。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "背景規則繼續執行。需要再次開啟視窗時，從啟動台或 Spotlight 啟動輕程即可。"
+          }
+        }
+      }
+    },
     "settings.metricStyle" : {
       "comment" : "Overview style picker",
       "localizations" : {

@@ -19,7 +19,7 @@ enum ThemeMode: String, Codable, CaseIterable, Sendable {
     }
 }
 
-/// 保存系统应用筛选、刷新间隔、外观、概览样式与列表排序。
+/// 保存系统应用筛选、刷新间隔、外观、概览样式、列表排序与菜单栏图标显示。
 struct AppPreferences: Codable, Equatable, Sendable {
     var showSystemApps = false
     var refreshInterval: DisplayRefreshInterval = .two
@@ -30,6 +30,8 @@ struct AppPreferences: Codable, Equatable, Sendable {
     var refreshOnlyInForeground = true
     var networkFeaturesEnabled = false
     var showNetworkActivity = true
+    /// 是否在屏幕右上角的菜单栏显示图标；关闭后从启动台或再次打开应用进入管理窗口。
+    var showMenuBarIcon = true
     var networkActivityVisible: Bool { networkFeaturesEnabled && showNetworkActivity }
 }
 
@@ -39,6 +41,7 @@ extension AppPreferences {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         networkFeaturesEnabled = try values.decodeIfPresent(Bool.self, forKey: .networkFeaturesEnabled) ?? false
         showNetworkActivity = try values.decodeIfPresent(Bool.self, forKey: .showNetworkActivity) ?? true
+        showMenuBarIcon = try values.decodeIfPresent(Bool.self, forKey: .showMenuBarIcon) ?? true
         showSystemApps = try values.decodeIfPresent(Bool.self, forKey: .showSystemApps) ?? false
         refreshInterval = try values.decodeIfPresent(DisplayRefreshInterval.self, forKey: .refreshInterval) ?? .two
         theme = try values.decodeIfPresent(ThemeMode.self, forKey: .theme) ?? .system

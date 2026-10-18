@@ -91,4 +91,4 @@ ApplicationSession 在规则模型创建前取得系统用户临时目录中的�
 
 许可证视图从应用包的 LICENSE.txt 读取完整 GNU GPLv3 文本，采用可选择和滚动的文本展示。仓库 LICENSE 与随包文本保持一致，SPDX 标识为 GPL-3.0-only。
 
-预览和测试使用独立数据，不创建正常状态栏入口。菜单栏图片明确采用 18 点逻辑尺寸并提供 Retina 资源。正常使用包由 Scripts/build-app.sh 生成 Release 构建。
+菜单栏图标由 `showMenuBarIcon` 偏好控制（默认开启，旧配置缺省按开启读取），MenuBarExtra 的插入状态与偏好双向绑定，按住 ⌘ 拖出图标同样写回偏好。隐藏图标不改变采样与规则执行；没有窗口时继续使用 accessory 策略，重复启动通过已有的重开通知恢复管理窗口。预览和测试使用独立数据，不创建正常状态栏入口。菜单栏图片明确采用 18 点逻辑尺寸并提供 Retina 资源。正常使用包由 Scripts/build-app.sh 生成 Release 构建。

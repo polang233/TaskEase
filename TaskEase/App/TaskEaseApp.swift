@@ -60,7 +60,10 @@ struct TaskEaseApp: App {
         }
     }
     var body: some Scene {
-        MenuBarExtra(isInserted: .constant(LaunchContext.current.hasStatusItem)) {
+        // 用户在设置中关闭，或按住 ⌘ 把图标拖出菜单栏时，都保存为同一个偏好。
+        MenuBarExtra(isInserted: Binding(
+            get: { LaunchContext.current.hasStatusItem && delegate.model.preferences.showMenuBarIcon },
+            set: { value in delegate.model.updatePreferences { $0.showMenuBarIcon = value } })) {
             MenuPanel(model: delegate.model)
         } label: {
             Image(nsImage: MenuBarIcon.image).accessibilityLabel("app.name")

@@ -48,6 +48,14 @@ struct SettingsView: View {
                     Text("settings.foregroundOnly.note")
                         .font(.caption).foregroundStyle(.secondary)
                 }
+                VStack(alignment: .leading, spacing: 6) {
+                    Toggle("settings.menuBarIcon", isOn: Binding(get: { model.preferences.showMenuBarIcon },
+                        set: { value in model.updatePreferences { $0.showMenuBarIcon = value } }))
+                        .toggleStyle(.checkbox).accessibilityIdentifier("show-menu-bar-icon")
+                    if !model.preferences.showMenuBarIcon {
+                        Text("settings.menuBarIcon.note").font(.caption).foregroundStyle(.secondary)
+                    }
+                }
                 Toggle("settings.showSystemApps", isOn: Binding(get: { model.preferences.showSystemApps },
                                                    set: { value in model.updatePreferences { $0.showSystemApps = value } }))
                     .toggleStyle(.checkbox)
