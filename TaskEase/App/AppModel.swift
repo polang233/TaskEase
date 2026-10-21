@@ -212,14 +212,20 @@ final class AppModel {
         let application = apps.first { $0.id == id } ?? configuredApps.first { $0.id == id }
         guard let application, allowsRuleEditing(application) else { return }
         let validated = rule.validated()
-        if rules[id]?.isActive != true && validated.isActive { backgroundSince[id] = nil }
-        if validated.adjustsVolume && rules[id]?.adjustsVolume != true { volume.retry() }
+        let previous = rules[id]
+        if previous?.isActive != true && validated.isActive { backgroundSince[id] = nil }
+        if validated.adjustsVolume && previous?.adjustsVolume != true { volume.retry() }
         rules[id] = validated
         savedApplications[id] = SavedApplication(application)
         persistRules()
         normalizeEnablement()
         reconcile()
-        refresh(force: true)
+        // 拖动滑杆只改上限、音量或等待时间，成员不变，直接按缓存下发即可；
+        // 只有开关某项限制时才需要重新扫描成员，避免拖动时连续触发完整扫描。
+        if previous.map({ $0.isActive != validated.isActive || $0.needsWorker != validated.needsWorker
+            || $0.adjustsVolume != validated.adjustsVolume }) ?? true {
+            refresh(force: true)
+        }
     }
 
     func resetRule(_ id: String) {
