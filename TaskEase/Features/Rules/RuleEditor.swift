@@ -36,6 +36,17 @@ struct RuleEditor: View {
                                  color: model.preferences.cpuScale == .machine ? MetricPalette.percent(cpu) : MetricPalette.applicationCPU(cpu))
                         statTile("metric.memory", value: Display.memory(app))
                     }
+                    if model.effectiveSortKey != .name {
+                        SectionCard {
+                            HStack {
+                                Text(model.effectiveSortKey.title).font(.subheadline.weight(.semibold))
+                                Spacer()
+                                Text("usage.chart.recent").font(.caption).foregroundStyle(.secondary)
+                            }
+                            UsageChart(key: model.effectiveSortKey, points: model.usageHistory.points(for: app.id),
+                                       scale: model.preferences.cpuScale)
+                        }
+                    }
                 } else {
                     Text("rule.notRunning").font(.callout).foregroundStyle(.secondary)
                 }

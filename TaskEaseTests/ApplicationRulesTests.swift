@@ -141,7 +141,7 @@ struct ApplicationRulesTests {
         #expect(AppRule(delaySeconds: 900).validated().delaySeconds == 300)
     }
     @Test func foregroundDisplayStopsPollingButKeepsControlDeadlines() {
-        let paused = SamplingPolicy.shouldRefreshDisplay(managementVisible: true, menuVisible: false,
+        let paused = SamplingPolicy.shouldRefreshDisplay(managementOpen: true, managementVisible: true, menuVisible: false,
                                                         isForeground: false, onlyInForeground: true)
         #expect(!paused)
         #expect(SamplingPolicy.nextInterval(displayVisible: paused, displayInterval: 1,
@@ -150,14 +150,19 @@ struct ApplicationRulesTests {
                                            controlMonitoring: true, waitingSeconds: []) == 2)
         #expect(SamplingPolicy.nextInterval(displayVisible: paused, displayInterval: 1,
                                            controlMonitoring: true, waitingSeconds: [0.2]) == 0.2)
-        #expect(SamplingPolicy.shouldRefreshDisplay(managementVisible: true, menuVisible: false,
+        #expect(SamplingPolicy.shouldRefreshDisplay(managementOpen: true, managementVisible: true, menuVisible: false,
                                                    isForeground: true, onlyInForeground: true))
-        #expect(SamplingPolicy.shouldRefreshDisplay(managementVisible: true, menuVisible: false,
+        #expect(SamplingPolicy.shouldRefreshDisplay(managementOpen: true, managementVisible: true, menuVisible: false,
                                                    isForeground: false, onlyInForeground: false))
-        #expect(SamplingPolicy.shouldRefreshDisplay(managementVisible: false, menuVisible: true,
+        #expect(SamplingPolicy.shouldRefreshDisplay(managementOpen: false, managementVisible: false, menuVisible: true,
                                                    isForeground: false, onlyInForeground: true))
-        #expect(!SamplingPolicy.shouldRefreshDisplay(managementVisible: false, menuVisible: false,
+        #expect(!SamplingPolicy.shouldRefreshDisplay(managementOpen: false, managementVisible: false, menuVisible: false,
                                                     isForeground: true, onlyInForeground: false))
+        // 关闭“仅在前台刷新”后，窗口被遮挡或最小化也继续采样；默认设置下则暂停。
+        #expect(SamplingPolicy.shouldRefreshDisplay(managementOpen: true, managementVisible: false, menuVisible: false,
+                                                   isForeground: false, onlyInForeground: false))
+        #expect(!SamplingPolicy.shouldRefreshDisplay(managementOpen: true, managementVisible: false, menuVisible: false,
+                                                    isForeground: true, onlyInForeground: true))
     }
 
     @Test func existingDisplayPreferencesKeepTheirValues() throws {
@@ -185,6 +190,38 @@ struct ApplicationRulesTests {
         #expect(!found("钉钉"))
         // 显示名是繁体时，用简体同样能搜到。
         #expect(AppSearch.matches("网页", name: "網頁瀏覽器", aliases: [], id: "example.browser"))
+    }
+
+    @Test func usageHistoryKeepsRecentPointsAndDropsExitedApps() {
+        func reading(_ id: String, cpu: Double, running: Bool = true) -> AppReading {
+            var app = AppReading(id: id, name: id, bundlePaths: [], primaryPIDs: [], targets: [], samples: [],
+                                 cpuPercent: cpu, memoryBytes: 1_000, readRate: 0, writeRate: 0,
+                                 canControl: true, isHidden: false)
+            app.isRunning = running
+            return app
+        }
+        var history = UsageHistory()
+        let start = Date(timeIntervalSinceReferenceDate: 1_000)
+        for step in 0..<400 {
+            history.record([reading("a", cpu: Double(step)), reading("b", cpu: 1)], at: start.addingTimeInterval(Double(step)), step: 1)
+        }
+        // 只保留近五分钟，点数不超过上限。
+        let points = history.points(for: "a")
+        #expect(points.count <= UsageHistory.capacity)
+        #expect(points.last?.cpu == 399)
+        #expect(points.first.map { $0.time >= 399 - UsageHistory.retention } == true)
+        // 中途暂停十分钟，回来后横轴只前进一个间隔，曲线接着画。
+        history.record([reading("a", cpu: 5), reading("b", cpu: 1)], at: start.addingTimeInterval(1_000), step: 1)
+        #expect(history.points(for: "a").last?.time == 400)
+        // 后台只追加受控应用时，不清除其他应用的记录。
+        history.record([reading("a", cpu: 6)], at: start.addingTimeInterval(1_002), step: 2, removingOthers: false)
+        #expect(!history.points(for: "b").isEmpty)
+        #expect(history.points(for: "a").last?.time == 402)
+        // 应用退出后清除记录，未运行的已配置应用不记录。
+        history.record([reading("b", cpu: 1), reading("c", cpu: 0, running: false)], at: start.addingTimeInterval(1_003), step: 1)
+        #expect(history.points(for: "a").isEmpty)
+        #expect(history.points(for: "c").isEmpty)
+        #expect(!history.points(for: "b").isEmpty)
     }
 
     @Test func menuBarIconDefaultsOnAndKeepsTheUsersChoice() throws {

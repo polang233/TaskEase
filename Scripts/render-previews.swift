@@ -19,6 +19,11 @@ struct PreviewRenderer {
         model.setEnabled(true)
         try save(ContentView(model: model), size: NSSize(width: 1000, height: 720),
                  appearance: .aqua, to: destination.appendingPathComponent("management-preview.png"))
+        // 详情折线图随排序依据切换；磁盘排序显示读、写两条曲线。
+        model.updatePreferences { $0.sortKey = .disk }
+        try save(ContentView(model: model), size: NSSize(width: 1000, height: 720),
+                 appearance: .aqua, to: destination.appendingPathComponent("management-disk-preview.png"))
+        model.updatePreferences { $0.sortKey = .cpu }
         model.setEnabled(false)
         model.updatePreferences { $0.theme = .dark }
         try save(MenuPanel(model: model), size: NSSize(width: 420, height: 244),

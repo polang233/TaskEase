@@ -21,6 +21,8 @@ final class AppModel {
     /// 后台音量调整失败（多为未授予系统录音权限）的应用。
     private(set) var volumeFailures: Set<String> = []
     private(set) var sampledAt = Date()
+    /// 详情折线图用的近期显示采样。
+    private(set) var usageHistory = UsageHistory()
     private(set) var isRefreshing = false
     private(set) var managementIsOpen = false
     private(set) var managementDisplayPaused = false
@@ -59,6 +61,7 @@ final class AppModel {
         updates = UpdateChecker(fixtures: preview)
         if preview {
             apps = Self.exampleApps
+            usageHistory.seedFixture(from: apps, now: Date())
             system = SystemReading(cpuPercent: 18, gpuPercent: 24, thermal: .nominal,
                 memory: .init(usedBytes: 14 * 1_073_741_824, totalBytes: 24 * 1_073_741_824, compressedBytes: 1_073_741_824, swapBytes: 512 * 1_048_576),
                 network: .init(receiveRate: 12_345_678, sendRate: 123_456), temperatureCelsius: 54.3,
@@ -363,6 +366,7 @@ final class AppModel {
 
     private var displayIsVisible: Bool {
         SamplingPolicy.shouldRefreshDisplay(
+            managementOpen: managementIsOpen,
             managementVisible: managementIsOpen && managementWindow?.window?.isMiniaturized == false &&
                 managementWindow?.window?.occlusionState.contains(.visible) == true,
             menuVisible: menuWindow?.isVisible == true && menuWindow?.occlusionState.contains(.visible) == true,
@@ -429,9 +433,16 @@ final class AppModel {
             networkMonitorStatus = snapshot.networkStatus
             sampledAt = Date()
             lastDisplaySample = NativeProcess.now
+            usageHistory.record(apps, at: sampledAt, step: preferences.refreshInterval.seconds)
         } else {
             // 控制刷新只更新成员与执行状态，显示数值仍按独立刷新间隔更新。
             let fresh = Dictionary(uniqueKeysWithValues: snapshot.apps.map { ($0.id, $0) })
+            // 窗口不刷新时，受控应用借每 2 秒的控制检查继续记录 CPU、内存和磁盘，不额外扫描；
+            // 窗口刷新期间不记录，避免两套采样基线的读数交错。
+            if !displayIsVisible {
+                usageHistory.record(snapshot.apps.filter { monitoredIDs.contains($0.id) }, at: Date(),
+                                    step: 2, removingOthers: false)
+            }
             apps = apps.compactMap { old in
                 guard monitoredIDs.contains(old.id) else { return old }
                 guard var next = fresh[old.id] else { return nil }

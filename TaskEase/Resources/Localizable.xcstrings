@@ -6460,6 +6460,54 @@
         }
       }
     },
+    "usage.chart.accessibility %@" : {
+      "comment" : "VoiceOver label for the usage line chart",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ usage over the last 3 minutes"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最近 3 分钟的%@占用折线图"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最近 3 分鐘的%@占用折線圖"
+          }
+        }
+      }
+    },
+    "usage.chart.recent" : {
+      "comment" : "Chart header, time range",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Last 3 minutes"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最近 3 分钟"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最近 3 分鐘"
+          }
+        }
+      }
+    },
     "usage.diskReadWrite %@ %@" : {
       "comment" : "Secondary line when sorting by disk: read rate, then write rate",
       "localizations" : {
