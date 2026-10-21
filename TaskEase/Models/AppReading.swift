@@ -50,6 +50,8 @@ struct AppReading: Identifiable, Sendable {
     var isRunning = true
     var network: NetworkReading?
     var processNetwork: [ProcessIdentity: NetworkReading] = [:]
+    /// 搜索用的其他名称（英文包名、文件名等），不参与显示。
+    var aliases: [String] = []
 
     var isSystemApp: Bool {
         ApplicationScope.isSystem(id: id, roots: bundlePaths)

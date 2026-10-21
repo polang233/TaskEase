@@ -142,7 +142,7 @@ final class AppModel {
         let query = search.trimmingCharacters(in: .whitespacesAndNewlines)
         let source = applicationList == .running ? visibleRunningApps : configuredApps
         return Self.sorted(source.filter {
-            query.isEmpty || $0.name.localizedCaseInsensitiveContains(query) || $0.id.localizedCaseInsensitiveContains(query)
+            AppSearch.matches(query, name: $0.name, aliases: $0.aliases, id: $0.id)
         }, by: effectiveSortKey)
     }
 

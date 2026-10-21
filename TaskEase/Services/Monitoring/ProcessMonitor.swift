@@ -7,6 +7,8 @@ import Darwin
 struct RunningApplication: Sendable {
     let id: String
     let name: String
+    /// 搜索用的其他名称（英文包名、文件名等），不参与显示。
+    var aliases: [String] = []
     let roots: [String]
     let primaryPIDs: Set<Int32>
     let isHidden: Bool
@@ -25,7 +27,9 @@ struct RunningApplication: Sendable {
         return Dictionary(grouping: running, by: { $0.bundleIdentifier ?? "" }).compactMap { id, instances in
             if let ids, !ids.contains(id) { return nil }
             guard let first = instances.first else { return nil }
-            let app = RunningApplication(id: id, name: first.localizedName ?? id,
+            let name = first.localizedName ?? id
+            let app = RunningApplication(id: id, name: name,
+                                         aliases: first.bundleURL.map { AppSearch.aliases(for: $0, excluding: name) } ?? [],
                                          roots: Array(Set(instances.compactMap { $0.bundleURL?.resolvingSymlinksInPath().path })).sorted(),
                                          primaryPIDs: Set(instances.map(\.processIdentifier)),
                                          isHidden: instances.allSatisfy(\.isHidden))
@@ -127,7 +131,7 @@ struct ProcessSampler {
                                      primaryPIDs: app.primaryPIDs, targets: [], samples: [],
                                      cpuPercent: elapsed == nil ? nil : 0, memoryBytes: 0,
                                      readRate: 0, writeRate: 0, canControl: !app.isSystemApp && !app.id.hasPrefix("com.apple."),
-                                     isHidden: app.isHidden)
+                                     isHidden: app.isHidden, aliases: app.aliases)
             for pid in app.primaryPIDs { primaryOwners[pid] = app.id }
         }
         // GPU 客户端时间只在显示采样读取；控制采样不访问 IORegistry。

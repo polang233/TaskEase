@@ -172,6 +172,21 @@ struct ApplicationRulesTests {
         #expect(try JSONDecoder().decode(AppPreferences.self, from: JSONEncoder().encode(changed)) == changed)
     }
 
+    @MainActor @Test func searchIgnoresTraditionalOrSimplifiedAndCaseAndFindsEnglishNames() {
+        // 显示名是简体，用繁体或英文包名都应能搜到。
+        func found(_ query: String) -> Bool {
+            AppSearch.matches(query, name: "腾讯会议", aliases: ["TencentMeeting", "Tencent Meeting"], id: "com.tencent.meeting")
+        }
+        #expect(found("騰訊會議"))
+        #expect(found("腾讯"))
+        #expect(found("騰訊"))
+        #expect(found("tencentmeeting"))
+        #expect(found("MEETING"))
+        #expect(!found("钉钉"))
+        // 显示名是繁体时，用简体同样能搜到。
+        #expect(AppSearch.matches("网页", name: "網頁瀏覽器", aliases: [], id: "example.browser"))
+    }
+
     @Test func menuBarIconDefaultsOnAndKeepsTheUsersChoice() throws {
         // 旧配置没有该字段，按默认显示读取；关闭后保存并原样读回。
         let legacy = Data(#"{"showSystemApps":true,"theme":"dark"}"#.utf8)
