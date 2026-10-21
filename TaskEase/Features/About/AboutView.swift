@@ -10,10 +10,7 @@ struct AboutView: View {
             Image(nsImage: NSApp.applicationIconImage).resizable().scaledToFit()
                 .frame(width: 80, height: 80).accessibilityHidden(true)
             Text("about.title").font(.title2.weight(.semibold))
-            HStack(spacing: 14) {
-                Text("about.version \(AppVersion.short) \(AppVersion.build)")
-                Text(verbatim: "macOS 14+ · Apple Silicon")
-            }.font(.caption).foregroundStyle(.secondary)
+            Text("about.version \(AppVersion.short) \(AppVersion.build)").font(.caption).foregroundStyle(.secondary)
             Text("about.tagline")
                 .font(.callout).multilineTextAlignment(.center)
             Link("about.star", destination: ProjectLinks.repository)

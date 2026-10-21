@@ -34,20 +34,16 @@ struct SettingsView: View {
                         set: { scale in model.updatePreferences { $0.cpuScale = scale } })) {
                         ForEach(CPUScale.allCases, id: \.self) { Text($0.title).tag($0) }
                     }.selectionRail().accessibilityIdentifier("cpu-scale")
-                    (model.preferences.cpuScale == .core ? Text("settings.cpuScale.core.note") : Text("settings.cpuScale.machine.note"))
+                    Text("settings.cpuScale.note")
                         .font(.caption).foregroundStyle(.secondary)
                 }
                 Picker("settings.refreshInterval", selection: Binding(get: { model.preferences.refreshInterval },
                                                        set: { interval in model.updatePreferences { $0.refreshInterval = interval } })) {
                     ForEach(DisplayRefreshInterval.allCases, id: \.self) { Text($0.title).tag($0) }
                 }.accessibilityIdentifier("display-refresh-interval")
-                VStack(alignment: .leading, spacing: 6) {
-                    Toggle("settings.foregroundOnly", isOn: Binding(get: { model.preferences.refreshOnlyInForeground },
-                        set: { value in model.updatePreferences { $0.refreshOnlyInForeground = value } }))
-                        .toggleStyle(.checkbox).accessibilityIdentifier("foreground-display-only")
-                    Text("settings.foregroundOnly.note")
-                        .font(.caption).foregroundStyle(.secondary)
-                }
+                Toggle("settings.foregroundOnly", isOn: Binding(get: { model.preferences.refreshOnlyInForeground },
+                    set: { value in model.updatePreferences { $0.refreshOnlyInForeground = value } }))
+                    .toggleStyle(.checkbox).accessibilityIdentifier("foreground-display-only")
                 VStack(alignment: .leading, spacing: 6) {
                     Toggle("settings.menuBarIcon", isOn: Binding(get: { model.preferences.showMenuBarIcon },
                         set: { value in model.updatePreferences { $0.showMenuBarIcon = value } }))

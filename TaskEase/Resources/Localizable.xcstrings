@@ -1923,41 +1923,6 @@
         }
       }
     },
-    "list.processes %lld" : {
-      "comment" : "Number of processes an app has",
-      "localizations" : {
-        "en" : {
-          "variations" : {
-            "plural" : {
-              "one" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "%lld process"
-                }
-              },
-              "other" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "%lld processes"
-                }
-              }
-            }
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld 个进程"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld 個處理程序"
-          }
-        }
-      }
-    },
     "list.running" : {
       "comment" : "List tab: running apps",
       "localizations" : {
@@ -3075,29 +3040,6 @@
         }
       }
     },
-    "rule.audio.note" : {
-      "comment" : "Note under the background volume toggle",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Plays the app at the set volume after you leave it and restores its sound when you come back. The first time, macOS asks to allow system audio recording; TaskEase only uses it to adjust sound and never records or saves anything."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "离开前台后按设定音量播放，回到前台恢复原声。首次开启时系统会请求「系统录音」权限，轻程只用它调节声音，不会录制或保存任何内容。"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "離開前景後按設定音量播放，回到前景恢復原聲。首次開啟時系統會要求「系統錄音」權限，輕程只用它調節聲音，不會錄製或儲存任何內容。"
-          }
-        }
-      }
-    },
     "rule.audio.openSettings" : {
       "comment" : "Button that opens privacy settings",
       "localizations" : {
@@ -3163,29 +3105,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "CPU 使用上限"
-          }
-        }
-      }
-    },
-    "rule.cpuCap.note" : {
-      "comment" : "Note under the CPU cap slider",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "100% is one fully busy core, including the app's helper processes."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "100% 为一个核心满载，含应用的辅助进程。"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "100% 代表一顆核心滿載，包含 App 的輔助處理程序。"
           }
         }
       }
@@ -3328,71 +3247,25 @@
         }
       }
     },
-    "rule.mode.budget.note" : {
-      "comment" : "Explains the CPU limit method",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Briefly pauses the app so its average usage stays under the cap. May affect audio and network connections."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "按上限短暂暂停应用，平均占用不超过设定值；可能影响声音和网络连接。"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "依上限短暫暫停 App，讓平均用量不超過設定值；可能會影響聲音和網路連線。"
-          }
-        }
-      }
-    },
-    "rule.mode.gentle.note" : {
-      "comment" : "Explains the lower priority method",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Lowers scheduling priority so foreground apps get resources first. There's no cap, so usage may not change when the Mac is idle."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "降低调度优先级，前台应用优先获得资源；不设上限，空闲时占用可能不变。"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "降低排程優先順序，讓前景 App 先拿到資源；不設上限，電腦閒置時用量可能不會變。"
-          }
-        }
-      }
-    },
     "rule.mode.suspend.note" : {
       "comment" : "Explains the pause method",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Pauses the app completely so it uses no CPU. Background playback, downloads and notifications stop until you switch back."
+            "value" : "Pauses the app completely; playback, downloads and notifications stop."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "完全暂停，不占用 CPU。后台播放、下载和消息通知都会停止，回到前台后恢复。"
+            "value" : "完全暂停，后台播放、下载和通知都会停止。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "完全暫停，不吃 CPU。背景播放、下載和訊息通知都會停下來，切回前景就恢復。"
+            "value" : "完全暫停，背景播放、下載和通知都會停止。"
           }
         }
       }
@@ -3554,29 +3427,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "效能限制"
-          }
-        }
-      }
-    },
-    "rule.priority.suspended" : {
-      "comment" : "Note when priority is unavailable while pausing",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Not needed while the app is paused."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "暂停应用时无需降低优先级。"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "暫停 App 時無需降低優先順序。"
           }
         }
       }
@@ -3784,29 +3634,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "在前景使用時也會限制，操作可能會不太順。"
-          }
-        }
-      }
-    },
-    "rule.timing.background.note" : {
-      "comment" : "Note for background timing",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "The timer starts when you switch away or hide the app; it's restored as soon as you come back."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "切走或隐藏后开始计时，回到前台立即恢复。"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "切走或隱藏後開始計時，回到前景馬上恢復。"
           }
         }
       }
@@ -4019,48 +3846,26 @@
         }
       }
     },
-    "settings.cpuScale.core.note" : {
-      "comment" : "Per-core scale explanation",
+    "settings.cpuScale.note" : {
+      "comment" : "Note under the CPU basis picker",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "100% is one fully busy core, same as Activity Monitor."
+            "value" : "Per core: 100% is one core fully busy, like Activity Monitor. Whole machine: share of all cores."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "100% 为一个核心满载，与活动监视器一致。"
+            "value" : "单核：100% 为一个核心满载，与活动监视器一致；整机：占全部核心的比例。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "100% 代表一顆核心滿載，和「活動監視器」一樣。"
-          }
-        }
-      }
-    },
-    "settings.cpuScale.machine.note" : {
-      "comment" : "Whole-Mac scale explanation",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Share of all cores; all apps together never exceed 100%."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "占全部核心的比例，所有应用合计不超过 100%。"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "佔全部核心的比例，所有 App 加起來不會超過 100%。"
+            "value" : "單核：100% 為一個核心滿載，與活動監視器一致；整機：佔全部核心的比例。"
           }
         }
       }
@@ -4245,29 +4050,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "管理視窗只在前景時更新"
-          }
-        }
-      }
-    },
-    "settings.foregroundOnly.note" : {
-      "comment" : "Checkbox note",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Background rules keep running either way."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "不影响后台规则执行。"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "不影響背景規則執行。"
           }
         }
       }

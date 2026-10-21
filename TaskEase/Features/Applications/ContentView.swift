@@ -79,12 +79,7 @@ struct ContentView: View {
                             AppIcon(app: app, size: 30)
                             VStack(alignment: .leading, spacing: 5) {
                                 Text(app.name).lineLimit(1)
-                                HStack(spacing: 7) {
-                                    StatusLabel(status: app.status)
-                                    if app.isRunning && !app.targets.isEmpty {
-                                        Text("list.processes \(app.targets.count)").font(.caption).foregroundStyle(.tertiary)
-                                    }
-                                }
+                                StatusLabel(status: app.status)
                             }
                             Spacer()
                             if app.isRunning {
@@ -92,11 +87,6 @@ struct ContentView: View {
                                     Text(usage.value(app)).monospacedDigit()
                                     Text(usage.secondary(app))
                                         .font(.caption).foregroundStyle(.secondary).monospacedDigit()
-                                    if model.preferences.networkActivityVisible && key != .network {
-                                        Text("↓ " + Display.networkRate(app.network?.receiveRate) +
-                                             "  ↑ " + Display.networkRate(app.network?.sendRate))
-                                            .font(.caption2).foregroundStyle(.secondary).monospacedDigit()
-                                    }
                                 }
                             }
                         }

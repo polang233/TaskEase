@@ -105,7 +105,7 @@ struct RuleEditor: View {
     }
 
     private var ruleControls: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: 18) {
             switchRow("rule.toggle", isOn: rule.isEnabled, font: .headline, identifier: "app-rule-toggle") { value in
                 update { $0.isEnabled = value }
             }
@@ -120,20 +120,19 @@ struct RuleEditor: View {
                            in: Double(minimumDelayIndex)...Double(AppRule.delayPresets.count - 1), step: 1)
                         .accessibilityIdentifier("background-delay")
                         .accessibilityValue(delayTitle)
-                    (rule.alwaysLimit ? Text("rule.timing.always.note") : Text("rule.timing.background.note"))
-                        .font(.caption).foregroundStyle(.secondary)
+                    if rule.alwaysLimit {
+                        Text("rule.timing.always.note").font(.caption).foregroundStyle(.secondary)
+                    }
                 }
-                Divider()
+                Divider().padding(.vertical, 2)
                 performanceControls
-                Divider()
+                Divider().padding(.vertical, 2)
                 audioControls
-                Divider()
+                Divider().padding(.vertical, 2)
                 VStack(alignment: .leading, spacing: 6) {
                     switchRow("mode.gentle", isOn: rule.lowersPriority && !rule.suspends, identifier: "priority-toggle") { value in
                         update { $0.lowersPriority = value }
                     }.disabled(rule.suspends)
-                    Text(rule.suspends ? "rule.priority.suspended" : "rule.mode.gentle.note")
-                        .font(.caption).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
                 }
                 if !model.enabled {
                     Text("rule.enableHint").font(.caption).foregroundStyle(.secondary)
@@ -163,14 +162,10 @@ struct RuleEditor: View {
                     .accessibilityValue(rule.suspends ? Text("mode.suspend") : Text(verbatim: "\(Int(rule.cpuPercent))%"))
                 SliderMarks(range: 0...200, marks: [(0, String(localized: "rule.cpuCap.pause")),
                                                     (50, "50%"), (100, "100%"), (150, "150%"), (200, "200%")])
-                Group {
-                    if rule.suspends {
-                        Text("rule.mode.suspend.note").foregroundStyle(.orange)
-                    } else {
-                        Text("rule.mode.budget.note")
-                        Text("rule.cpuCap.note")
-                    }
-                }.font(.caption).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                if rule.suspends {
+                    Text("rule.mode.suspend.note").font(.caption).foregroundStyle(.orange)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
             }
         }
     }
@@ -206,9 +201,6 @@ struct RuleEditor: View {
                         Button("rule.audio.openSettings") { NSWorkspace.shared.open(Self.audioSettingsURL) }
                             .controlSize(.small)
                     }
-                } else {
-                    Text("rule.audio.note").font(.caption).foregroundStyle(.secondary)
-                        .fixedSize(horizontal: false, vertical: true)
                 }
             }
         }
