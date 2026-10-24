@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="560" height="190" viewBox="0 0 560 190" role="img" aria-label="轻程近 30 天 4 台设备">
+<style>
+  .card { fill: #ffffff; stroke: #d0d7de; }
+  .title { fill: #1f2328; font: 600 15px -apple-system, "PingFang SC", "Segoe UI", sans-serif; }
+  .muted { fill: #656d76; font: 12px -apple-system, "PingFang SC", "Segoe UI", sans-serif; }
+  .big { fill: #1f2328; font: 600 28px -apple-system, "SF Pro Rounded", "Segoe UI", sans-serif; }
+  .line { fill: none; stroke: #30bba9; stroke-width: 2; stroke-linejoin: round; }
+  .area { fill: #30bba9; opacity: 0.15; }
+  .axis { stroke: #d0d7de; }
+  @media (prefers-color-scheme: dark) {
+    .card { fill: #0d1117; stroke: #30363d; }
+    .title, .big { fill: #e6edf3; }
+    .muted { fill: #8d96a0; }
+    .axis { stroke: #30363d; }
+  }
+</style>
+<rect class="card" x="0.5" y="0.5" width="559" height="189" rx="10"/>
+<text class="title" x="24" y="30">轻程 TaskEase · 使用统计</text>
+<text class="big" x="24" y="64">4</text>
+<text class="muted" x="51" y="63">台设备 · 近 30 天活跃</text>
+<text class="muted" x="536" y="63" text-anchor="end">China 75%  Taiwan 25%</text>
+<line class="axis" x1="24" y1="150" x2="536" y2="150"/>
+<polygon class="area" points="24,150 24.0,150.0 41.7,150.0 59.3,150.0 77.0,150.0 94.6,150.0 112.3,150.0 129.9,150.0 147.6,150.0 165.2,150.0 182.9,150.0 200.6,150.0 218.2,150.0 235.9,150.0 253.5,150.0 271.2,150.0 288.8,150.0 306.5,114.0 324.1,78.0 341.8,78.0 359.4,78.0 377.1,114.0 394.8,114.0 412.4,114.0 430.1,78.0 447.7,114.0 465.4,150.0 483.0,114.0 500.7,78.0 518.3,114.0 536.0,114.0 536,150"/>
+<polyline class="line" points="24.0,150.0 41.7,150.0 59.3,150.0 77.0,150.0 94.6,150.0 112.3,150.0 129.9,150.0 147.6,150.0 165.2,150.0 182.9,150.0 200.6,150.0 218.2,150.0 235.9,150.0 253.5,150.0 271.2,150.0 288.8,150.0 306.5,114.0 324.1,78.0 341.8,78.0 359.4,78.0 377.1,114.0 394.8,114.0 412.4,114.0 430.1,78.0 447.7,114.0 465.4,150.0 483.0,114.0 500.7,78.0 518.3,114.0 536.0,114.0"/>
+<text class="muted" x="24" y="170">09-25</text>
+<text class="muted" x="536" y="170" text-anchor="end">10-24 · 更新于 2026-10-24 15:54 UTC</text>
+</svg>
