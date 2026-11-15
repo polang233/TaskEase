@@ -16,17 +16,13 @@ struct RuleEditor: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 18) {
-                HStack(spacing: 12) {
-                    AppIcon(app: app, size: 48)
-                    VStack(alignment: .leading, spacing: 5) {
-                        Text(app.name).font(.title3.weight(.semibold)).lineLimit(1)
-                        StatusLabel(status: app.status)
-                    }
-                    Spacer()
-                    if model.rules[app.id] != nil || model.networkRules[app.id] != nil {
-                        Button("rule.remove", systemImage: "trash", role: .destructive) { model.resetRule(app.id) }
-                            .labelStyle(.iconOnly).buttonStyle(.borderless).help("rule.remove").pointingHand()
-                            .accessibilityIdentifier("remove-rule")
+                header
+                // 主要任务在前：规则卡片紧跟标题，占用与图表放在后面辅助判断。
+                SectionCard {
+                    ruleControls.disabled(!model.allowsRuleEditing(app))
+                    if !model.allowsRuleEditing(app) {
+                        Label(title: { app.isSystemApp ? Text("rule.readOnly.system") : Text("rule.readOnly.other") }, icon: { Image(systemName: "lock") })
+                            .font(.callout).foregroundStyle(.secondary)
                     }
                 }
                 if app.isRunning {
@@ -46,15 +42,6 @@ struct RuleEditor: View {
                             UsageChart(key: model.effectiveSortKey, points: model.usageHistory.points(for: app.id),
                                        scale: model.preferences.cpuScale)
                         }
-                    }
-                } else {
-                    Text("rule.notRunning").font(.callout).foregroundStyle(.secondary)
-                }
-                SectionCard {
-                    ruleControls.disabled(!model.allowsRuleEditing(app))
-                    if !model.allowsRuleEditing(app) {
-                        Label(title: { app.isSystemApp ? Text("rule.readOnly.system") : Text("rule.readOnly.other") }, icon: { Image(systemName: "lock") })
-                            .font(.callout).foregroundStyle(.secondary)
                     }
                 }
                 if model.preferences.networkFeaturesEnabled {
@@ -104,94 +91,156 @@ struct RuleEditor: View {
         }
     }
 
-    private var ruleControls: some View {
-        VStack(alignment: .leading, spacing: 18) {
-            switchRow("rule.toggle", isOn: rule.isEnabled, font: .headline, identifier: "app-rule-toggle") { value in
-                update { $0.isEnabled = value }
-            }
-            if rule.isEnabled {
-                VStack(alignment: .leading, spacing: 8) {
-                    HStack {
-                        Text("rule.timing")
-                        Spacer()
-                        Text(delayTitle).monospacedDigit().foregroundStyle(rule.alwaysLimit ? .orange : .primary)
-                    }
-                    Slider(value: Binding(get: { Double(delayIndex) }, set: { setDelay(index: Int($0.rounded())) }),
-                           in: Double(minimumDelayIndex)...Double(AppRule.delayPresets.count - 1), step: 1)
-                        .accessibilityIdentifier("background-delay")
-                        .accessibilityValue(delayTitle)
-                    if rule.alwaysLimit {
-                        Text("rule.timing.always.note").font(.caption).foregroundStyle(.secondary)
+    /// 应用标题：名称、当前状态与规则摘要；未运行时说明规则在下次运行时执行。
+    private var header: some View {
+        HStack(spacing: 12) {
+            StatusIcon(app: app, status: app.status, size: 48)
+            VStack(alignment: .leading, spacing: 5) {
+                Text(app.name).font(.title3.weight(.semibold)).lineLimit(1)
+                HStack(spacing: 6) {
+                    StatusLabel(status: app.status)
+                    if !app.isRunning {
+                        Text("rule.notRunning").font(.caption).foregroundStyle(.secondary).lineLimit(1)
                     }
                 }
-                Divider().padding(.vertical, 2)
-                performanceControls
-                Divider().padding(.vertical, 2)
-                audioControls
-                Divider().padding(.vertical, 2)
-                VStack(alignment: .leading, spacing: 6) {
-                    switchRow("mode.gentle", isOn: rule.lowersPriority && !rule.suspends, identifier: "priority-toggle") { value in
+            }
+            Spacer()
+            if model.rules[app.id] != nil || model.networkRules[app.id] != nil {
+                Button("rule.remove", systemImage: "trash", role: .destructive) { model.resetRule(app.id) }
+                    .labelStyle(.iconOnly).buttonStyle(.borderless).help("rule.remove").pointingHand()
+                    .accessibilityIdentifier("remove-rule")
+            }
+        }
+    }
+
+    private var ruleControls: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            HStack(alignment: .firstTextBaseline) {
+                VStack(alignment: .leading, spacing: 3) {
+                    Text("rule.toggle").font(.headline)
+                    // 关闭时说明打开后会怎样，打开后用一句话概括当前规则。
+                    Group {
+                        if rule.isActive { Text(verbatim: rule.summary()) }
+                        else { Text("rule.toggle.description") }
+                    }
+                    .font(.callout).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                    .accessibilityIdentifier("rule-summary")
+                }
+                Spacer()
+                Toggle("rule.toggle", isOn: Binding(get: { rule.isEnabled }, set: { value in update { $0.isEnabled = value } }))
+                    .toggleStyle(.switch).labelsHidden().accessibilityIdentifier("app-rule-toggle")
+            }
+            if rule.isActive && !model.enabled {
+                enableCallout
+            }
+            if rule.isEnabled {
+                Divider()
+                timingControls
+                Divider()
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("rule.mode").font(.subheadline.weight(.semibold)).foregroundStyle(.secondary)
+                    performanceControls
+                    audioControls
+                    switchRow("mode.gentle", systemImage: "tortoise", isOn: rule.lowersPriority && !rule.suspends,
+                              identifier: "priority-toggle") { value in
                         update { $0.lowersPriority = value }
                     }.disabled(rule.suspends)
                 }
-                if !model.enabled {
-                    Text("rule.enableHint").font(.caption).foregroundStyle(.secondary)
-                }
+            }
+        }
+    }
+
+    /// 规则已有效但总开关关闭：就地说明并提供一键启用，不必回到页眉找开关。
+    private var enableCallout: some View {
+        HStack(spacing: 10) {
+            Image(systemName: "info.circle.fill").foregroundStyle(Color.accentColor)
+            Text("rule.enableCallout").font(.callout).fixedSize(horizontal: false, vertical: true)
+            Spacer(minLength: 8)
+            Button("toggle.enable") { model.setEnabled(true) }
+                .buttonStyle(.borderedProminent).controlSize(.small)
+                .disabled(!model.canEnable).pointingHand()
+                .accessibilityIdentifier("enable-from-rule")
+        }
+        .padding(.horizontal, 12).padding(.vertical, 9)
+        .background(Color.accentColor.opacity(0.1), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+    }
+
+    private var timingControls: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Text("rule.timing")
+                Spacer()
+                Text(rule.timingTitle).monospacedDigit().foregroundStyle(rule.alwaysLimit ? .orange : .primary)
+            }
+            Slider(value: Binding(get: { Double(rule.delayIndex) }, set: { setDelay(index: Int($0.rounded())) }),
+                   in: Double(minimumDelayIndex)...Double(AppRule.delayPresets.count - 1), step: 1)
+                .accessibilityIdentifier("background-delay")
+                .accessibilityValue(rule.timingTitle)
+            let last = AppRule.delayPresets.count - 1
+            SliderMarks(range: Double(minimumDelayIndex)...Double(last),
+                        marks: [minimumDelayIndex, 2, 5, last].map { (Double($0), AppRule.shortDelayTitle(index: $0)) })
+            if rule.alwaysLimit {
+                Text("rule.timing.always.note").font(.caption).foregroundStyle(.secondary)
             }
         }
     }
 
     private var performanceControls: some View {
         VStack(alignment: .leading, spacing: 8) {
-            switchRow("rule.performance", isOn: rule.limitsPerformance, identifier: "performance-toggle") { value in
+            switchRow("rule.performance", systemImage: "cpu", isOn: rule.limitsPerformance, identifier: "performance-toggle") { value in
                 update {
                     $0.limitsPerformance = value
                     if value { Self.leaveAlwaysForSuspend(&$0) }
                 }
             }
             if rule.limitsPerformance {
-                HStack {
-                    Text("rule.cpuCap")
-                    Spacer()
-                    Text(rule.suspends ? String(localized: "mode.suspend") : "\(Int(rule.cpuPercent))%")
-                        .monospacedDigit().foregroundStyle(rule.suspends ? .orange : .primary)
-                }.padding(.top, 4)
-                // 不设 step，避免 40 个刻度点；取值按 5% 取整，拖到最左为暂停应用。
-                Slider(value: Binding(get: { rule.suspends ? 0 : rule.cpuPercent }, set: setCPU), in: 0...200)
-                    .accessibilityIdentifier("cpu-budget")
-                    .accessibilityValue(rule.suspends ? Text("mode.suspend") : Text(verbatim: "\(Int(rule.cpuPercent))%"))
-                SliderMarks(range: 0...200, marks: [(0, String(localized: "rule.cpuCap.pause")),
-                                                    (50, "50%"), (100, "100%"), (150, "150%"), (200, "200%")])
-                if rule.suspends {
-                    Text("rule.mode.suspend.note").font(.caption).foregroundStyle(.orange)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
+                // 子设置向右缩进到标题文字处，表示属于上面的开关。
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack {
+                        Text("rule.cpuCap")
+                        Spacer()
+                        Text(rule.suspends ? String(localized: "mode.suspend") : "\(Int(rule.cpuPercent))%")
+                            .monospacedDigit().foregroundStyle(rule.suspends ? .orange : .primary)
+                    }.padding(.top, 4)
+                    // 不设 step，避免 40 个刻度点；取值按 5% 取整，拖到最左为暂停应用。
+                    Slider(value: Binding(get: { rule.suspends ? 0 : rule.cpuPercent }, set: setCPU), in: 0...200)
+                        .accessibilityIdentifier("cpu-budget")
+                        .accessibilityValue(rule.suspends ? Text("mode.suspend") : Text(verbatim: "\(Int(rule.cpuPercent))%"))
+                    SliderMarks(range: 0...200, marks: [(0, String(localized: "rule.cpuCap.pause")),
+                                                        (50, "50%"), (100, "100%"), (150, "150%"), (200, "200%")])
+                    if rule.suspends {
+                        Text("rule.mode.suspend.note").font(.caption).foregroundStyle(.orange)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                }.padding(.leading, Self.nestedInset)
             }
         }
     }
 
     private var audioControls: some View {
         VStack(alignment: .leading, spacing: 8) {
-            switchRow("rule.audio", isOn: rule.adjustsVolume && AppVolume.isSupported, identifier: "volume-toggle") { value in
+            switchRow("rule.audio", systemImage: "speaker.wave.2", isOn: rule.adjustsVolume && AppVolume.isSupported, identifier: "volume-toggle") { value in
                 update { $0.adjustsVolume = value }
             }.disabled(!AppVolume.isSupported)
             if !AppVolume.isSupported {
                 Text("rule.audio.unsupported").font(.caption).foregroundStyle(.secondary)
             } else {
                 if rule.adjustsVolume {
-                    HStack {
-                        Text("rule.volume")
-                        Spacer()
-                        Text(volumeTitle).monospacedDigit()
-                    }.padding(.top, 4)
-                    Slider(value: Binding(get: { rule.volumePercent }, set: { percent in
-                        let rounded = (percent / 5).rounded() * 5
-                        if rounded != rule.volumePercent { update { $0.volumePercent = rounded } }
-                    }), in: 0...90)
-                        .accessibilityIdentifier("background-volume")
-                        .accessibilityValue(volumeTitle)
-                    SliderMarks(range: 0...90, marks: [(0, String(localized: "rule.volume.mute")),
-                                                       (30, "30%"), (60, "60%"), (90, "90%")])
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack {
+                            Text("rule.volume")
+                            Spacer()
+                            Text(volumeTitle).monospacedDigit()
+                        }.padding(.top, 4)
+                        Slider(value: Binding(get: { rule.volumePercent }, set: { percent in
+                            let rounded = (percent / 5).rounded() * 5
+                            if rounded != rule.volumePercent { update { $0.volumePercent = rounded } }
+                        }), in: 0...90)
+                            .accessibilityIdentifier("background-volume")
+                            .accessibilityValue(volumeTitle)
+                        SliderMarks(range: 0...90, marks: [(0, String(localized: "rule.volume.mute")),
+                                                           (30, "30%"), (60, "60%"), (90, "90%")])
+                    }.padding(.leading, Self.nestedInset)
                 }
                 if rule.adjustsVolume && model.volumeFailures.contains(app.id) {
                     HStack(alignment: .firstTextBaseline) {
@@ -205,6 +254,9 @@ struct RuleEditor: View {
             }
         }
     }
+
+    /// 符号宽度加间距，子设置与开关标题文字左对齐。
+    private static let nestedInset: CGFloat = 28
 
     private var volumeTitle: String {
         rule.volumePercent == 0 ? String(localized: "rule.volume.mute") : "\(Int(rule.volumePercent))%"
@@ -226,11 +278,15 @@ struct RuleEditor: View {
 
     private static let audioSettingsURL = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture")!
 
-    /// 左侧标题、右侧开关的一行。
-    private func switchRow(_ title: LocalizedStringKey, isOn: Bool, font: Font = .body, identifier: String,
+    /// 左侧带符号的标题、右侧开关的一行。
+    private func switchRow(_ title: LocalizedStringKey, systemImage: String, isOn: Bool, identifier: String,
                            set: @escaping (Bool) -> Void) -> some View {
         HStack {
-            Text(title).font(font)
+            Label {
+                Text(title)
+            } icon: {
+                Image(systemName: systemImage).font(.system(size: 13)).foregroundStyle(.secondary).frame(width: 20)
+            }
             Spacer()
             Toggle(title, isOn: Binding(get: { isOn }, set: set))
                 .toggleStyle(.switch).labelsHidden().accessibilityIdentifier(identifier)
@@ -248,23 +304,10 @@ struct RuleEditor: View {
         }
     }
 
-    /// 旧规则的等待时间可能不在预设中，显示最接近的档位。
-    private var delayIndex: Int {
-        if rule.alwaysLimit { return 0 }
-        let presets = AppRule.delayPresets
-        return (1..<presets.count).min { abs(presets[$0] - rule.delaySeconds) < abs(presets[$1] - rule.delaySeconds) } ?? 2
-    }
-
-    private var delayTitle: String {
-        if rule.alwaysLimit { return String(localized: "rule.timing.always") }
-        let seconds = Int(AppRule.delayPresets[delayIndex])
-        return seconds >= 60 ? String(localized: "rule.timing.minutes \(seconds / 60)") : String(localized: "rule.timing.seconds \(seconds)")
-    }
-
     private func setDelay(index: Int) {
         let presets = AppRule.delayPresets
         let index = min(presets.count - 1, max(minimumDelayIndex, index))
-        guard index != delayIndex else { return }
+        guard index != rule.delayIndex else { return }
         update {
             $0.alwaysLimit = index == 0
             $0.delaySeconds = presets[index]

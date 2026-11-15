@@ -67,23 +67,62 @@ struct AppIcon: View {
 struct StatusLabel: View {
     let status: RuleStatus
 
-    private var tint: Color? {
+    static func tint(_ status: RuleStatus) -> Color? {
         switch status {
         case .gentle, .budget: .green
-        case .muted: .indigo
+        case .muted, .quieted: .indigo
         case .suspended: .blue
         case .waiting: .orange
         default: nil
         }
     }
 
+    /// 图标角标使用的系统符号；没有规则或无法控制的应用不显示角标。
+    static func symbol(_ status: RuleStatus) -> String? {
+        switch status {
+        case .budget: "gauge.with.dots.needle.33percent"
+        case .gentle: "tortoise.fill"
+        case .suspended: "pause.fill"
+        case .muted: "speaker.slash.fill"
+        case .quieted: "speaker.wave.1.fill"
+        case .waiting: "clock.fill"
+        case .foreground: "macwindow"
+        case .paused: "power"
+        default: nil
+        }
+    }
+
     var body: some View {
-        if let tint {
+        if let tint = Self.tint(status) {
             Text(status.title).font(.caption2.weight(.semibold)).foregroundStyle(tint)
                 .padding(.horizontal, 6).padding(.vertical, 1.5)
                 .background(tint.opacity(0.13), in: Capsule())
         } else {
             Text(status.title).font(.caption).foregroundStyle(.secondary)
+        }
+    }
+}
+
+/// 应用图标加右下角规则状态角标：生效时用状态色，规则就绪但未执行（前台、总开关关闭）时为灰色。
+/// 角标只是视觉提示，状态文字由同一行的 StatusLabel 朗读。
+struct StatusIcon: View {
+    let app: AppReading
+    let status: RuleStatus
+    var size: CGFloat = 30
+
+    var body: some View {
+        AppIcon(app: app, size: size).overlay(alignment: .bottomTrailing) {
+            if let symbol = StatusLabel.symbol(status) {
+                let badge = max(12, size * 0.46)
+                Image(systemName: symbol)
+                    .font(.system(size: badge * 0.52, weight: .bold))
+                    .foregroundStyle(.white)
+                    .frame(width: badge, height: badge)
+                    .background(Circle().fill(StatusLabel.tint(status) ?? Color.gray))
+                    .overlay(Circle().strokeBorder(Color(nsColor: .windowBackgroundColor), lineWidth: 1.5))
+                    .offset(x: badge * 0.22, y: badge * 0.22)
+                    .accessibilityHidden(true)
+            }
         }
     }
 }

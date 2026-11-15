@@ -3201,25 +3201,25 @@
         }
       }
     },
-    "rule.enableHint" : {
-      "comment" : "Shown when the master switch is off",
+    "rule.enableCallout" : {
+      "comment" : "Rule card: rule is saved but the main switch is off",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Takes effect once the main switch at the top is on."
+            "value" : "Rule saved. Turn on limits to apply it."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "打开顶部总开关后生效。"
+            "value" : "规则已保存，打开总开关后执行。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "打開最上方的總開關後就會生效。"
+            "value" : "規則已儲存，打開總開關後就會執行。"
           }
         }
       }
@@ -3638,6 +3638,29 @@
         }
       }
     },
+    "rule.timing.mark.always" : {
+      "comment" : "Timing slider mark: limit even in the foreground",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Always"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "始终"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "始終"
+          }
+        }
+      }
+    },
     "rule.timing.minutes %lld" : {
       "comment" : "Timing preset in minutes",
       "localizations" : {
@@ -3708,6 +3731,52 @@
         }
       }
     },
+    "rule.timing.short.minutes %lld" : {
+      "comment" : "Timing slider mark in minutes",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld min"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld 分钟"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld 分鐘"
+          }
+        }
+      }
+    },
+    "rule.timing.short.seconds %lld" : {
+      "comment" : "Timing slider mark in seconds",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%llds"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld 秒"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld 秒"
+          }
+        }
+      }
+    },
     "rule.toggle" : {
       "comment" : "Per-app switch",
       "localizations" : {
@@ -3727,6 +3796,29 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "限制背景資源"
+          }
+        }
+      }
+    },
+    "rule.toggle.description" : {
+      "comment" : "Rule card: what turning on the rule does",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Limits the app a few seconds after it leaves the foreground and restores it the moment you switch back."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "应用离开前台几秒后自动限制，切回立即恢复。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App 離開前景幾秒後自動限制，切回來馬上恢復。"
           }
         }
       }
