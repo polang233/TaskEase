@@ -25,7 +25,12 @@ struct PreviewRenderer {
                  appearance: .aqua, to: destination.appendingPathComponent("management-disk-preview.png"))
         model.updatePreferences { $0.sortKey = .cpu }
         model.setEnabled(false)
+        // 首次设置：规则已打开、总开关仍关闭时，规则卡片里出现启用提示。
+        try save(ContentView(model: model), size: NSSize(width: 1000, height: 720),
+                 appearance: .aqua, to: destination.appendingPathComponent("management-setup-preview.png"))
         model.updatePreferences { $0.theme = .dark }
+        try save(ContentView(model: model), size: NSSize(width: 1000, height: 720),
+                 appearance: .darkAqua, to: destination.appendingPathComponent("management-dark-preview.png"))
         try save(MenuPanel(model: model), size: NSSize(width: 420, height: 244),
                  appearance: .darkAqua, to: destination.appendingPathComponent("menu-preview.png"))
         try save(SettingsView(model: model), size: NSSize(width: 560, height: 700),
