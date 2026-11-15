@@ -34,6 +34,8 @@ final class AppModel {
     let updates: UpdateChecker
     /// 节省报告：借已有采样累计估算省下的 CPU 与 GPU 时间。
     let savings: SavingsModel
+    /// 智能建议的阈值与忽略记录；建议本身由节省记录中的后台基线算出。
+    let suggestionCenter: SuggestionsModel
 
     @ObservationIgnored private var savedApplications: [String: SavedApplication] = [:]
     @ObservationIgnored private var reportMetadata: [String: SavedApplication] = [:]
@@ -63,6 +65,7 @@ final class AppModel {
         usageStatistics = UsageStatisticsModel(fixtures: preview)
         updates = UpdateChecker(fixtures: preview)
         savings = preview ? SavingsModel(store: nil, ledger: SavingsModel.fixture()) : SavingsModel(store: .current)
+        suggestionCenter = SuggestionsModel(defaults: preview ? nil : .standard)
         if preview {
             apps = Self.exampleApps
             usageHistory.seedFixture(from: apps, now: Date())
@@ -185,6 +188,25 @@ final class AppModel {
     }
 
     var selectedApp: AppReading? { filteredApps.first { $0.id == selectedID } }
+
+    /// 还没有规则、在后台平均占用超过阈值的运行中应用。系统应用和不可控制的应用不列出。
+    var suggestions: [Suggestion] {
+        guard !isShutdown else { return [] }
+        let candidates = apps.filter { $0.isRunning && $0.canControl && !$0.isSystemApp && !$0.id.hasPrefix("com.apple.") }
+            .map { SuggestionEngine.Candidate(id: $0.id, name: $0.name, category: suggestionCenter.category(for: $0)) }
+        return SuggestionEngine.suggestions(baselines: savings.ledger.baselines, candidates: candidates,
+                                            excluded: Set(rules.keys).union(networkRules.keys),
+                                            settings: suggestionCenter.settings, now: Date())
+    }
+
+    /// 一键套用建议。之前没有任何有效规则时同时打开总开关，让规则立即可用；用户主动关掉的总开关保持关闭。
+    func applySuggestion(_ suggestion: Suggestion) {
+        let hadActiveRules = configuredCount > 0
+        setRule(suggestion.id, rule: suggestion.method.rule)
+        guard rules[suggestion.id]?.isActive == true else { return }
+        if !hadActiveRules && !enabled { setEnabled(true) }
+        if filteredApps.contains(where: { $0.id == suggestion.id }) { selectedID = suggestion.id }
+    }
 
     /// 报告与建议中显示的应用：优先用运行中的读数，其次用已保存的元数据或系统登记的应用包路径。
     func reportApplication(id: String, name: String) -> AppReading {

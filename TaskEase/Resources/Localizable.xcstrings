@@ -5943,6 +5943,524 @@
         }
       }
     },
+    "suggestion.apply" : {
+      "comment" : "Apply suggestion as a rule",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apply"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "套用"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "套用"
+          }
+        }
+      }
+    },
+    "suggestion.banner.hide" : {
+      "comment" : "Hide suggestion banner until new suggestions appear",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hide Until New Suggestions"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "隐藏，有新建议时再显示"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "隱藏，有新建議時再顯示"
+          }
+        }
+      }
+    },
+    "suggestion.banner.show" : {
+      "comment" : "Suggestion banner button",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "View Suggestions"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "查看建议"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "查看建議"
+          }
+        }
+      }
+    },
+    "suggestion.banner.title %lld" : {
+      "comment" : "Suggestion banner: number of apps busy in the background",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld app is busy in the background. Limit it?"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld apps are busy in the background. Limit them?"
+                }
+              }
+            }
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld 个应用在后台占用较高，建议限制"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld 個 App 在背景使用量較高，建議限制"
+          }
+        }
+      }
+    },
+    "suggestion.dismiss" : {
+      "comment" : "Ignore a suggestion",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ignore"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "忽略"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "忽略"
+          }
+        }
+      }
+    },
+    "suggestion.list.empty" : {
+      "comment" : "Suggestion list empty state",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No suggestions right now."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "目前没有建议。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "目前沒有建議。"
+          }
+        }
+      }
+    },
+    "suggestion.list.note" : {
+      "comment" : "Suggestion list explanation",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Based on each app's average usage while in the background without limits, after at least a minute of observation. GPU includes estimated window compositing."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "依据应用在后台未受限时的平均占用，至少观察一分钟。GPU 含估算的画面合成。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "依據 App 在背景未受限時的平均使用量，至少觀察一分鐘。GPU 含估算的畫面合成。"
+          }
+        }
+      }
+    },
+    "suggestion.list.title" : {
+      "comment" : "Suggestion list title",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suggested Limits"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "建议限制"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "建議限制"
+          }
+        }
+      }
+    },
+    "suggestion.method.cpu" : {
+      "comment" : "Suggested method: CPU cap 20%",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "CPU Cap 20%"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "CPU 上限 20%"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "CPU 上限 20%"
+          }
+        }
+      }
+    },
+    "suggestion.method.pause" : {
+      "comment" : "Suggested method: pause the app",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pause"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "暂停"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "暫停"
+          }
+        }
+      }
+    },
+    "suggestion.method.priority" : {
+      "comment" : "Suggested method: lower priority",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lower Priority"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "降低优先级"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "降低優先順序"
+          }
+        }
+      }
+    },
+    "suggestion.reason.general" : {
+      "comment" : "Reason for CPU cap suggestion",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "keeps working in the background"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在后台持续运算"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在背景持續運算"
+          }
+        }
+      }
+    },
+    "suggestion.reason.media" : {
+      "comment" : "Reason for lower priority suggestion (audio)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "pausing would stop playback"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "暂停会中断播放"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "暫停會中斷播放"
+          }
+        }
+      }
+    },
+    "suggestion.reason.notifying" : {
+      "comment" : "Reason for lower priority suggestion (chat/mail)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "pausing would stop notifications"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "暂停会收不到通知"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "暫停會收不到通知"
+          }
+        }
+      }
+    },
+    "suggestion.reason.visual" : {
+      "comment" : "Reason for pause suggestion",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "keeps drawing on screen"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "持续显示画面"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "持續顯示畫面"
+          }
+        }
+      }
+    },
+    "suggestion.recommend %@" : {
+      "comment" : "Recommended method; %@ is the method name",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suggested: %@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "建议：%@"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "建議：%@"
+          }
+        }
+      }
+    },
+    "suggestion.restore %lld" : {
+      "comment" : "Restore dismissed suggestions; %lld is the count",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restore Ignored (%lld)"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "恢复已忽略（%lld）"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "恢復已忽略（%lld）"
+          }
+        }
+      }
+    },
+    "suggestion.threshold.cpu" : {
+      "comment" : "Suggestion CPU threshold picker (single core)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "CPU above"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "CPU 高于"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "CPU 高於"
+          }
+        }
+      }
+    },
+    "suggestion.threshold.gpu" : {
+      "comment" : "Suggestion GPU threshold picker",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "GPU above"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "GPU 高于"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "GPU 高於"
+          }
+        }
+      }
+    },
+    "suggestion.usage.compositing %@ %@ %@" : {
+      "comment" : "Background average usage; CPU percent, GPU percent, compositing part",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Background avg. CPU %1$@ · GPU %2$@ (compositing %3$@)"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "后台平均 CPU %1$@ · GPU %2$@（画面合成 %3$@）"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "背景平均 CPU %1$@ · GPU %2$@（畫面合成 %3$@）"
+          }
+        }
+      }
+    },
+    "suggestion.usage.cpu %@" : {
+      "comment" : "Background average usage; %@ is CPU percent",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Background avg. CPU %@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "后台平均 CPU %@"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "背景平均 CPU %@"
+          }
+        }
+      }
+    },
+    "suggestion.usage.gpu %@ %@" : {
+      "comment" : "Background average usage; CPU percent, GPU percent",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Background avg. CPU %1$@ · GPU %2$@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "后台平均 CPU %1$@ · GPU %2$@"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "背景平均 CPU %1$@ · GPU %2$@"
+          }
+        }
+      }
+    },
     "theme.dark" : {
       "comment" : "Appearance option",
       "localizations" : {

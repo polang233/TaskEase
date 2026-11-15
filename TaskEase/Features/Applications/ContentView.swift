@@ -41,6 +41,7 @@ struct ContentView: View {
                     Button("error.recoverRetry") { model.setEnabled(true) }.disabled(!model.canEnable)
                 }.padding(12).background(Color.orange.opacity(0.08))
             }
+            SuggestionBanner(model: model)
             HSplitView {
                 applicationList.frame(minWidth: 340, idealWidth: 400)
                 Group {

@@ -81,6 +81,10 @@ SavingsModel 由 AppModel 持有，在 `apply` 合并采样时按合并前的规
 
 SavingsLedger 是值类型，保存 UsageBaseline（按观察时长加权、窗口约 10 分钟的后台平均 CPU、GPU 与画面合成占比）和按本地日期、应用汇总的 SavingsAmount。基线同时供智能建议使用。SavingsStore 把记录写入 Application Support 下的 `savings.v1.json`，至少间隔 60 秒，睡眠与退出时立即写入；损坏时保留 `.invalid-backup` 并重新开始。数据清理前先停止写盘，退出阶段不会把记录写回。日期保留 30 天，基线最多 300 个，14 天未更新即删除。
 
+## 智能建议
+
+SuggestionEngine 是纯函数：输入节省记录中的后台基线、可控制的运行中应用（含 Info.plist 的 LSApplicationCategoryType）、已有规则与 SuggestionSettings，输出按占用排序的建议。AppModel 的 `suggestions` 为计算属性，不保存建议列表；SuggestionsModel 持有阈值、忽略与提示条隐藏记录并写入 suggestions.v1，按应用缓存类别。套用通过 `setRule` 走正常的规则校验、保存与执行路径。界面为独立的 SuggestionBanner 与 SuggestionList 组件，管理窗口只插入一行。
+
 ## 数据清理
 
 AppDataStore 仅持有本应用偏好域和明确归属的目录。AppModel 先停止事件与刷新、等待 WorkerController 恢复并结束工作进程，再执行清理和退出。清理前关闭管理窗口位置的自动保存，防止退出时重新写入配置。文件删除失败时报告错误，偏好域留待成功后移除。
