@@ -1877,6 +1877,29 @@
         }
       }
     },
+    "list.focusSearch" : {
+      "comment" : "Hidden button for the Command-F shortcut that focuses app search",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Search Apps"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "搜索应用"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "搜尋 App"
+          }
+        }
+      }
+    },
     "list.loading" : {
       "comment" : "Shown while reading app usage",
       "localizations" : {
@@ -2085,6 +2108,29 @@
         }
       }
     },
+    "menu.hint.noRules" : {
+      "comment" : "Menu bar panel: first-use hint when no rules exist",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Click an app to set a background rule."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "点一个应用，为它设置后台规则。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "點一個 App，幫它設定背景規則。"
+          }
+        }
+      }
+    },
     "menu.manageApps" : {
       "comment" : "Opens the app manager window",
       "localizations" : {
@@ -2127,6 +2173,29 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "目前沒有可顯示的 App"
+          }
+        }
+      }
+    },
+    "menu.row.help" : {
+      "comment" : "Menu bar panel row tooltip",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open in Manage Apps"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在应用管理中打开"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在 App 管理中開啟"
           }
         }
       }

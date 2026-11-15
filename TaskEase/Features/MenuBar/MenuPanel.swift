@@ -21,24 +21,22 @@ struct MenuPanel: View {
                     Text("menu.topUsage").font(.caption).foregroundStyle(.secondary)
                     Spacer()
                     SortMenu(model: model)
-                }
+                }.padding(.horizontal, 6).padding(.bottom, 2)
                 let key = model.effectiveSortKey
                 let usage = AppUsage(key, scale: model.preferences.cpuScale, apps: model.apps)
                 ForEach(Array(AppModel.sorted(model.visibleRunningApps, by: key).prefix(5))) { app in
-                    HStack(spacing: 9) {
-                        AppIcon(app: app, size: 24)
-                        Text(app.name).lineLimit(1)
-                        Spacer()
-                        Text(usage.value(app)).monospacedDigit()
-                    }
-                    .padding(.vertical, 5).padding(.horizontal, 6)
-                    .background(UsageFill(fraction: usage.fraction(app)))
+                    MenuAppRow(model: model, app: app, usage: usage)
                 }
                 if model.visibleRunningApps.isEmpty {
                     (model.isRefreshing ? Text("list.loading") : Text("menu.noApps"))
                         .font(.callout).foregroundStyle(.secondary)
+                } else if model.savedRuleCount == 0 {
+                    // 首次使用：点行即可进入规则设置。
+                    Label("menu.hint.noRules", systemImage: "hand.point.up.left")
+                        .font(.caption).foregroundStyle(.secondary)
+                        .frame(maxWidth: .infinity, alignment: .leading).padding(.top, 4).padding(.leading, 6)
                 }
-            }.padding(16)
+            }.padding(.horizontal, 10).padding(.vertical, 12)
             Divider()
             HStack {
                 Button("menu.manageApps") { model.showManagement() }.pointingHand()
@@ -52,6 +50,45 @@ struct MenuPanel: View {
         .frame(width: 420)
         .background(WindowReader { [weak model] window in model?.trackMenuWindow(window) }
             .frame(width: 0, height: 0))
+    }
+}
+
+/// 菜单栏中的一行应用：图标角标与状态标签说明规则是否在执行；点击打开管理窗口并选中该应用。
+struct MenuAppRow: View {
+    @Bindable var model: AppModel
+    let app: AppReading
+    let usage: AppUsage
+    @State private var hovering = false
+
+    var body: some View {
+        Button(action: open) {
+            HStack(spacing: 9) {
+                StatusIcon(app: app, status: app.status, size: 24)
+                Text(app.name).lineLimit(1)
+                if StatusLabel.symbol(app.status) != nil {
+                    StatusLabel(status: app.status).fixedSize()
+                }
+                Spacer(minLength: 6)
+                Text(usage.value(app)).monospacedDigit()
+            }
+            .padding(.vertical, 5).padding(.horizontal, 6)
+            .background(UsageFill(fraction: usage.fraction(app)))
+            .background(RoundedRectangle(cornerRadius: 7, style: .continuous)
+                .fill(Color.primary.opacity(hovering ? 0.07 : 0)))
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain).pointingHand()
+        .onHover { hovering = $0 }
+        .help("menu.row.help")
+        .accessibilityHint("menu.row.help")
+    }
+
+    /// 已配置列表里找不到该应用时切回运行列表，再选中它。
+    private func open() {
+        if !model.filteredApps.contains(where: { $0.id == app.id }) { model.setApplicationList(.running) }
+        model.search = ""
+        model.selectedID = app.id
+        model.showManagement()
     }
 }
 
