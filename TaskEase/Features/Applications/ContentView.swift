@@ -114,12 +114,11 @@ struct ContentView: View {
                             // 覆盖原生整行选中底色，让占用渐变与选择标记分别表达状态。
                             .listRowBackground(Color(nsColor: .controlBackgroundColor))
                             .listRowSeparator(.visible)
-                            .contextMenu { rowMenu(app) }
                             .tag(app.id)
                             .id(app.id)
                         }
                     }.listStyle(.inset)
-                    // 从菜单栏跳转或右键操作后，让选中行保持在可见范围内。
+                    // 从菜单栏跳转后，让选中行保持在可见范围内。
                     .onChange(of: model.selectedID) { _, id in
                         guard let id else { return }
                         withAnimation(.easeOut(duration: 0.2)) { proxy.scrollTo(id) }
@@ -140,21 +139,6 @@ struct ContentView: View {
                         .font(.caption).foregroundStyle(.secondary).lineLimit(1)
                 }
             }
-        }
-    }
-
-    /// 行右键菜单：直接开关该应用的限制或移除规则，不必先进入详情。
-    @ViewBuilder private func rowMenu(_ app: AppReading) -> some View {
-        let rule = model.rules[app.id] ?? AppRule()
-        Toggle("rule.toggle", isOn: Binding(get: { rule.isEnabled }, set: { value in
-            var changed = rule
-            changed.isEnabled = value
-            model.setRule(app.id, rule: changed)
-            model.selectedID = app.id
-        })).disabled(!model.allowsRuleEditing(app))
-        if model.rules[app.id] != nil || model.networkRules[app.id] != nil {
-            Divider()
-            Button("rule.remove", role: .destructive) { model.resetRule(app.id) }
         }
     }
 

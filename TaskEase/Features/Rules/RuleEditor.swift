@@ -25,6 +25,9 @@ struct RuleEditor: View {
                             .font(.callout).foregroundStyle(.secondary)
                     }
                 }
+                if model.preferences.networkFeaturesEnabled {
+                    SectionCard { NetworkRuleEditor(model: model, app: app) }
+                }
                 if app.isRunning {
                     let cpu = AppUsage.cpu(app, scale: model.preferences.cpuScale)
                     HStack(spacing: 10) {
@@ -43,9 +46,6 @@ struct RuleEditor: View {
                                        scale: model.preferences.cpuScale)
                         }
                     }
-                }
-                if model.preferences.networkFeaturesEnabled {
-                    SectionCard { NetworkRuleEditor(model: model, app: app) }
                 }
                 if app.isRunning {
                     if model.preferences.networkActivityVisible {
