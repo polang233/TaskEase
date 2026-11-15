@@ -28,7 +28,16 @@
 
 ![应用占用与后台规则](Artifacts/screenshots/management.jpg)
 
-截图来自轻程 1.4.7 的实际运行界面，使用繁体中文与浅色外观，应用占用为截图时的数据。
+截图来自轻程 1.4.7 的实际运行界面，使用繁体中文与浅色外观，应用占用为截图时的数据。当前界面把规则卡片放在详情最上方，列表用角标标出受限应用，菜单栏面板可点行直达规则，示例渲染见下方“当前界面预览”。
+
+<details>
+<summary>当前界面预览</summary>
+
+<table><tr><td valign="top"><img src="Artifacts/management-setup-preview.png" width="420" alt="首次设置规则与启用提示"></td><td valign="top"><img src="Artifacts/menu-preview.png" width="420" alt="菜单栏面板"></td></tr></table>
+
+示例数据渲染，应用图标为系统通用图标。改前改后对比见 [Artifacts/ui-refresh](Artifacts/ui-refresh)，评审结论见 [界面评审与改进](Docs/Interface.md)。
+
+</details>
 
 <details>
 <summary>设置与使用统计</summary>
@@ -88,7 +97,7 @@ curl -fsSL https://raw.githubusercontent.com/polang233/TaskEase/main/Scripts/ins
 
 安装包放在临时目录，装完自动删除；再次运行即可更新。也可以从 [Releases](https://github.com/polang233/TaskEase/releases/latest) 下载 DMG 拖到“应用程序”，这种方式第一次打开会提示“移到废纸篓”（轻程暂未经过 Apple 公证）：点“完成”，再到“系统设置 → 隐私与安全性”底部点“仍要打开”，只需一次。
 
-装好后：选中想限制的应用，打开“限制后台资源”，选好生效时机和限制方式，再打开顶部的“启用限制”。更详细的操作见 [使用说明](Docs/Usage.md)。
+装好后：选中想限制的应用，打开“限制后台资源”，选好生效时机和限制方式，再点规则卡片里的“启用限制”（或打开顶部总开关）。更详细的操作见 [使用说明](Docs/Usage.md)。
 
 ## 常见问题
 
