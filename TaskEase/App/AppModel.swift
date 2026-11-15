@@ -28,6 +28,8 @@ final class AppModel {
     private(set) var managementDisplayPaused = false
     private(set) var statisticsIsOpen = false
     private(set) var foregroundID: String?
+    /// 临时暂停与“立即恢复”，按应用标识保存在内存中。
+    private(set) var temporaryActions: [String: TemporaryAction] = [:]
     let preview: Bool
     let usageAnalytics: UsageAnalytics
     let usageStatistics: UsageStatisticsModel
@@ -208,6 +210,119 @@ final class AppModel {
         if filteredApps.contains(where: { $0.id == suggestion.id }) { selectedID = suggestion.id }
     }
 
+    /// 临时操作只作用于当前用户正在运行、可以设置规则的应用。
+    func canAct(on id: String) -> Bool {
+        guard !isShutdown, !id.isEmpty, id != Bundle.main.bundleIdentifier, !id.hasPrefix("com.apple.") else { return false }
+        if let app = apps.first(where: { $0.id == id }) { return app.isRunning && app.canControl && !app.isSystemApp }
+        if preview { return false }
+        // 面板未打开、也没有规则时应用列表可能为空，直接向系统确认应用正在运行。
+        return !RunningApplication.capture(showSystemApps: false, only: [id]).isEmpty
+    }
+
+    /// 临时暂停：应用在后台时暂停，直到期限；切回前台照常使用。不依赖规则和总开关。
+    @discardableResult
+    func pauseTemporarily(_ id: String, minutes: Double = TemporaryAction.defaultMinutes) -> Bool {
+        guard canAct(on: id) else { return false }
+        temporaryActions[id] = .pause(until: Date().addingTimeInterval(TemporaryAction.clampedMinutes(minutes) * 60))
+        reconcile()
+        refresh(force: true)
+        return true
+    }
+
+    /// 立即恢复：取消临时暂停；规则正在限制时，让规则暂停执行一小时或直到下次切回该应用。
+    @discardableResult
+    func resumeNow(_ id: String) -> Bool {
+        let wasPaused = temporaryActions[id]?.isPause == true
+        let limited = apps.first { $0.id == id }.map { Policy.shouldControl($0.status) && $0.status != .held } == true
+        guard wasPaused || limited || temporaryActions[id] != nil else { return false }
+        if limited || (wasPaused && rules[id]?.isActive == true && enabled) {
+            temporaryActions[id] = .release(until: Date().addingTimeInterval(TemporaryAction.releaseMinutes * 60))
+        } else {
+            temporaryActions[id] = nil
+        }
+        reconcile()
+        refresh(force: true)
+        return true
+    }
+
+    /// 结束临时操作，回到按规则执行。
+    func clearTemporaryAction(_ id: String) {
+        guard temporaryActions[id] != nil else { return }
+        temporaryActions[id] = nil
+        reconcile()
+        refresh(force: true)
+    }
+
+    /// 执行 URL Scheme 或快捷指令的命令。
+    func perform(_ command: AutomationCommand) -> AutomationOutcome {
+        switch command {
+        case .setLimits(let value):
+            let target = value ?? !enabled
+            guard !target || canEnable else {
+                return AutomationOutcome(succeeded: false, message: String(localized: "automation.error.noRules"))
+            }
+            setEnabled(target)
+            return AutomationOutcome(succeeded: true, message: target ? String(localized: "automation.limits.on")
+                                                                      : String(localized: "automation.limits.off"))
+        case .pause(let id, let minutes):
+            let name = automationName(id)
+            guard pauseTemporarily(id, minutes: minutes) else {
+                return AutomationOutcome(succeeded: false, message: String(localized: "automation.error.app \(name)"))
+            }
+            return AutomationOutcome(succeeded: true,
+                                     message: String(localized: "automation.paused \(name) \(Int(TemporaryAction.clampedMinutes(minutes)))"))
+        case .resume(let id):
+            let name = automationName(id)
+            guard resumeNow(id) else {
+                return AutomationOutcome(succeeded: false, message: String(localized: "automation.error.notLimited \(name)"))
+            }
+            return AutomationOutcome(succeeded: true, message: String(localized: "automation.resumed \(name)"))
+        }
+    }
+
+    private func automationName(_ id: String) -> String {
+        apps.first { $0.id == id }?.name ?? savedApplications[id]?.name ??
+            NSRunningApplication.runningApplications(withBundleIdentifier: id).first?.localizedName ?? id
+    }
+
+    /// 导出 CPU 规则，格式与 rules.v1 相同。
+    func exportRules() throws -> Data { try RuleTemplate.export(rules) }
+
+    /// 导入规则模板：同一应用的规则被替换，其余保留；系统应用和本应用跳过。不改变总开关。
+    @discardableResult
+    func importRules(_ data: Data) throws -> RuleTemplate.Parsed {
+        let parsed = try RuleTemplate.parse(data)
+        var accepted: [String: AppRule] = [:]
+        var skipped = parsed.skipped
+        for (id, rule) in parsed.rules {
+            if let app = apps.first(where: { $0.id == id }), app.isSystemApp { skipped.append(id); continue }
+            accepted[id] = rule
+        }
+        guard !accepted.isEmpty, !isShutdown else { throw RuleTemplate.Failure.empty }
+        for (id, rule) in accepted {
+            if rule.isActive && rules[id]?.isActive != true { backgroundSince[id] = nil }
+            rules[id] = rule
+            if savedApplications[id] == nil {
+                savedApplications[id] = apps.first { $0.id == id }.map(SavedApplication.init) ?? Self.installedMetadata(id)
+            }
+        }
+        if accepted.values.contains(where: \.adjustsVolume) { volume.retry() }
+        persistRules()
+        normalizeEnablement()
+        ensureSelection()
+        reconcile()
+        refresh(force: true)
+        return RuleTemplate.Parsed(rules: accepted, skipped: skipped.sorted())
+    }
+
+    /// 从系统登记的应用包读取名称与路径，用于展示未运行的已配置应用。
+    private static func installedMetadata(_ id: String) -> SavedApplication? {
+        guard let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: id) else { return nil }
+        let name = Bundle(url: url)?.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String ??
+            url.deletingPathExtension().lastPathComponent
+        return SavedApplication(name: name, bundlePaths: [url.resolvingSymlinksInPath().path])
+    }
+
     /// 报告与建议中显示的应用：优先用运行中的读数，其次用已保存的元数据或系统登记的应用包路径。
     func reportApplication(id: String, name: String) -> AppReading {
         if let app = apps.first(where: { $0.id == id }) { return app }
@@ -373,12 +488,8 @@ final class AppModel {
         }
         var discoveredMetadata = false
         for id in Set(rules.keys).union(networkRules.keys) where savedApplications[id] == nil {
-            guard let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: id) else { continue }
-            let bundle = Bundle(url: url)
-            let name = bundle?.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String ??
-                url.deletingPathExtension().lastPathComponent
-            savedApplications[id] = SavedApplication(name: name,
-                                                      bundlePaths: [url.resolvingSymlinksInPath().path])
+            guard let metadata = Self.installedMetadata(id) else { continue }
+            savedApplications[id] = metadata
             discoveredMetadata = true
         }
         if discoveredMetadata { persistRules() }
@@ -418,26 +529,33 @@ final class AppModel {
     }
 
     private var controlMonitoringRequired: Bool {
-        enabled && apps.contains {
+        hasTemporaryPauses || enabled && apps.contains {
             guard let rule = rules[$0.id], rule.isActive else { return false }
             return rule.alwaysLimit || $0.id != foregroundID || $0.isHidden
         }
     }
 
+    private var hasTemporaryPauses: Bool { temporaryActions.values.contains(where: \.isPause) }
+    /// 有控制需求时需要跟踪的应用：启用的规则与临时暂停。
+    private var controlledIDs: Set<String> {
+        Set(rules.filter { $0.value.isActive }.keys).union(temporaryActions.filter { $0.value.isPause }.keys)
+    }
+    private var needsControl: Bool { (enabled && canEnable) || hasTemporaryPauses }
+
     /// 在主 actor 上捕获应用列表，在采样 actor 中扫描进程；合并扫描期间的新请求。
     func refresh(force: Bool = false) {
         guard !preview, !sleeping, !isShutdown,
-              displayIsVisible || (enabled && canEnable) else { return }
+              displayIsVisible || needsControl else { return }
         let displayDue = lastDisplaySample.map {
             NativeProcess.seconds(since: $0) >= preferences.refreshInterval.seconds
         } ?? true
         let display = displayIsVisible && (force || displayDue)
-        guard display || controlMonitoringRequired || (force && enabled && canEnable) else { return }
+        guard display || controlMonitoringRequired || (force && needsControl) else { return }
         guard refreshTask == nil else {
             pendingRefresh = (pendingRefresh ?? false) || force
             return
         }
-        let ids = display ? nil : Set(rules.filter { $0.value.isActive }.keys)
+        let ids = display ? nil : controlledIDs
         let running = RunningApplication.capture(showSystemApps: display && preferences.showSystemApps, only: ids)
         let includeNetwork = display && preferences.networkActivityVisible
         isRefreshing = true
@@ -472,7 +590,7 @@ final class AppModel {
             primaryIdentities[reading.id] = current
         }
         let liveIDs = Set(snapshot.apps.map(\.id))
-        let monitoredIDs = Set(rules.filter { $0.value.isActive }.keys)
+        let monitoredIDs = controlledIDs
         if updateDisplay {
             backgroundSince = backgroundSince.filter { liveIDs.contains($0.key) }
             primaryIdentities = primaryIdentities.filter { liveIDs.contains($0.key) }
@@ -520,6 +638,11 @@ final class AppModel {
             }
         }
         if metadataChanged { persistRules() }
+        // 应用退出后临时操作失效，重新打开的应用不会被沿用的期限暂停。
+        let running = Set(apps.map(\.id))
+        if temporaryActions.keys.contains(where: { !running.contains($0) }) {
+            temporaryActions = temporaryActions.filter { running.contains($0.key) }
+        }
         ensureSelection()
         updateFocus()
     }
@@ -545,12 +668,14 @@ final class AppModel {
 
     private func focusChanged() {
         guard !sleeping, !isShutdown else { return }
-        guard displayIsVisible || (enabled && canEnable) else {
+        guard displayIsVisible || needsControl else {
             // 后台且无控制需求时，只撤销显示定时器，不遍历应用进程状态。
             scheduleRefresh()
             return
         }
         updateFocus()
+        // “立即恢复”持续到下次切回该应用，之后照常按规则执行。
+        if let front = foregroundID, case .release = temporaryActions[front] { temporaryActions[front] = nil }
         // 从系统设置授权后切回本应用时，重新尝试此前失败的静音。
         if foregroundID == Bundle.main.bundleIdentifier { volume.retry() }
         // 使用缓存计划立即恢复前台应用，再进行异步扫描。
@@ -561,7 +686,8 @@ final class AppModel {
 
     private func membershipChanged(_ id: String?) {
         guard id != Bundle.main.bundleIdentifier else { return }
-        if displayIsVisible || (enabled && id.flatMap { rules[$0]?.isActive } == true) {
+        if displayIsVisible || (enabled && id.flatMap { rules[$0]?.isActive } == true)
+            || id.flatMap({ temporaryActions[$0] })?.isPause == true {
             refresh(force: true)
         }
     }
@@ -570,6 +696,10 @@ final class AppModel {
     private func reconcile() {
         guard !isShutdown else { return }
         let now = NativeProcess.now
+        let date = Date()
+        if temporaryActions.values.contains(where: { $0.until <= date }) {
+            temporaryActions = temporaryActions.filter { $0.value.until > date }
+        }
         var plan: [ControlGroup] = []
         var volumes: [String: (pids: Set<Int32>, percent: Double)] = [:]
         for index in apps.indices {
@@ -581,9 +711,14 @@ final class AppModel {
             let seconds = backgroundSince[id].map { NativeProcess.seconds(since: $0) } ?? 0
             let status = Policy.status(rule: rule, enabled: enabled,
                                        controllable: apps[index].canControl && (preview || !apps[index].targets.isEmpty),
-                                       isForeground: front, isHidden: apps[index].isHidden, backgroundSeconds: seconds)
+                                       isForeground: front, isHidden: apps[index].isHidden, backgroundSeconds: seconds,
+                                       temporary: temporaryActions[id])
             apps[index].status = status
-            if Policy.shouldControl(status), !apps[index].targets.isEmpty {
+            if status == .held, !apps[index].targets.isEmpty {
+                // 临时暂停与暂停规则一样交给工作进程，写入恢复记录。
+                plan.append(ControlGroup(bundleID: id, mode: .suspend, background: false, cpuPercent: rule.cpuPercent,
+                                         targets: apps[index].targets))
+            } else if Policy.shouldControl(status), !apps[index].targets.isEmpty {
                 if rule.needsWorker {
                     // 暂停时降低优先级没有意义，只交给工作进程暂停。
                     plan.append(ControlGroup(bundleID: id, mode: rule.limitsPerformance ? rule.performance : .off,
@@ -612,7 +747,7 @@ final class AppModel {
         let waiting = apps.filter { $0.status == .waiting }.compactMap { app -> TimeInterval? in
             guard let began = backgroundSince[app.id], let rule = rules[app.id] else { return nil }
             return rule.delaySeconds - NativeProcess.seconds(since: began)
-        }
+        } + temporaryActions.values.map { max(0.05, $0.until.timeIntervalSinceNow) }
         // 读取尚未返回时按正常显示间隔等待，避免因上次数据过期反复唤醒。
         let remainingDisplay = refreshTask == nil ? (lastDisplaySample.map {
             max(0.05, preferences.refreshInterval.seconds - NativeProcess.seconds(since: $0))
@@ -694,6 +829,8 @@ final class AppModel {
         backgroundSince.removeAll()
         savings.flush()
         savings.resetTiming()
+        // 睡眠时控制进程已恢复全部进程，临时操作随之结束。
+        temporaryActions.removeAll()
     }
 
     private func wake() {
@@ -701,7 +838,7 @@ final class AppModel {
         usageAnalytics.wake()
         updateFocus()
         reconcile()
-        if displayIsVisible || (enabled && canEnable) { refresh(force: true) }
+        if displayIsVisible || needsControl { refresh(force: true) }
     }
 
     /// 停止事件与异步刷新，恢复进程后再清理数据，防止退出阶段重新写入配置。
@@ -732,6 +869,7 @@ final class AppModel {
         events = nil
         if !preview { controller.stop(); volume.stop(); Task { await monitor.cancelNetworkSampling() } }
         enabled = false
+        temporaryActions.removeAll()
         for index in apps.indices where rules[apps[index].id]?.isActive == true { apps[index].status = .paused }
     }
 

@@ -3,8 +3,18 @@ import Foundation
 /// 纯规则计算，统一确定应用当前状态和是否需要进程控制。
 enum Policy {
     static func status(rule: AppRule, enabled: Bool, controllable: Bool,
-                       isForeground: Bool, isHidden: Bool, backgroundSeconds: Double) -> RuleStatus {
+                       isForeground: Bool, isHidden: Bool, backgroundSeconds: Double,
+                       temporary: TemporaryAction? = nil) -> RuleStatus {
         guard controllable else { return .unavailable }
+        // 临时暂停与总开关、规则无关，只在后台生效且不等待；切回前台照常使用，再次离开立即暂停，直到期限。
+        switch temporary {
+        case .pause:
+            return isForeground && !isHidden ? .foreground : .held
+        case .release where rule.isActive && enabled:
+            return .released
+        default:
+            break
+        }
         guard rule.isActive else { return .unmanaged }
         guard enabled else { return .paused }
         if !rule.alwaysLimit {
@@ -18,7 +28,7 @@ enum Policy {
         return rule.volumePercent > 0 ? .quieted : .muted
     }
     static func shouldControl(_ status: RuleStatus) -> Bool {
-        [.gentle, .budget, .suspended, .muted, .quieted].contains(status)
+        [.gentle, .budget, .suspended, .muted, .quieted, .held].contains(status)
     }
 }
 

@@ -64,6 +64,7 @@ struct SettingsView: View {
                     model.showManagement()
                 }.accessibilityIdentifier("open-configured-rules")
             }
+            AutomationSettingsSection(model: model)
             Section("settings.experimental") {
                 Toggle("settings.network", isOn: Binding(get: { model.preferences.networkFeaturesEnabled },
                     set: { value in model.updatePreferences { $0.networkFeaturesEnabled = value } }))

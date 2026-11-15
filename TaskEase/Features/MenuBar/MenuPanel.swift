@@ -24,11 +24,12 @@ struct MenuPanel: View {
                 }
                 let key = model.effectiveSortKey
                 let usage = AppUsage(key, scale: model.preferences.cpuScale, apps: model.apps)
-                ForEach(Array(AppModel.sorted(model.visibleRunningApps, by: key).prefix(5))) { app in
+                ForEach(QuickActions.rows(model.visibleRunningApps, sortedBy: key, temporary: model.temporaryActions)) { app in
                     HStack(spacing: 9) {
                         AppIcon(app: app, size: 24)
                         Text(app.name).lineLimit(1)
                         Spacer()
+                        QuickActions(model: model, app: app)
                         Text(usage.value(app)).monospacedDigit()
                     }
                     .padding(.vertical, 5).padding(.horizontal, 6)

@@ -71,7 +71,8 @@ struct StatusLabel: View {
         switch status {
         case .gentle, .budget: .green
         case .muted: .indigo
-        case .suspended: .blue
+        case .suspended, .held: .blue
+        case .released: .orange
         case .waiting: .orange
         default: nil
         }

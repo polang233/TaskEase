@@ -7,8 +7,26 @@ import Darwin
 final class AppDelegate: NSObject, NSApplicationDelegate {
     lazy var model = AppModel(preview: LaunchContext.current.usesFixtures)
 
+    /// URL 事件可能早于启动完成到达，提前注册处理程序。
+    func applicationWillFinishLaunching(_ notification: Notification) {
+        NSAppleEventManager.shared().setEventHandler(self, andSelector: #selector(handleURL(_:reply:)),
+                                                     forEventClass: AEEventClass(kInternetEventClass),
+                                                     andEventID: AEEventID(kAEGetURL))
+    }
+
+    /// taskease:// 自动化命令；无效或失败时提示音，不弹窗打扰。
+    @objc private func handleURL(_ event: NSAppleEventDescriptor, reply: NSAppleEventDescriptor) {
+        guard let text = event.paramDescriptor(forKeyword: keyDirectObject)?.stringValue,
+              let url = URL(string: text), let command = AutomationCommand.parse(url),
+              model.perform(command).succeeded else {
+            NSSound.beep()
+            return
+        }
+    }
+
     func applicationDidFinishLaunching(_ notification: Notification) {
         _ = model
+        AutomationCenter.model = model
         do {
             try ApplicationSession.shared.startHandlingReopen { [weak self] in self?.model.showManagement() }
         } catch {
