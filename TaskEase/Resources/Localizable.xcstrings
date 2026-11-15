@@ -3823,6 +3823,535 @@
         }
       }
     },
+    "savings.badge %@" : {
+      "comment" : "Header/menu badge: CPU time saved today; %@ is a duration",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saved %@ today"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "今天省下 %@"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "今天省下 %@"
+          }
+        }
+      }
+    },
+    "savings.chart.title" : {
+      "comment" : "Savings chart section: CPU time saved per day",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "CPU Time Saved per Day"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "每天省下的 CPU 时间"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "每天省下的 CPU 時間"
+          }
+        }
+      }
+    },
+    "savings.cpuTime" : {
+      "comment" : "Caption under the saved CPU time value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "CPU time saved (est., single core)"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "省下的 CPU 时间（估算，单核）"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "省下的 CPU 時間（估算，單核心）"
+          }
+        }
+      }
+    },
+    "savings.empty" : {
+      "comment" : "Savings ranking empty state",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nothing yet. Savings appear once a rule with a CPU cap or pause takes effect."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "还没有记录。设置了 CPU 上限或暂停的规则生效后会在这里出现。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "還沒有記錄。設定了 CPU 上限或暫停的規則生效後會在這裡出現。"
+          }
+        }
+      }
+    },
+    "savings.gpu %@" : {
+      "comment" : "Saved GPU time; %@ is a duration",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "GPU %@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "GPU %@"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "GPU %@"
+          }
+        }
+      }
+    },
+    "savings.limited %@" : {
+      "comment" : "How long limits were in effect; %@ is a duration",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Limited %@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "受限 %@"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "受限 %@"
+          }
+        }
+      }
+    },
+    "savings.method.1" : {
+      "comment" : "Savings method line 1",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "These are estimates. Each limited app is compared with its own average background usage before it was limited (its baseline)."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "数值为估算。每个受限应用与它自己受限前在后台的平均占用（基线）比较。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "數值為估算。每個受限 App 與它自己受限前在背景的平均使用量（基準）比較。"
+          }
+        }
+      }
+    },
+    "savings.method.2" : {
+      "comment" : "Savings method line 2",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saved CPU = (baseline − measured) × time limited, in single-core time: 1 minute means one core fully busy for a minute. It uses readings TaskEase already takes, with no extra sampling."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "省下的 CPU =（基线 − 实测）× 受限时长，按单核计：1 分钟相当于一个核心满载 1 分钟。只用已有采样，不额外读取。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "省下的 CPU =（基準 − 實測）× 受限時長，按單核心計：1 分鐘相當於一個核心滿載 1 分鐘。只用既有取樣，不額外讀取。"
+          }
+        }
+      }
+    },
+    "savings.method.3" : {
+      "comment" : "Savings method line 3",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "GPU time, including estimated window compositing, is counted only while an app is paused, since a paused app can't submit GPU work."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "GPU 时间（含估算的画面合成）只在应用暂停期间计入，因为暂停的应用不会提交 GPU 工作。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "GPU 時間（含估算的畫面合成）只在 App 暫停期間計入，因為暫停的 App 不會提交 GPU 工作。"
+          }
+        }
+      }
+    },
+    "savings.method.4" : {
+      "comment" : "Savings method line 4",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A baseline needs at least 20 seconds in the background and expires after 14 days without updates. It includes the moments right after leaving the foreground, so savings may be overstated; always-limited apps may have no baseline."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "基线需要至少 20 秒的后台观察，14 天未更新即失效。基线包含刚离开前台的时段，可能偏高；始终受限的应用可能没有基线。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "基準需要至少 20 秒的背景觀察，14 天未更新即失效。基準包含剛離開前景的時段，可能偏高；一律受限的 App 可能沒有基準。"
+          }
+        }
+      }
+    },
+    "savings.method.5" : {
+      "comment" : "Savings method line 5",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lower priority and background volume don't cut CPU time directly and aren't counted. Battery and temperature aren't estimated: they depend on the whole system."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "降低优先级和后台音量不直接减少 CPU 时间，不计入。不估算电量和温度：它们取决于整机状态，无法可靠归到单个应用。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "降低優先順序和背景音量不直接減少 CPU 時間，不計入。不估算電量和溫度：它們取決於整機狀態，無法可靠歸到單一 App。"
+          }
+        }
+      }
+    },
+    "savings.method.title" : {
+      "comment" : "Savings estimate method section",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "How It's Estimated"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "估算口径"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "估算方式"
+          }
+        }
+      }
+    },
+    "savings.noBaseline" : {
+      "comment" : "Tooltip for an app with limited time but no estimate",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No background baseline yet, so savings can't be estimated. It builds up while the app runs in the background without limits."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "还没有后台基线，暂时无法估算。应用在后台未受限运行时会逐步积累。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "還沒有背景基準，暫時無法估算。App 在背景未受限執行時會逐步累積。"
+          }
+        }
+      }
+    },
+    "savings.open" : {
+      "comment" : "Open the savings report",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Savings Report"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "节省报告"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "節省報告"
+          }
+        }
+      }
+    },
+    "savings.ranking.title" : {
+      "comment" : "Savings ranking section (last 7 days)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "By App · Last 7 Days"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "按应用 · 最近 7 天"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "依 App · 最近 7 天"
+          }
+        }
+      }
+    },
+    "savings.reset" : {
+      "comment" : "Button: clear savings records",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reset Records…"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "清除记录…"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "清除記錄⋯"
+          }
+        }
+      }
+    },
+    "savings.reset.confirm" : {
+      "comment" : "Reset savings confirm button",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reset"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "清除"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "清除"
+          }
+        }
+      }
+    },
+    "savings.reset.message" : {
+      "comment" : "Reset savings alert message",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Daily totals and background baselines will be deleted. Rules aren't affected."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "将删除每日记录和后台基线，规则不受影响。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "將刪除每日記錄和背景基準，規則不受影響。"
+          }
+        }
+      }
+    },
+    "savings.reset.title" : {
+      "comment" : "Reset savings alert title",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reset savings records?"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "清除节省记录？"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "清除節省記錄？"
+          }
+        }
+      }
+    },
+    "savings.subtitle" : {
+      "comment" : "Savings report subtitle",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estimated resources saved while your rules were in effect"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "规则生效期间估算省下的资源"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "規則生效期間估算省下的資源"
+          }
+        }
+      }
+    },
+    "savings.title" : {
+      "comment" : "Savings report window title and menu command",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Savings Report"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "节省报告"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "節省報告"
+          }
+        }
+      }
+    },
+    "savings.today" : {
+      "comment" : "Savings tile: today",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Today"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "今天"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "今天"
+          }
+        }
+      }
+    },
+    "savings.week" : {
+      "comment" : "Savings tile: last 7 days including today",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Last 7 Days"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最近 7 天"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最近 7 天"
+          }
+        }
+      }
+    },
     "settings.cpuScale" : {
       "comment" : "CPU scale picker",
       "localizations" : {

@@ -23,6 +23,7 @@ struct ContentView: View {
                 if model.managedCount > 0 {
                     Text("header.activeLimits \(model.managedCount)").font(.callout).foregroundStyle(.secondary)
                 }
+                SavingsBadge(model: model)
                 BackgroundControlToggle(model: model)
                 Button("common.settings", systemImage: "gearshape") { model.showUtility(.settings) }
                     .labelStyle(.iconOnly).buttonStyle(.borderless).font(.title3)

@@ -75,6 +75,8 @@ struct TaskEaseApp: App {
                 CommandGroup(after: .appInfo) {
                     Button("menu.manageApps") { delegate.model.showManagement() }
                         .keyboardShortcut("1", modifiers: .command)
+                    Button("savings.title") { delegate.model.showUtility(.savings) }
+                        .keyboardShortcut("2", modifiers: .command)
                 }
                 CommandGroup(replacing: .appSettings) {
                     Button("menu.settings") { delegate.model.showUtility(.settings) }

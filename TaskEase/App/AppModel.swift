@@ -32,8 +32,11 @@ final class AppModel {
     let usageAnalytics: UsageAnalytics
     let usageStatistics: UsageStatisticsModel
     let updates: UpdateChecker
+    /// 节省报告：借已有采样累计估算省下的 CPU 与 GPU 时间。
+    let savings: SavingsModel
 
     @ObservationIgnored private var savedApplications: [String: SavedApplication] = [:]
+    @ObservationIgnored private var reportMetadata: [String: SavedApplication] = [:]
     @ObservationIgnored private var backgroundSince: [String: UInt64] = [:]
     @ObservationIgnored private var primaryIdentities: [String: Set<ProcessIdentity>] = [:]
     @ObservationIgnored private var lastDisplaySample: UInt64?
@@ -59,6 +62,7 @@ final class AppModel {
         usageAnalytics = UsageAnalytics(fixtures: preview, deferStart: true)
         usageStatistics = UsageStatisticsModel(fixtures: preview)
         updates = UpdateChecker(fixtures: preview)
+        savings = preview ? SavingsModel(store: nil, ledger: SavingsModel.fixture()) : SavingsModel(store: .current)
         if preview {
             apps = Self.exampleApps
             usageHistory.seedFixture(from: apps, now: Date())
@@ -181,6 +185,16 @@ final class AppModel {
     }
 
     var selectedApp: AppReading? { filteredApps.first { $0.id == selectedID } }
+
+    /// 报告与建议中显示的应用：优先用运行中的读数，其次用已保存的元数据或系统登记的应用包路径。
+    func reportApplication(id: String, name: String) -> AppReading {
+        if let app = apps.first(where: { $0.id == id }) { return app }
+        if let metadata = savedApplications[id] ?? reportMetadata[id] { return .offline(id: id, metadata: metadata) }
+        let paths = NSWorkspace.shared.urlForApplication(withBundleIdentifier: id).map { [$0.resolvingSymlinksInPath().path] } ?? []
+        let metadata = SavedApplication(name: name, bundlePaths: paths)
+        reportMetadata[id] = metadata
+        return .offline(id: id, metadata: metadata)
+    }
 
     func allowsRuleEditing(_ app: AppReading) -> Bool {
         !isShutdown && !app.isSystemApp && !app.id.hasPrefix("com.apple.") && (app.canControl || rules[app.id] != nil || networkRules[app.id] != nil)
@@ -422,6 +436,12 @@ final class AppModel {
 
     /// 合并采样结果，检测应用重启并按刷新用途维护数值与进程成员。
     func apply(_ snapshot: MonitoringSnapshot, updateDisplay: Bool = true) {
+        // 读数覆盖的是上一次控制计划生效的时段，按合并前的状态归类。
+        let previousStatus = Dictionary(apps.map { ($0.id, $0.status) }, uniquingKeysWith: { first, _ in first })
+        savings.observe(snapshot.apps) { [foregroundID] reading in
+            Self.savingsPhase(status: previousStatus[reading.id],
+                              background: foregroundID != reading.id || reading.isHidden)
+        }
         for reading in snapshot.apps {
             let current = Set(reading.samples.filter { reading.primaryPIDs.contains($0.identity.pid) }.map(\.identity))
             if let before = primaryIdentities[reading.id], !before.isEmpty && before.isDisjoint(with: current) {
@@ -480,6 +500,17 @@ final class AppModel {
         if metadataChanged { persistRules() }
         ensureSelection()
         updateFocus()
+    }
+
+    /// 性能限制与暂停计入节省；后台未受限（含等待期、只调音量、总开关关闭）更新基线；其余不计。
+    nonisolated static func savingsPhase(status: RuleStatus?, background: Bool) -> SavingsPhase {
+        switch status {
+        case .budget: .limited(suspended: false)
+        case .suspended: .limited(suspended: true)
+        case .waiting, .muted, .quieted: .unlimitedBackground
+        case .unmanaged, .paused: background ? .unlimitedBackground : .other
+        default: .other
+        }
     }
 
     private func updateFocus() {
@@ -639,6 +670,8 @@ final class AppModel {
         controller.stop()
         volume.stop()
         backgroundSince.removeAll()
+        savings.flush()
+        savings.resetTiming()
     }
 
     private func wake() {
@@ -653,6 +686,7 @@ final class AppModel {
     func eraseDataAndQuit() -> String? {
         // 清理后关闭窗口时不再自动保存窗口位置。
         managementWindow?.window?.setFrameAutosaveName("")
+        savings.stopPersisting()
         stopActivity()
         do {
             if !preview { try AppDataStore.current.erase() }
@@ -665,6 +699,7 @@ final class AppModel {
 
     private func stopActivity() {
         isShutdown = true
+        savings.flush()
         usageAnalytics.stop()
         usageStatistics.cancel()
         updates.cancel()

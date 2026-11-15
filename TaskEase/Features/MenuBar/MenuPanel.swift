@@ -44,6 +44,7 @@ struct MenuPanel: View {
                 Button("menu.manageApps") { model.showManagement() }.pointingHand()
                 Button("common.settings", systemImage: "gearshape") { model.showUtility(.settings) }
                     .labelStyle(.iconOnly).help("common.settings").pointingHand()
+                SavingsBadge(model: model, compact: true)
                 Spacer()
                 Text("menu.activeCount \(model.managedCount)").font(.caption).foregroundStyle(.secondary)
                 Button("common.quit") { NSApp.terminate(nil) }.pointingHand()
