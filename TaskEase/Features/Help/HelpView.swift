@@ -13,6 +13,7 @@ struct HelpView: View {
                 section("help.timing.title", ["help.timing.1", "help.timing.2"])
                 section("help.cpu.title", ["help.cpu.1", "help.cpu.2", "help.cpu.3"])
                 section("help.overview.title", ["help.overview.1", "help.overview.2"])
+                section("help.automation.title", ["help.automation.1", "help.automation.2", "help.automation.3"])
                 section("help.language.title", ["help.language.1"])
             }.font(.callout).textSelection(.enabled).padding(28)
         }

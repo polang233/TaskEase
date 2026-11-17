@@ -23,6 +23,7 @@ struct ContentView: View {
                 if model.managedCount > 0 {
                     Text("header.activeLimits \(model.managedCount)").font(.callout).foregroundStyle(.secondary)
                 }
+                SavingsBadge(model: model)
                 BackgroundControlToggle(model: model)
                 Button("common.settings", systemImage: "gearshape") { model.showUtility(.settings) }
                     .labelStyle(.iconOnly).buttonStyle(.borderless).font(.title3)
@@ -40,6 +41,7 @@ struct ContentView: View {
                     Button("error.recoverRetry") { model.setEnabled(true) }.disabled(!model.canEnable)
                 }.padding(12).background(Color.orange.opacity(0.08))
             }
+            SuggestionBanner(model: model)
             HSplitView {
                 applicationList.frame(minWidth: 340, idealWidth: 400)
                 Group {
@@ -70,52 +72,74 @@ struct ContentView: View {
             if model.filteredApps.isEmpty {
                 emptyList.frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
-                List(selection: $model.selectedID) {
-                    let key = model.effectiveSortKey
-                    let usage = AppUsage(key, scale: model.preferences.cpuScale, apps: model.apps)
-                    ForEach(model.filteredApps) { app in
-                        let selected = model.selectedID == app.id
-                        HStack(spacing: 10) {
-                            AppIcon(app: app, size: 30)
-                            VStack(alignment: .leading, spacing: 5) {
-                                Text(app.name).lineLimit(1)
-                                StatusLabel(status: app.status)
-                            }
-                            Spacer()
-                            if app.isRunning {
-                                VStack(alignment: .trailing, spacing: 4) {
-                                    Text(usage.value(app)).monospacedDigit()
-                                    Text(usage.secondary(app))
-                                        .font(.caption).foregroundStyle(.secondary).monospacedDigit()
+                ScrollViewReader { proxy in
+                    List(selection: $model.selectedID) {
+                        let key = model.effectiveSortKey
+                        let usage = AppUsage(key, scale: model.preferences.cpuScale, apps: model.apps)
+                        ForEach(model.filteredApps) { app in
+                            let selected = model.selectedID == app.id
+                            HStack(spacing: 10) {
+                                StatusIcon(app: app, status: app.status, size: 30)
+                                VStack(alignment: .leading, spacing: 5) {
+                                    Text(app.name).lineLimit(1)
+                                    ruleLine(app)
+                                }
+                                Spacer()
+                                if app.isRunning {
+                                    VStack(alignment: .trailing, spacing: 4) {
+                                        Text(usage.value(app)).monospacedDigit()
+                                        Text(usage.secondary(app))
+                                            .font(.caption).foregroundStyle(.secondary).monospacedDigit()
+                                    }
                                 }
                             }
-                        }
-                        .foregroundStyle(Color(nsColor: .labelColor))
-                        .padding(.vertical, 8).padding(.horizontal, 8)
-                        .background(UsageFill(fraction: usage.fraction(app)))
-                        .overlay {
-                            if selected {
-                                RoundedRectangle(cornerRadius: 7, style: .continuous)
-                                    .strokeBorder(Color.accentColor.opacity(0.65), lineWidth: 1.5)
-                                    .allowsHitTesting(false)
-                                    .accessibilityHidden(true)
+                            .foregroundStyle(Color(nsColor: .labelColor))
+                            .padding(.vertical, 8).padding(.horizontal, 8)
+                            .background(UsageFill(fraction: usage.fraction(app)))
+                            .overlay {
+                                if selected {
+                                    RoundedRectangle(cornerRadius: 7, style: .continuous)
+                                        .strokeBorder(Color.accentColor.opacity(0.65), lineWidth: 1.5)
+                                        .allowsHitTesting(false)
+                                        .accessibilityHidden(true)
+                                }
                             }
-                        }
-                        .overlay(alignment: .leading) {
-                            if selected {
-                                Capsule().fill(Color.accentColor)
-                                    .frame(width: 3, height: 24).padding(.leading, 2)
-                                    .allowsHitTesting(false)
-                                    .accessibilityHidden(true)
+                            .overlay(alignment: .leading) {
+                                if selected {
+                                    Capsule().fill(Color.accentColor)
+                                        .frame(width: 3, height: 24).padding(.leading, 2)
+                                        .allowsHitTesting(false)
+                                        .accessibilityHidden(true)
+                                }
                             }
+                            .contentShape(Rectangle()).pointingHand()
+                            // 覆盖原生整行选中底色，让占用渐变与选择标记分别表达状态。
+                            .listRowBackground(Color(nsColor: .controlBackgroundColor))
+                            .listRowSeparator(.visible)
+                            .tag(app.id)
+                            .id(app.id)
                         }
-                        .contentShape(Rectangle()).pointingHand()
-                        // 覆盖原生整行选中底色，让占用渐变与选择标记分别表达状态。
-                        .listRowBackground(Color(nsColor: .controlBackgroundColor))
-                        .listRowSeparator(.visible)
-                        .tag(app.id)
+                    }.listStyle(.inset)
+                    // 从菜单栏跳转后，让选中行保持在可见范围内。
+                    .onChange(of: model.selectedID) { _, id in
+                        guard let id else { return }
+                        withAnimation(.easeOut(duration: 0.2)) { proxy.scrollTo(id) }
                     }
-                }.listStyle(.inset)
+                }
+            }
+        }
+    }
+
+    /// 第二行只为有规则或只读的应用显示状态，规则生效时附带摘要；没有规则的应用不再逐行写“保持原样”。
+    @ViewBuilder private func ruleLine(_ app: AppReading) -> some View {
+        let rule = model.rules[app.id]
+        if rule != nil || app.status != .unmanaged {
+            HStack(spacing: 6) {
+                StatusLabel(status: app.status)
+                if let rule, rule.isActive {
+                    Text(verbatim: rule.summary(includesTiming: false))
+                        .font(.caption).foregroundStyle(.secondary).lineLimit(1)
+                }
             }
         }
     }
@@ -132,6 +156,7 @@ struct ContentView: View {
             Image(systemName: "magnifyingglass").foregroundStyle(.secondary)
             TextField("list.search \(model.filteredApps.count)", text: $model.search).textFieldStyle(.plain)
                 .focused($searchFocused)
+                .onExitCommand { model.search = "" }
                 .accessibilityIdentifier("app-search")
             if !model.search.isEmpty {
                 Button("list.clearSearch", systemImage: "xmark.circle.fill") { model.search = "" }
@@ -144,6 +169,12 @@ struct ContentView: View {
             .strokeBorder(searchFocused ? Color.accentColor.opacity(0.6) : Color(nsColor: .separatorColor), lineWidth: 1))
         .contentShape(Rectangle())
         .onTapGesture { searchFocused = true }
+        // ⌘F 聚焦搜索；按钮不可见，只提供快捷键。
+        .background {
+            Button("list.focusSearch") { searchFocused = true }
+                .keyboardShortcut("f", modifiers: .command)
+                .opacity(0).allowsHitTesting(false).accessibilityHidden(true)
+        }
     }
 
     @ViewBuilder private var emptyList: some View {

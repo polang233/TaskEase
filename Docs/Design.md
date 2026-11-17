@@ -17,10 +17,13 @@ AppModel 在 MainActor 上持有规则、显示设置、前台状态和窗口状
 | App | 入口、单实例、AppModel、类型化工作区事件与窗口控制 |
 | Features/Applications | 运行列表、已配置列表与管理窗口 |
 | Features/Rules | 规则编辑、Policy 与原有规则格式读写 |
-| Features/MenuBar | 菜单栏面板 |
+| Features/MenuBar | 菜单栏面板与临时操作 |
+| Features/Savings | 节省记录与节省报告 |
+| Features/Suggestions | 智能建议计算、设置与提示条 |
+| Features/Automation | 快捷指令、URL Scheme 命令与规则模板入口 |
 | Features/Settings、Help、About | 显示设置、使用帮助、关于信息与许可证查看 |
 | Models | 应用读数、规则、偏好、进程身份和控制消息 |
-| Services/Storage | 偏好域与本地应用数据清理 |
+| Services/Storage | 偏好域与本地应用数据清理、节省记录文件 |
 | Services/Networking | 网络快照进程、CSV 边界解析与速度基线 |
 | Features/Networking | 网络规则配置与权限状态 |
 | Services/Monitoring | 采样 actor、计数差分和采样周期策略 |
@@ -75,6 +78,22 @@ CPU 累计时间和墙钟使用相同 Mach 时间单位。CPU 上限以单核时
 
 已有暂停的进程不接管。恢复时按 UID、PID 和启动时间确认归属，路径变化会阻止新增限制，但不妨碍解除之前施加的暂停。控制进程异常结束后，主应用按恢复记录补偿；重启时恢复已经失联的旧记录。
 
+## 节省记录
+
+SavingsModel 由 AppModel 持有，在 `apply` 合并采样时按合并前的规则状态把读数归类：CPU 上限与暂停记为受限，等待期、未配置且在后台、只调音量和总开关关闭记为后台未受限，其余不计。归类是纯函数 `AppModel.savingsPhase`。每个应用按相邻读数间隔计算覆盖时长，第一帧只建立时间基准，间隔超过 12 秒不计入，因此显示采样与控制采样交替到达时不会重复计时。
+
+SavingsLedger 是值类型，保存 UsageBaseline（按观察时长加权、窗口约 10 分钟的后台平均 CPU、GPU 与画面合成占比）和按本地日期、应用汇总的 SavingsAmount。基线同时供智能建议使用。SavingsStore 把记录写入 Application Support 下的 `savings.v1.json`，至少间隔 60 秒，睡眠与退出时立即写入；损坏时保留 `.invalid-backup` 并重新开始。数据清理前先停止写盘，退出阶段不会把记录写回。日期保留 30 天，基线最多 300 个，14 天未更新即删除。
+
+## 智能建议
+
+SuggestionEngine 是纯函数：输入节省记录中的后台基线、可控制的运行中应用（含 Info.plist 的 LSApplicationCategoryType）、已有规则与 SuggestionSettings，输出按占用排序的建议。AppModel 的 `suggestions` 为计算属性，不保存建议列表；SuggestionsModel 持有阈值、忽略与提示条隐藏记录并写入 suggestions.v1，按应用缓存类别。套用通过 `setRule` 走正常的规则校验、保存与执行路径。界面为独立的 SuggestionBanner 与 SuggestionList 组件，管理窗口只插入一行。
+
+## 临时操作与自动化
+
+AppModel 以 `temporaryActions` 在内存中保存临时暂停与“立即恢复”的期限。`Policy.status` 增加可选的临时操作参数：临时暂停在后台时返回 `held`，与规则和总开关无关；“立即恢复”在规则会执行时返回 `released`。reconcile 为 `held` 的应用生成 suspend 控制组，仍由 NativeWorker 唯一执行并写入恢复记录，因此退出、睡眠、失联和崩溃沿用原有恢复路径；睡眠与 shutdown 清空临时操作，`apply` 发现应用退出时移除其临时操作。存在临时暂停时控制采样只扫描启用规则与临时暂停的应用；期限加入 SamplingPolicy 的等待期限，到期即时恢复。切回前台时结束该应用的“立即恢复”。
+
+RuleTemplate 复用 StoredRules 的编解码，导出排序缩进，导入校验数值与标识。AutomationCommand 解析 `taskease://` 链接，AppModel.perform 执行并返回结果；AppDelegate 在启动前注册 kAEGetURL 处理程序。App Intents（SetLimitsIntent、PauseApplicationIntent、ResumeApplicationIntent 与运行中应用的 ApplicationEntity）在应用进程内运行，通过 AutomationCenter 取得模型，与链接共用同一命令。
+
 ## 数据清理
 
 AppDataStore 仅持有本应用偏好域和明确归属的目录。AppModel 先停止事件与刷新、等待 WorkerController 恢复并结束工作进程，再执行清理和退出。清理前关闭管理窗口位置的自动保存，防止退出时重新写入配置。文件删除失败时报告错误，偏好域留待成功后移除。
@@ -92,3 +111,7 @@ ApplicationSession 在规则模型创建前取得系统用户临时目录中的�
 许可证视图从应用包的 LICENSE.txt 读取完整 GNU GPLv3 文本，采用可选择和滚动的文本展示。仓库 LICENSE 与随包文本保持一致，SPDX 标识为 GPL-3.0-only。
 
 菜单栏图标由 `showMenuBarIcon` 偏好控制（默认开启，旧配置缺省按开启读取），MenuBarExtra 的插入状态与偏好双向绑定，按住 ⌘ 拖出图标同样写回偏好。隐藏图标不改变采样与规则执行；没有窗口时继续使用 accessory 策略，重复启动通过已有的重开通知恢复管理窗口。预览和测试使用独立数据，不创建正常状态栏入口。菜单栏图片明确采用 18 点逻辑尺寸并提供 Retina 资源。正常使用包由 Scripts/build-app.sh 生成 Release 构建。
+
+## 界面
+
+界面评审结论、改进记录与后续项见 [界面评审与改进](Interface.md)。

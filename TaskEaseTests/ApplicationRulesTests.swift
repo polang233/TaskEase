@@ -233,4 +233,22 @@ struct ApplicationRulesTests {
         #expect(try JSONDecoder().decode(AppPreferences.self, from: JSONEncoder().encode(hidden)).showMenuBarIcon == false)
     }
 
+
+    /// 列表与详情的规则摘要只读规则字段：暂停时不再列出降低优先级，旧的非预设等待时间取最近档位。
+    @Test func ruleSummaryListsTimingAndMethods() {
+        var rule = AppRule(mode: .budget, cpuPercent: 35, delaySeconds: 3)
+        rule.adjustsVolume = true
+        rule.lowersPriority = true
+        let parts = rule.summary().components(separatedBy: " · ")
+        #expect(parts == [String(localized: "rule.timing.seconds \(3)"), "CPU 35%",
+                          String(localized: "rule.volume.mute"), String(localized: "mode.gentle")])
+        #expect(rule.summary(includesTiming: false).hasPrefix("CPU 35%"))
+        rule.performance = .suspend
+        #expect(!rule.summary(includesTiming: false).contains(String(localized: "mode.gentle")))
+        #expect(rule.summary(includesTiming: false).hasPrefix(String(localized: "mode.suspend")))
+        let legacy = AppRule(mode: .budget, delaySeconds: 50)
+        #expect(legacy.delayIndex == AppRule.delayPresets.firstIndex(of: 60))
+        #expect(AppRule(mode: .budget, alwaysLimit: true).timingTitle == String(localized: "rule.timing.always"))
+        #expect(AppRule.shortDelayTitle(index: 0) == String(localized: "rule.timing.mark.always"))
+    }
 }

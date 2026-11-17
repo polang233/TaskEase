@@ -346,6 +346,305 @@
         }
       }
     },
+    "automation.error.app %@" : {
+      "comment" : "Automation: app cannot be paused; %@ is the app",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ isn't running or can't be controlled."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ 没有运行，或不能控制。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ 沒有在執行，或無法控制。"
+          }
+        }
+      }
+    },
+    "automation.error.noRules" : {
+      "comment" : "Automation: cannot enable without rules",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Set up a rule for an app first."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "请先为应用设置规则。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "請先為 App 設定規則。"
+          }
+        }
+      }
+    },
+    "automation.error.notLimited %@" : {
+      "comment" : "Automation: nothing to resume; %@ is the app",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ isn't paused or limited."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ 没有被暂停或限制。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ 沒有被暫停或限制。"
+          }
+        }
+      }
+    },
+    "automation.error.unavailable" : {
+      "comment" : "Automation: app model not ready",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "TaskEase isn't ready yet. Try again."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "轻程尚未就绪，请重试。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "輕程尚未就緒，請重試。"
+          }
+        }
+      }
+    },
+    "automation.limits.off" : {
+      "comment" : "Automation result: limits off",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Limits are off."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已关闭限制。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已關閉限制。"
+          }
+        }
+      }
+    },
+    "automation.limits.on" : {
+      "comment" : "Automation result: limits on",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Limits are on."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已启用限制。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已啟用限制。"
+          }
+        }
+      }
+    },
+    "automation.paused %@ %lld" : {
+      "comment" : "Automation result: app name, minutes",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ will pause in the background for %2$lld minutes."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ 将在后台暂停 %2$lld 分钟。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ 將在背景暫停 %2$lld 分鐘。"
+          }
+        }
+      }
+    },
+    "automation.resumed %@" : {
+      "comment" : "Automation result: app resumed",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ is resumed."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ 已恢复。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ 已恢復。"
+          }
+        }
+      }
+    },
+    "automation.section" : {
+      "comment" : "Settings section: automation",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automation"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "自动化"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "自動化"
+          }
+        }
+      }
+    },
+    "automation.shortcuts" : {
+      "comment" : "Settings: Shortcuts actions",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In Shortcuts, find TaskEase actions to turn limits on or off, pause an app for a while, or resume it."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在“快捷指令”中搜索轻程，可以开关限制、临时暂停或恢复指定应用。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在「捷徑」中搜尋輕程，可以開關限制、暫時暫停或恢復指定 App。"
+          }
+        }
+      }
+    },
+    "automation.url" : {
+      "comment" : "Settings: URL scheme",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Or open these links (minutes: 1–240):"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "也可以打开以下链接（分钟数 1–240）："
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "也可以打開以下連結（分鐘數 1–240）："
+          }
+        }
+      }
+    },
+    "automation.url.allow" : {
+      "comment" : "Settings: allow URL scheme automation",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Allow taskease:// links"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "允许 taskease:// 链接控制"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "允許 taskease:// 連結控制"
+          }
+        }
+      }
+    },
+    "automation.url.allowNote" : {
+      "comment" : "Settings: URL scheme risk note",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Any web page or app can open these links. Off by default; Shortcuts work either way."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "任何网页或程序都能打开这些链接，所以默认关闭；快捷指令不受影响。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "任何網頁或程式都能打開這些連結，所以預設關閉；捷徑不受影響。"
+          }
+        }
+      }
+    },
     "common.cancel" : {
       "comment" : "Cancel button",
       "localizations" : {
@@ -1405,6 +1704,98 @@
         }
       }
     },
+    "help.automation.1" : {
+      "comment" : "Help line",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In the menu bar panel, use the button next to an app to pause it for a while in the background, or resume it right away."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "菜单栏面板中每个应用右侧的按钮可以临时暂停（只在后台生效）或立即恢复。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "選單列面板中每個 App 右側的按鈕可以暫時暫停（只在背景生效）或立即恢復。"
+          }
+        }
+      }
+    },
+    "help.automation.2" : {
+      "comment" : "Help line",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Temporary actions end when TaskEase quits, the Mac sleeps or the app quits; paused apps are always resumed."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "退出轻程、电脑睡眠或该应用退出时，临时操作结束，被暂停的应用一定会恢复。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "結束輕程、電腦睡眠或該 App 結束時，暫時操作結束，被暫停的 App 一定會恢復。"
+          }
+        }
+      }
+    },
+    "help.automation.3" : {
+      "comment" : "Help line",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Settings › Automation imports and exports rules, and lists the Shortcuts actions and taskease:// links."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“设置 › 自动化”可以导入导出规则，并列出快捷指令与 taskease:// 链接。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "「設定 › 自動化」可以匯入匯出規則，並列出捷徑與 taskease:// 連結。"
+          }
+        }
+      }
+    },
+    "help.automation.title" : {
+      "comment" : "Help section: quick actions and automation",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quick Actions and Automation"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "快捷操作与自动化"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "快速操作與自動化"
+          }
+        }
+      }
+    },
     "help.cpu.1" : {
       "comment" : "Help text",
       "localizations" : {
@@ -1773,6 +2164,351 @@
         }
       }
     },
+    "intent.app.type" : {
+      "comment" : "Shortcuts: app parameter / entity type",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "应用"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App"
+          }
+        }
+      }
+    },
+    "intent.pause.description" : {
+      "comment" : "Shortcuts action description",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pauses the app whenever it's in the background for the given minutes. It works normally while in front."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在指定分钟内，应用位于后台时暂停；切到前台照常使用。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在指定分鐘內，App 位於背景時暫停；切到前景照常使用。"
+          }
+        }
+      }
+    },
+    "intent.pause.minutes" : {
+      "comment" : "Shortcuts: minutes parameter",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Minutes"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "分钟"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "分鐘"
+          }
+        }
+      }
+    },
+    "intent.pause.summary ${application} ${minutes}" : {
+      "comment" : "Shortcuts parameter summary",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pause ${application} for ${minutes} minutes"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "暂停 ${application} ${minutes} 分钟"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "暫停 ${application} ${minutes} 分鐘"
+          }
+        }
+      }
+    },
+    "intent.pause.title" : {
+      "comment" : "Shortcuts action title",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pause App Temporarily"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "临时暂停应用"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "暫時暫停 App"
+          }
+        }
+      }
+    },
+    "intent.resume.description" : {
+      "comment" : "Shortcuts action description",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ends a temporary pause. If a rule is limiting the app, limits stay off for an hour or until you switch to it."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "结束临时暂停；若规则正在限制该应用，1 小时内或切回该应用前不再限制。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "結束暫時暫停；若規則正在限制該 App，1 小時內或切回該 App 前不再限制。"
+          }
+        }
+      }
+    },
+    "intent.resume.summary ${application}" : {
+      "comment" : "Shortcuts parameter summary",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Resume ${application}"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "恢复 ${application}"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "恢復 ${application}"
+          }
+        }
+      }
+    },
+    "intent.resume.title" : {
+      "comment" : "Shortcuts action title",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Resume App"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "恢复应用"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "恢復 App"
+          }
+        }
+      }
+    },
+    "intent.setLimits.description" : {
+      "comment" : "Shortcuts action description",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Turns TaskEase's Enable Limits switch on or off."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "打开或关闭轻程的“启用限制”总开关。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "開啟或關閉輕程的「啟用限制」總開關。"
+          }
+        }
+      }
+    },
+    "intent.setLimits.summary ${state}" : {
+      "comment" : "Shortcuts parameter summary",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Set background limits to ${state}"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "将后台限制设为${state}"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "將背景限制設為${state}"
+          }
+        }
+      }
+    },
+    "intent.setLimits.title" : {
+      "comment" : "Shortcuts action title",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Set Background Limits"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "设置后台限制"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "設定背景限制"
+          }
+        }
+      }
+    },
+    "intent.state.off" : {
+      "comment" : "Shortcuts: turn off",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Off"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "关闭"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "關閉"
+          }
+        }
+      }
+    },
+    "intent.state.on" : {
+      "comment" : "Shortcuts: turn on",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "On"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "打开"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "開啟"
+          }
+        }
+      }
+    },
+    "intent.state.toggle" : {
+      "comment" : "Shortcuts: toggle",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toggle"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "切换"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "切換"
+          }
+        }
+      }
+    },
+    "intent.state.type" : {
+      "comment" : "Shortcuts: limits switch state parameter",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "State"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "状态"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "狀態"
+          }
+        }
+      }
+    },
     "interval.seconds %lld" : {
       "comment" : "Refresh interval option",
       "localizations" : {
@@ -1873,6 +2609,29 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "已設定規則"
+          }
+        }
+      }
+    },
+    "list.focusSearch" : {
+      "comment" : "Hidden button for the Command-F shortcut that focuses app search",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Search Apps"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "搜索应用"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "搜尋 App"
           }
         }
       }
@@ -2085,6 +2844,29 @@
         }
       }
     },
+    "menu.hint.noRules" : {
+      "comment" : "Menu bar panel: first-use hint when no rules exist",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Click an app to set a background rule."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "点一个应用，为它设置后台规则。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "點一個 App，幫它設定背景規則。"
+          }
+        }
+      }
+    },
     "menu.manageApps" : {
       "comment" : "Opens the app manager window",
       "localizations" : {
@@ -2127,6 +2909,29 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "目前沒有可顯示的 App"
+          }
+        }
+      }
+    },
+    "menu.row.help" : {
+      "comment" : "Menu bar panel row tooltip",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open in Manage Apps"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在应用管理中打开"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在 App 管理中開啟"
           }
         }
       }
@@ -2994,6 +3799,225 @@
         }
       }
     },
+    "quick.pause" : {
+      "comment" : "Menu bar row menu: temporarily pause the app",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pause Temporarily"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "临时暂停"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "暫時暫停"
+          }
+        }
+      }
+    },
+    "quick.pause.hours %lld" : {
+      "comment" : "Temporary pause duration in hours",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Pause for %lld Hour"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Pause for %lld Hours"
+                }
+              }
+            }
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "暂停 %lld 小时"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "暫停 %lld 小時"
+          }
+        }
+      }
+    },
+    "quick.pause.minutes %lld" : {
+      "comment" : "Temporary pause duration in minutes",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pause for %lld Minutes"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "暂停 %lld 分钟"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "暫停 %lld 分鐘"
+          }
+        }
+      }
+    },
+    "quick.pause.note" : {
+      "comment" : "Note inside the temporary pause menu",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pauses while in the background; works normally when you switch to it"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在后台时暂停，切回去照常使用"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在背景時暫停，切回去照常使用"
+          }
+        }
+      }
+    },
+    "quick.pausedUntil %@" : {
+      "comment" : "Temporary pause end time; %@ is a time",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Paused until %@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "暂停至 %@"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "暫停至 %@"
+          }
+        }
+      }
+    },
+    "quick.releasedUntil %@" : {
+      "comment" : "Limits off until time; %@ is a time",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No limits until %@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ 前不限制"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ 前不限制"
+          }
+        }
+      }
+    },
+    "quick.restoreRule" : {
+      "comment" : "Turn the app's rule back on after Resume Now",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Limit Again by Rule"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "恢复按规则限制"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "恢復依規則限制"
+          }
+        }
+      }
+    },
+    "quick.resume" : {
+      "comment" : "Resume a temporarily paused app now",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Resume Now"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "立即恢复"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "立即恢復"
+          }
+        }
+      }
+    },
+    "quick.resumeRule" : {
+      "comment" : "Resume an app limited by its rule, for one hour or until you switch to it",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Resume Now (Limits Off for 1 Hour or Until You Switch to It)"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "立即恢复（1 小时内或切回该应用前不限制）"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "立即恢復（1 小時內或切回該 App 前不限制）"
+          }
+        }
+      }
+    },
     "rule.audio" : {
       "comment" : "Toggle title in the app rule editor",
       "localizations" : {
@@ -3201,25 +4225,25 @@
         }
       }
     },
-    "rule.enableHint" : {
-      "comment" : "Shown when the master switch is off",
+    "rule.enableCallout" : {
+      "comment" : "Rule card: rule is saved but the main switch is off",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Takes effect once the main switch at the top is on."
+            "value" : "Rule saved. Turn on limits to apply it."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "打开顶部总开关后生效。"
+            "value" : "规则已保存，打开总开关后执行。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "打開最上方的總開關後就會生效。"
+            "value" : "規則已儲存，打開總開關後就會執行。"
           }
         }
       }
@@ -3638,6 +4662,29 @@
         }
       }
     },
+    "rule.timing.mark.always" : {
+      "comment" : "Timing slider mark: limit even in the foreground",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Always"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "始终"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "始終"
+          }
+        }
+      }
+    },
     "rule.timing.minutes %lld" : {
       "comment" : "Timing preset in minutes",
       "localizations" : {
@@ -3708,6 +4755,52 @@
         }
       }
     },
+    "rule.timing.short.minutes %lld" : {
+      "comment" : "Timing slider mark in minutes",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld min"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld 分钟"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld 分鐘"
+          }
+        }
+      }
+    },
+    "rule.timing.short.seconds %lld" : {
+      "comment" : "Timing slider mark in seconds",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%llds"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld 秒"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld 秒"
+          }
+        }
+      }
+    },
     "rule.toggle" : {
       "comment" : "Per-app switch",
       "localizations" : {
@@ -3727,6 +4820,29 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "限制背景資源"
+          }
+        }
+      }
+    },
+    "rule.toggle.description" : {
+      "comment" : "Rule card: what turning on the rule does",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Limits the app a few seconds after it leaves the foreground and restores it the moment you switch back."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "应用离开前台几秒后自动限制，切回立即恢复。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App 離開前景幾秒後自動限制，切回來馬上恢復。"
           }
         }
       }
@@ -3819,6 +4935,535 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "App 和它的輔助處理程序每秒的中斷喚醒次數。"
+          }
+        }
+      }
+    },
+    "savings.badge %@" : {
+      "comment" : "Header/menu badge: CPU time saved today; %@ is a duration",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saved %@ today"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "今天省下 %@"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "今天省下 %@"
+          }
+        }
+      }
+    },
+    "savings.chart.title" : {
+      "comment" : "Savings chart section: CPU time saved per day",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "CPU Time Saved per Day"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "每天省下的 CPU 时间"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "每天省下的 CPU 時間"
+          }
+        }
+      }
+    },
+    "savings.cpuTime" : {
+      "comment" : "Caption under the saved CPU time value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "CPU time saved (est., single core)"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "省下的 CPU 时间（估算，单核）"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "省下的 CPU 時間（估算，單核心）"
+          }
+        }
+      }
+    },
+    "savings.empty" : {
+      "comment" : "Savings ranking empty state",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nothing yet. Savings appear once a rule with a CPU cap or pause takes effect."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "还没有记录。设置了 CPU 上限或暂停的规则生效后会在这里出现。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "還沒有記錄。設定了 CPU 上限或暫停的規則生效後會在這裡出現。"
+          }
+        }
+      }
+    },
+    "savings.gpu %@" : {
+      "comment" : "Saved GPU time; %@ is a duration",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "GPU %@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "GPU %@"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "GPU %@"
+          }
+        }
+      }
+    },
+    "savings.limited %@" : {
+      "comment" : "How long limits were in effect; %@ is a duration",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Limited %@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "受限 %@"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "受限 %@"
+          }
+        }
+      }
+    },
+    "savings.method.1" : {
+      "comment" : "Savings method line 1",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "These are estimates. Each limited app is compared with its own average background usage before it was limited (its baseline)."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "数值为估算。每个受限应用与它自己受限前在后台的平均占用（基线）比较。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "數值為估算。每個受限 App 與它自己受限前在背景的平均使用量（基準）比較。"
+          }
+        }
+      }
+    },
+    "savings.method.2" : {
+      "comment" : "Savings method line 2",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saved CPU = (baseline − measured) × time limited, in single-core time: 1 minute means one core fully busy for a minute. It uses readings TaskEase already takes, with no extra sampling."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "省下的 CPU =（基线 − 实测）× 受限时长，按单核计：1 分钟相当于一个核心满载 1 分钟。只用已有采样，不额外读取。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "省下的 CPU =（基準 − 實測）× 受限時長，按單核心計：1 分鐘相當於一個核心滿載 1 分鐘。只用既有取樣，不額外讀取。"
+          }
+        }
+      }
+    },
+    "savings.method.3" : {
+      "comment" : "Savings method line 3",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "GPU time, including estimated window compositing, is counted only while an app is paused, since a paused app can't submit GPU work."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "GPU 时间（含估算的画面合成）只在应用暂停期间计入，因为暂停的应用不会提交 GPU 工作。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "GPU 時間（含估算的畫面合成）只在 App 暫停期間計入，因為暫停的 App 不會提交 GPU 工作。"
+          }
+        }
+      }
+    },
+    "savings.method.4" : {
+      "comment" : "Savings method line 4",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A baseline needs at least 20 seconds in the background and expires after 14 days without updates. It includes the moments right after leaving the foreground, so savings may be overstated; always-limited apps may have no baseline."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "基线需要至少 20 秒的后台观察，14 天未更新即失效。基线包含刚离开前台的时段，可能偏高；始终受限的应用可能没有基线。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "基準需要至少 20 秒的背景觀察，14 天未更新即失效。基準包含剛離開前景的時段，可能偏高；一律受限的 App 可能沒有基準。"
+          }
+        }
+      }
+    },
+    "savings.method.5" : {
+      "comment" : "Savings method line 5",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lower priority and background volume don't cut CPU time directly and aren't counted. Battery and temperature aren't estimated: they depend on the whole system."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "降低优先级和后台音量不直接减少 CPU 时间，不计入。不估算电量和温度：它们取决于整机状态，无法可靠归到单个应用。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "降低優先順序和背景音量不直接減少 CPU 時間，不計入。不估算電量和溫度：它們取決於整機狀態，無法可靠歸到單一 App。"
+          }
+        }
+      }
+    },
+    "savings.method.title" : {
+      "comment" : "Savings estimate method section",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "How It's Estimated"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "估算口径"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "估算方式"
+          }
+        }
+      }
+    },
+    "savings.noBaseline" : {
+      "comment" : "Tooltip for an app with limited time but no estimate",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No background baseline yet, so savings can't be estimated. It builds up while the app runs in the background without limits."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "还没有后台基线，暂时无法估算。应用在后台未受限运行时会逐步积累。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "還沒有背景基準，暫時無法估算。App 在背景未受限執行時會逐步累積。"
+          }
+        }
+      }
+    },
+    "savings.open" : {
+      "comment" : "Open the savings report",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Savings Report"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "节省报告"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "節省報告"
+          }
+        }
+      }
+    },
+    "savings.ranking.title" : {
+      "comment" : "Savings ranking section (last 7 days)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "By App · Last 7 Days"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "按应用 · 最近 7 天"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "依 App · 最近 7 天"
+          }
+        }
+      }
+    },
+    "savings.reset" : {
+      "comment" : "Button: clear savings records",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reset Records…"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "清除记录…"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "清除記錄⋯"
+          }
+        }
+      }
+    },
+    "savings.reset.confirm" : {
+      "comment" : "Reset savings confirm button",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reset"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "清除"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "清除"
+          }
+        }
+      }
+    },
+    "savings.reset.message" : {
+      "comment" : "Reset savings alert message",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Daily totals and background baselines will be deleted. Rules aren't affected."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "将删除每日记录和后台基线，规则不受影响。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "將刪除每日記錄和背景基準，規則不受影響。"
+          }
+        }
+      }
+    },
+    "savings.reset.title" : {
+      "comment" : "Reset savings alert title",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reset savings records?"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "清除节省记录？"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "清除節省記錄？"
+          }
+        }
+      }
+    },
+    "savings.subtitle" : {
+      "comment" : "Savings report subtitle",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estimated resources saved while your rules were in effect"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "规则生效期间估算省下的资源"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "規則生效期間估算省下的資源"
+          }
+        }
+      }
+    },
+    "savings.title" : {
+      "comment" : "Savings report window title and menu command",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Savings Report"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "节省报告"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "節省報告"
+          }
+        }
+      }
+    },
+    "savings.today" : {
+      "comment" : "Savings tile: today",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Today"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "今天"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "今天"
+          }
+        }
+      }
+    },
+    "savings.week" : {
+      "comment" : "Savings tile: last 7 days including today",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Last 7 Days"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最近 7 天"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最近 7 天"
           }
         }
       }
@@ -5023,6 +6668,29 @@
         }
       }
     },
+    "status.held" : {
+      "comment" : "App status: temporarily paused from the menu bar, URL or Shortcuts",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Paused for Now"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "临时暂停"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "暫時暫停"
+          }
+        }
+      }
+    },
     "status.muted" : {
       "comment" : "Rule status in the app list",
       "localizations" : {
@@ -5134,6 +6802,29 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "唯讀"
+          }
+        }
+      }
+    },
+    "status.released" : {
+      "comment" : "App status: rule temporarily not applied after Resume Now",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Limits Off for Now"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "暂不限制"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "暫不限制"
           }
         }
       }
@@ -5410,6 +7101,732 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "圓環"
+          }
+        }
+      }
+    },
+    "suggestion.apply" : {
+      "comment" : "Apply suggestion as a rule",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apply"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "套用"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "套用"
+          }
+        }
+      }
+    },
+    "suggestion.banner.hide" : {
+      "comment" : "Hide suggestion banner until new suggestions appear",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hide Until New Suggestions"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "隐藏，有新建议时再显示"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "隱藏，有新建議時再顯示"
+          }
+        }
+      }
+    },
+    "suggestion.banner.show" : {
+      "comment" : "Suggestion banner button",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "View Suggestions"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "查看建议"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "查看建議"
+          }
+        }
+      }
+    },
+    "suggestion.banner.title %lld" : {
+      "comment" : "Suggestion banner: number of apps busy in the background",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld app is busy in the background. Limit it?"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld apps are busy in the background. Limit them?"
+                }
+              }
+            }
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld 个应用在后台占用较高，建议限制"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld 個 App 在背景使用量較高，建議限制"
+          }
+        }
+      }
+    },
+    "suggestion.dismiss" : {
+      "comment" : "Ignore a suggestion",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ignore"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "忽略"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "忽略"
+          }
+        }
+      }
+    },
+    "suggestion.list.empty" : {
+      "comment" : "Suggestion list empty state",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No suggestions right now."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "目前没有建议。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "目前沒有建議。"
+          }
+        }
+      }
+    },
+    "suggestion.list.note" : {
+      "comment" : "Suggestion list explanation",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Based on each app's average usage while in the background without limits, after at least a minute of observation. GPU includes estimated window compositing."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "依据应用在后台未受限时的平均占用，至少观察一分钟。GPU 含估算的画面合成。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "依據 App 在背景未受限時的平均使用量，至少觀察一分鐘。GPU 含估算的畫面合成。"
+          }
+        }
+      }
+    },
+    "suggestion.list.title" : {
+      "comment" : "Suggestion list title",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suggested Limits"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "建议限制"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "建議限制"
+          }
+        }
+      }
+    },
+    "suggestion.method.cpu" : {
+      "comment" : "Suggested method: CPU cap 20%",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "CPU Cap 20%"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "CPU 上限 20%"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "CPU 上限 20%"
+          }
+        }
+      }
+    },
+    "suggestion.method.pause" : {
+      "comment" : "Suggested method: pause the app",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pause"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "暂停"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "暫停"
+          }
+        }
+      }
+    },
+    "suggestion.method.priority" : {
+      "comment" : "Suggested method: lower priority",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lower Priority"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "降低优先级"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "降低優先順序"
+          }
+        }
+      }
+    },
+    "suggestion.reason.general" : {
+      "comment" : "Reason for CPU cap suggestion",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "keeps working in the background"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在后台持续运算"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在背景持續運算"
+          }
+        }
+      }
+    },
+    "suggestion.reason.media" : {
+      "comment" : "Reason for lower priority suggestion (audio)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "pausing would stop playback"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "暂停会中断播放"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "暫停會中斷播放"
+          }
+        }
+      }
+    },
+    "suggestion.reason.notifying" : {
+      "comment" : "Reason for lower priority suggestion (chat/mail)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "pausing would stop notifications"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "暂停会收不到通知"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "暫停會收不到通知"
+          }
+        }
+      }
+    },
+    "suggestion.reason.visual" : {
+      "comment" : "Reason for pause suggestion",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "keeps drawing on screen"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "持续显示画面"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "持續顯示畫面"
+          }
+        }
+      }
+    },
+    "suggestion.recommend %@" : {
+      "comment" : "Recommended method; %@ is the method name",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suggested: %@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "建议：%@"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "建議：%@"
+          }
+        }
+      }
+    },
+    "suggestion.restore %lld" : {
+      "comment" : "Restore dismissed suggestions; %lld is the count",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restore Ignored (%lld)"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "恢复已忽略（%lld）"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "恢復已忽略（%lld）"
+          }
+        }
+      }
+    },
+    "suggestion.threshold.cpu" : {
+      "comment" : "Suggestion CPU threshold picker (single core)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "CPU above"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "CPU 高于"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "CPU 高於"
+          }
+        }
+      }
+    },
+    "suggestion.threshold.gpu" : {
+      "comment" : "Suggestion GPU threshold picker",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "GPU above"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "GPU 高于"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "GPU 高於"
+          }
+        }
+      }
+    },
+    "suggestion.usage.compositing %@ %@ %@" : {
+      "comment" : "Background average usage; CPU percent, GPU percent, compositing part",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Background avg. CPU %1$@ · GPU %2$@ (compositing %3$@)"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "后台平均 CPU %1$@ · GPU %2$@（画面合成 %3$@）"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "背景平均 CPU %1$@ · GPU %2$@（畫面合成 %3$@）"
+          }
+        }
+      }
+    },
+    "suggestion.usage.cpu %@" : {
+      "comment" : "Background average usage; %@ is CPU percent",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Background avg. CPU %@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "后台平均 CPU %@"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "背景平均 CPU %@"
+          }
+        }
+      }
+    },
+    "suggestion.usage.gpu %@ %@" : {
+      "comment" : "Background average usage; CPU percent, GPU percent",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Background avg. CPU %1$@ · GPU %2$@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "后台平均 CPU %1$@ · GPU %2$@"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "背景平均 CPU %1$@ · GPU %2$@"
+          }
+        }
+      }
+    },
+    "template.error.empty" : {
+      "comment" : "Rule template has no importable rules",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The file has no rules that can be imported."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "文件中没有可以导入的规则。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "檔案中沒有可以匯入的規則。"
+          }
+        }
+      }
+    },
+    "template.error.unreadable" : {
+      "comment" : "Rule template could not be read",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This file isn't a TaskEase rules file."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "这不是轻程的规则文件。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "這不是輕程的規則檔案。"
+          }
+        }
+      }
+    },
+    "template.export" : {
+      "comment" : "Export rules to a JSON file",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Export Rules…"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "导出规则…"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "匯出規則⋯"
+          }
+        }
+      }
+    },
+    "template.exported %lld" : {
+      "comment" : "Export result",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Exported %lld rule."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Exported %lld rules."
+                }
+              }
+            }
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已导出 %lld 条规则。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已匯出 %lld 條規則。"
+          }
+        }
+      }
+    },
+    "template.import" : {
+      "comment" : "Import rules from a JSON file",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Import Rules…"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "导入规则…"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "匯入規則⋯"
+          }
+        }
+      }
+    },
+    "template.imported %lld" : {
+      "comment" : "Import result",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Imported %lld rule."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Imported %lld rules."
+                }
+              }
+            }
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已导入 %lld 条规则。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已匯入 %lld 條規則。"
+          }
+        }
+      }
+    },
+    "template.importedSkipped %lld %lld" : {
+      "comment" : "Import result with skipped entries: imported count, skipped count",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Imported %1$lld rules, skipped %2$lld for system apps or invalid IDs."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已导入 %1$lld 条规则，跳过 %2$lld 条系统应用或无效标识。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已匯入 %1$lld 條規則，略過 %2$lld 條系統 App 或無效識別碼。"
+          }
+        }
+      }
+    },
+    "template.note" : {
+      "comment" : "Rule template explanation",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "JSON in the same format as saved rules (rules.v1). Importing replaces rules for the same apps and keeps the rest; system apps are skipped."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "JSON 格式与已保存的规则（rules.v1）相同。导入会替换同一应用的规则并保留其他规则，跳过系统应用。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "JSON 格式與已儲存的規則（rules.v1）相同。匯入會取代同一 App 的規則並保留其他規則，略過系統 App。"
           }
         }
       }

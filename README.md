@@ -4,12 +4,12 @@
 
 <h1 align="center">TaskEase · 轻程</h1>
 
-<p align="center">找出拖慢 Mac 的后台应用，切走几秒后自动限制或暂停，切回来立即恢复。</p>
+<p align="center"><b>你没在看的应用，就让它歇着。</b><br>找出拖慢 Mac 的后台应用，切走几秒后自动限制或暂停，切回来立即恢复。</p>
 
 <p align="center">叠层双叶呈现前后台任务，菜单栏使用随系统外观变化的单色标识。</p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-1.5.2-30BBA9" alt="版本 1.5.2">
+  <img src="https://img.shields.io/badge/version-1.6.0-30BBA9" alt="版本 1.6.0">
   <img src="https://img.shields.io/badge/macOS-14%2B-24292f?logo=apple" alt="macOS 14 及以上">
   <img src="https://img.shields.io/badge/platform-Apple%20Silicon-24292f" alt="Apple Silicon">
   <img src="https://img.shields.io/badge/Swift-6-F05138?logo=swift&logoColor=white" alt="Swift 6">
@@ -28,7 +28,16 @@
 
 ![应用占用与后台规则](Artifacts/screenshots/management.jpg)
 
-截图来自轻程 1.4.7 的实际运行界面，使用繁体中文与浅色外观，应用占用为截图时的数据。
+截图来自轻程 1.4.7 的实际运行界面，使用繁体中文与浅色外观，应用占用为截图时的数据。当前界面把规则卡片放在详情最上方，列表用角标标出受限应用，菜单栏面板可点行直达规则，示例渲染见下方“当前界面预览”。
+
+<details>
+<summary>当前界面预览</summary>
+
+<table><tr><td valign="top"><img src="Artifacts/management-setup-preview.png" width="420" alt="首次设置规则与启用提示"></td><td valign="top"><img src="Artifacts/menu-preview.png" width="420" alt="菜单栏面板"></td></tr></table>
+
+示例数据渲染，应用图标为系统通用图标。改前改后对比见 [Artifacts/ui-refresh](Artifacts/ui-refresh)，评审结论见 [界面评审与改进](Docs/Interface.md)。
+
+</details>
 
 <details>
 <summary>设置与使用统计</summary>
@@ -43,7 +52,7 @@
 
 排查下来，问题出在 UU 远程：远程画面在后台持续解码、持续合成，GPU 一直被占着，而这部分开销记在系统进程 WindowServer 名下，不会算到 UU 头上。
 
-我不想用完就关掉 UU，否则下次还得重新连接；只希望它在我切走以后安静下来。最初想限制它的帧率，但 macOS 没有可靠的办法从外部限制别的应用的帧率。于是换个思路：应用离开前台几秒后，限制它的 CPU，或者干脆暂停，回到前台立即恢复。这就是轻程。
+我不想用完就关掉 UU，否则下次还得重新连接；只希望它在我切走以后安静下来。玩游戏时我一直用“切到后台自动降帧”的模组，于是最初也想限制 UU 的帧率，但 macOS 没有可靠的办法从外部限制别的应用的帧率。于是换个思路：应用离开前台几秒后，限制它的 CPU，或者干脆暂停，回到前台立即恢复。这就是轻程。
 
 ## 使用效果
 
@@ -67,6 +76,21 @@
 - 一个总开关控制全部规则；规则在应用退出后仍保留，下次启动自动匹配。
 - 睡眠、退出或控制进程意外终止时，被限制的应用都会被恢复，不会一直卡在暂停状态。
 
+**不知道该限制谁？**
+
+- 智能建议观察还没有规则的应用在后台的平均 CPU、GPU（含画面合成），超过阈值时在管理窗口顶部提示，并按类型推荐方式：持续显示画面的暂停，聊天、音乐类降低优先级，其他限制 CPU。
+- 一键套用为规则，也可以忽略某条建议或调整阈值。
+
+**随手操作与自动化**
+
+- 菜单栏面板里对占用最高的应用一键“暂停 1 小时”或“立即恢复”；临时操作退出、睡眠或崩溃时同样会被恢复。
+- 规则可以导出为 JSON 再导入（与已保存的规则格式相同）；快捷指令和 `taskease://` 链接可以开关总开关、临时暂停或恢复指定应用（链接需先在设置中允许，默认关闭）。
+
+**看到省了多少**
+
+- 节省报告显示今天和最近 7 天估算省下的 CPU 时间、暂停期间省下的 GPU 时间（含画面合成），并按应用排行。
+- 估算以每个应用受限前的后台平均占用为基线，界面写明口径；不编造电量或温度数字。
+
 **轻量，不打扰**
 
 - 常驻菜单栏，面板里能看到占用最高的应用和整机概览。
@@ -88,7 +112,7 @@ curl -fsSL https://raw.githubusercontent.com/polang233/TaskEase/main/Scripts/ins
 
 安装包放在临时目录，装完自动删除；再次运行即可更新。也可以从 [Releases](https://github.com/polang233/TaskEase/releases/latest) 下载 DMG 拖到“应用程序”，这种方式第一次打开会提示“移到废纸篓”（轻程暂未经过 Apple 公证）：点“完成”，再到“系统设置 → 隐私与安全性”底部点“仍要打开”，只需一次。
 
-装好后：选中想限制的应用，打开“限制后台资源”，选好生效时机和限制方式，再打开顶部的“启用限制”。更详细的操作见 [使用说明](Docs/Usage.md)。
+装好后：选中想限制的应用，打开“限制后台资源”，选好生效时机和限制方式，再点规则卡片里的“启用限制”（或打开顶部总开关）。更详细的操作见 [使用说明](Docs/Usage.md)。
 
 ## 常见问题
 
@@ -135,7 +159,10 @@ TaskEase/
     Applications/            应用列表与管理窗口
     Rules/                   规则编辑与执行策略
     Networking/              网络规则编辑
-    MenuBar/                 菜单栏面板
+    MenuBar/                 菜单栏面板与临时操作
+    Automation/              快捷指令、URL Scheme 与规则模板入口
+    Savings/                 节省报告与估算记录
+    Suggestions/             智能建议
     Settings/                显示与外观设置
     Help/                    使用帮助
     About/                   关于信息、使用统计与许可证

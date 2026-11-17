@@ -10,6 +10,11 @@ final class TaskEaseUITests: XCTestCase {
         }
     }
 
+    /// 不显示标签的开关在部分系统上以 CheckBox 暴露，按标识查找，不限定控件类型。
+    private func ruleToggle(_ window: XCUIElement, _ identifier: String) -> XCUIElement {
+        window.descendants(matching: .any).matching(identifier: identifier).firstMatch
+    }
+
     private func launchFixture() -> XCUIApplication {
         let app = XCUIApplication()
         app.launchArguments = ["--ui-testing"]
@@ -38,7 +43,7 @@ final class TaskEaseUITests: XCTestCase {
         XCTAssertTrue(window.staticTexts["Finder"].waitForExistence(timeout: 5))
         window.staticTexts["Finder"].firstMatch.click()
         XCTAssertTrue(window.staticTexts["系统应用只用于观察。"].waitForExistence(timeout: 5))
-        XCTAssertFalse(window.switches["app-rule-toggle"].isEnabled)
+        XCTAssertFalse(ruleToggle(window, "app-rule-toggle").isEnabled)
     }
 
     func testConfigureRuleGlobalSwitchAndSavedList() throws {
@@ -52,23 +57,27 @@ final class TaskEaseUITests: XCTestCase {
         window.buttons["management-unavailable"].click()
         XCTAssertTrue(app.staticTexts["先为应用设置后台规则"].waitForExistence(timeout: 5))
         window.staticTexts["网页浏览器"].firstMatch.click()
-        let rule = window.switches["app-rule-toggle"]
+        let rule = ruleToggle(window, "app-rule-toggle")
         XCTAssertTrue(rule.waitForExistence(timeout: 5))
         rule.click()
         XCTAssertTrue(global.isEnabled)
         XCTAssertTrue(window.sliders["cpu-budget"].exists)
-        XCTAssertTrue(window.switches["volume-toggle"].exists)
+        XCTAssertTrue(ruleToggle(window, "volume-toggle").exists)
         // 性能限制、后台音量和降低优先级可以组合；只保留降低优先级时规则仍然有效。
-        window.switches["priority-toggle"].click()
-        window.switches["performance-toggle"].click()
+        ruleToggle(window, "priority-toggle").click()
+        ruleToggle(window, "performance-toggle").click()
         XCTAssertFalse(window.sliders["cpu-budget"].exists)
         XCTAssertTrue(global.isEnabled)
-        window.switches["performance-toggle"].click()
+        ruleToggle(window, "performance-toggle").click()
         XCTAssertTrue(window.sliders["cpu-budget"].waitForExistence(timeout: 5))
-        XCTAssertTrue(window.staticTexts["规则已保存，打开顶部总开关后执行。"].exists)
+        // 规则有效但总开关关闭时，规则卡片就地提示并可一键启用。
+        let callout = window.staticTexts["规则已保存，打开总开关后执行。"]
+        XCTAssertTrue(callout.exists)
+        window.buttons["enable-from-rule"].click()
+        XCTAssertEqual((global.value as? NSNumber)?.intValue, 1)
+        XCTAssertFalse(callout.exists)
         global.click()
-        global.click()
-        XCTAssertTrue(window.staticTexts["规则已保存，打开顶部总开关后执行。"].exists)
+        XCTAssertTrue(callout.waitForExistence(timeout: 5))
         let configured = window.descendants(matching: .any).matching(identifier: "已配置规则").firstMatch
         XCTAssertTrue(configured.waitForExistence(timeout: 5))
         configured.click()
@@ -224,6 +233,22 @@ final class TaskEaseUITests: XCTestCase {
         XCTAssertTrue(window.staticTexts["example.browser"].waitForExistence(timeout: 5))
         header.click()
         XCTAssertFalse(window.staticTexts["example.browser"].exists)
+    }
+
+    /// ⌘F 聚焦搜索、Esc 清空。
+    func testSearchShortcutAndEscape() throws {
+        let app = launchFixture()
+        defer { app.terminate() }
+        let window = app.windows["轻程"]
+        XCTAssertTrue(window.staticTexts["代码编辑器"].waitForExistence(timeout: 5))
+        window.typeKey("f", modifierFlags: .command)
+        let search = window.textFields["app-search"]
+        search.typeText("编辑")
+        expectation(for: NSPredicate(format: "value == %@", "编辑"), evaluatedWith: search)
+        waitForExpectations(timeout: 5)
+        XCTAssertFalse(window.staticTexts["网页浏览器"].exists)
+        search.typeKey(.escape, modifierFlags: [])
+        XCTAssertTrue(window.staticTexts["网页浏览器"].waitForExistence(timeout: 5))
     }
 
     /// 验证网络配置进入已配置列表，同时明确显示待启用状态。

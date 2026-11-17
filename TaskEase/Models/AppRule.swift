@@ -107,6 +107,10 @@ extension AppRule: Codable {
 
 enum RuleStatus: Equatable, Sendable {
     case unmanaged, foreground, waiting, gentle, budget, suspended, muted, quieted, paused, unavailable, notRunning
+    /// 菜单栏、URL Scheme 或快捷指令发起的临时暂停正在生效。
+    case held
+    /// 用户选择“立即恢复”，规则暂时不执行。
+    case released
 
     var title: String {
         switch self {
@@ -121,6 +125,8 @@ enum RuleStatus: Equatable, Sendable {
         case .paused: String(localized: "status.paused")
         case .unavailable: String(localized: "status.readOnly")
         case .notRunning: String(localized: "status.notRunning")
+        case .held: String(localized: "status.held")
+        case .released: String(localized: "status.released")
         }
     }
 }
