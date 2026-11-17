@@ -24,7 +24,7 @@ struct MenuPanel: View {
                 }.padding(.horizontal, 6).padding(.bottom, 2)
                 let key = model.effectiveSortKey
                 let usage = AppUsage(key, scale: model.preferences.cpuScale, apps: model.apps)
-                ForEach(Array(AppModel.sorted(model.visibleRunningApps, by: key).prefix(5))) { app in
+                ForEach(QuickActions.rows(model.visibleRunningApps, sortedBy: key, temporary: model.temporaryActions)) { app in
                     MenuAppRow(model: model, app: app, usage: usage)
                 }
                 if model.visibleRunningApps.isEmpty {
@@ -42,6 +42,7 @@ struct MenuPanel: View {
                 Button("menu.manageApps") { model.showManagement() }.pointingHand()
                 Button("common.settings", systemImage: "gearshape") { model.showUtility(.settings) }
                     .labelStyle(.iconOnly).help("common.settings").pointingHand()
+                SavingsBadge(model: model, compact: true)
                 Spacer()
                 Text("menu.activeCount \(model.managedCount)").font(.caption).foregroundStyle(.secondary)
                 Button("common.quit") { NSApp.terminate(nil) }.pointingHand()
@@ -60,27 +61,33 @@ struct MenuAppRow: View {
     let usage: AppUsage
     @State private var hovering = false
 
+    /// 快捷操作放在行按钮之外，避免嵌套按钮吞掉点击；其余区域点击打开管理窗口。
     var body: some View {
-        Button(action: open) {
-            HStack(spacing: 9) {
-                StatusIcon(app: app, status: app.status, size: 24)
-                Text(app.name).lineLimit(1)
-                if StatusLabel.symbol(app.status) != nil {
-                    StatusLabel(status: app.status).fixedSize()
+        HStack(spacing: 9) {
+            Button(action: open) {
+                HStack(spacing: 9) {
+                    StatusIcon(app: app, status: app.status, size: 24)
+                    Text(app.name).lineLimit(1)
+                    if StatusLabel.symbol(app.status) != nil {
+                        StatusLabel(status: app.status).fixedSize()
+                    }
+                    Spacer(minLength: 6)
                 }
-                Spacer(minLength: 6)
-                Text(usage.value(app)).monospacedDigit()
+                .contentShape(Rectangle())
             }
-            .padding(.vertical, 5).padding(.horizontal, 6)
-            .background(UsageFill(fraction: usage.fraction(app)))
-            .background(RoundedRectangle(cornerRadius: 7, style: .continuous)
-                .fill(Color.primary.opacity(hovering ? 0.07 : 0)))
-            .contentShape(Rectangle())
+            .buttonStyle(.plain).pointingHand()
+            .help("menu.row.help")
+            .accessibilityHint("menu.row.help")
+            QuickActions(model: model, app: app)
+            Text(usage.value(app)).monospacedDigit()
+                .contentShape(Rectangle())
+                .onTapGesture(perform: open)
         }
-        .buttonStyle(.plain).pointingHand()
+        .padding(.vertical, 5).padding(.horizontal, 6)
+        .background(UsageFill(fraction: usage.fraction(app)))
+        .background(RoundedRectangle(cornerRadius: 7, style: .continuous)
+            .fill(Color.primary.opacity(hovering ? 0.07 : 0)))
         .onHover { hovering = $0 }
-        .help("menu.row.help")
-        .accessibilityHint("menu.row.help")
     }
 
     /// 已配置列表里找不到该应用时切回运行列表，再选中它。

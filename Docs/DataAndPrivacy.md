@@ -7,7 +7,7 @@
 | 数据 | 位置 |
 | --- | --- |
 | 规则、应用名称与路径、显示偏好、窗口位置、统计同意与随机安装标识 | ~/Library/Preferences/com.github.polang233.TaskEase.plist |
-| 进程恢复记录与工作进程锁 | ~/Library/Application Support/com.github.polang233.TaskEase/ |
+| 进程恢复记录、工作进程锁与节省记录（savings.v1.json） | ~/Library/Application Support/com.github.polang233.TaskEase/ |
 | 应用缓存与日志 | ~/Library/Caches/com.github.polang233.TaskEase/、~/Library/Logs/com.github.polang233.TaskEase/ |
 | 系统保存的窗口状态 | ~/Library/Saved Application State/com.github.polang233.TaskEase.savedState/ |
 

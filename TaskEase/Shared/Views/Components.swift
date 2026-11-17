@@ -71,7 +71,8 @@ struct StatusLabel: View {
         switch status {
         case .gentle, .budget: .green
         case .muted, .quieted: .indigo
-        case .suspended: .blue
+        case .suspended, .held: .blue
+        case .released: .orange
         case .waiting: .orange
         default: nil
         }
@@ -83,6 +84,8 @@ struct StatusLabel: View {
         case .budget: "gauge.with.dots.needle.33percent"
         case .gentle: "tortoise.fill"
         case .suspended: "pause.fill"
+        case .held: "pause.circle.fill"
+        case .released: "play.fill"
         case .muted: "speaker.slash.fill"
         case .quieted: "speaker.wave.1.fill"
         case .waiting: "clock.fill"

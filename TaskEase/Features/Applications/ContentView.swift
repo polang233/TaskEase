@@ -23,6 +23,7 @@ struct ContentView: View {
                 if model.managedCount > 0 {
                     Text("header.activeLimits \(model.managedCount)").font(.callout).foregroundStyle(.secondary)
                 }
+                SavingsBadge(model: model)
                 BackgroundControlToggle(model: model)
                 Button("common.settings", systemImage: "gearshape") { model.showUtility(.settings) }
                     .labelStyle(.iconOnly).buttonStyle(.borderless).font(.title3)
@@ -40,6 +41,7 @@ struct ContentView: View {
                     Button("error.recoverRetry") { model.setEnabled(true) }.disabled(!model.canEnable)
                 }.padding(12).background(Color.orange.opacity(0.08))
             }
+            SuggestionBanner(model: model)
             HSplitView {
                 applicationList.frame(minWidth: 340, idealWidth: 400)
                 Group {

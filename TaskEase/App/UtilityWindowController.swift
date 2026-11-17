@@ -2,7 +2,7 @@ import AppKit
 import SwiftUI
 
 enum UtilityWindowKind: String {
-    case settings, help, about, license, statistics, update
+    case settings, help, about, license, statistics, update, savings
 
     var title: String {
         switch self {
@@ -12,6 +12,7 @@ enum UtilityWindowKind: String {
         case .license: String(localized: "window.license")
         case .statistics: String(localized: "window.statistics")
         case .update: String(localized: "window.update")
+        case .savings: String(localized: "savings.title")
         }
     }
 
@@ -23,6 +24,7 @@ enum UtilityWindowKind: String {
         case .license: NSSize(width: 680, height: 600)
         case .statistics: NSSize(width: 580, height: 460)
         case .update: NSSize(width: 480, height: 400)
+        case .savings: NSSize(width: 560, height: 680)
         }
     }
 
@@ -35,6 +37,7 @@ enum UtilityWindowKind: String {
         case .license: NSSize(width: 480, height: 360)
         case .statistics: size
         case .update: size
+        case .savings: NSSize(width: 460, height: 420)
         }
     }
 }
@@ -92,6 +95,7 @@ private struct UtilityRoot: View {
             case .license: LicenseView()
             case .statistics: UsageStatisticsView(model: model)
             case .update: UpdateView(model: model)
+            case .savings: SavingsReportView(model: model)
             }
         }
         // 托管视图的最小布局约束与窗口最小尺寸一致，防止关于窗口被压缩，其余窗口内容可滚动。
