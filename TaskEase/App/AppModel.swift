@@ -102,6 +102,8 @@ final class AppModel {
             self.errorMessage = message
             self.enabled = false
             self.defaults.set(false, forKey: "managementEnabled")
+            // 临时暂停不依赖总开关，不清掉会让 reconcile 立刻重启出错的工作进程。
+            self.temporaryActions.removeAll()
             self.controller.stop()
             self.reconcile()
         }
@@ -224,6 +226,8 @@ final class AppModel {
     func pauseTemporarily(_ id: String, minutes: Double = TemporaryAction.defaultMinutes) -> Bool {
         guard canAct(on: id) else { return false }
         temporaryActions[id] = .pause(until: Date().addingTimeInterval(TemporaryAction.clampedMinutes(minutes) * 60))
+        // 面板关闭时前台记录可能过期，先更新，避免暂停正在使用的应用。
+        updateFocus()
         reconcile()
         refresh(force: true)
         return true
@@ -639,10 +643,12 @@ final class AppModel {
         }
         if metadataChanged { persistRules() }
         // 应用退出后临时操作失效，重新打开的应用不会被沿用的期限暂停。
+        // 快照可能早于临时操作，删除前向系统确认应用确实已退出。
         let running = Set(apps.map(\.id))
-        if temporaryActions.keys.contains(where: { !running.contains($0) }) {
-            temporaryActions = temporaryActions.filter { running.contains($0.key) }
+        let exited = temporaryActions.keys.filter {
+            !running.contains($0) && (preview || NSRunningApplication.runningApplications(withBundleIdentifier: $0).isEmpty)
         }
+        if !exited.isEmpty { exited.forEach { temporaryActions[$0] = nil } }
         ensureSelection()
         updateFocus()
     }

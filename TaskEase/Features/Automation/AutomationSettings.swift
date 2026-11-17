@@ -6,6 +6,7 @@ import UniformTypeIdentifiers
 struct AutomationSettingsSection: View {
     @Bindable var model: AppModel
     @State private var message: String?
+    @AppStorage(AutomationCommand.urlEnabledKey) private var urlEnabled = false
 
     var body: some View {
         Section("automation.section") {
@@ -19,6 +20,9 @@ struct AutomationSettingsSection: View {
             }
             VStack(alignment: .leading, spacing: 6) {
                 Text("automation.shortcuts").fixedSize(horizontal: false, vertical: true)
+                Toggle("automation.url.allow", isOn: $urlEnabled).accessibilityIdentifier("allow-url-automation")
+                Text("automation.url.allowNote").font(.caption).foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
                 Text("automation.url").fixedSize(horizontal: false, vertical: true)
                 Text(verbatim: Self.examples).font(.caption.monospaced()).textSelection(.enabled)
                     .foregroundStyle(.secondary)

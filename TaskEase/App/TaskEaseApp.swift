@@ -16,7 +16,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     /// taskease:// 自动化命令；无效或失败时提示音，不弹窗打扰。
     @objc private func handleURL(_ event: NSAppleEventDescriptor, reply: NSAppleEventDescriptor) {
-        guard let text = event.paramDescriptor(forKeyword: keyDirectObject)?.stringValue,
+        // 网页和其他程序都能打开链接，默认不执行，需在设置中允许。
+        guard UserDefaults.standard.bool(forKey: AutomationCommand.urlEnabledKey),
+              let text = event.paramDescriptor(forKeyword: keyDirectObject)?.stringValue,
               let url = URL(string: text), let command = AutomationCommand.parse(url),
               model.perform(command).succeeded else {
             NSSound.beep()

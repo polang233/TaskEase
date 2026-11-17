@@ -12,6 +12,8 @@ enum AutomationCommand: Equatable, Sendable {
     case resume(app: String)
 
     static let scheme = "taskease"
+    /// 设置“允许链接控制”，默认关闭；快捷指令不受影响。
+    static let urlEnabledKey = "automationURLEnabled"
 
     static func parse(_ url: URL) -> AutomationCommand? {
         guard url.scheme?.lowercased() == scheme,

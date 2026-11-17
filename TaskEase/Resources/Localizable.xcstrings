@@ -599,6 +599,52 @@
         }
       }
     },
+    "automation.url.allow" : {
+      "comment" : "Settings: allow URL scheme automation",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Allow taskease:// links"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "允许 taskease:// 链接控制"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "允許 taskease:// 連結控制"
+          }
+        }
+      }
+    },
+    "automation.url.allowNote" : {
+      "comment" : "Settings: URL scheme risk note",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Any web page or app can open these links. Off by default; Shortcuts work either way."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "任何网页或程序都能打开这些链接，所以默认关闭；快捷指令不受影响。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "任何網頁或程式都能打開這些連結，所以預設關閉；捷徑不受影響。"
+          }
+        }
+      }
+    },
     "common.cancel" : {
       "comment" : "Cancel button",
       "localizations" : {
