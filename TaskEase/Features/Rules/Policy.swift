@@ -6,9 +6,10 @@ enum Policy {
                        isForeground: Bool, isHidden: Bool, backgroundSeconds: Double,
                        temporary: TemporaryAction? = nil) -> RuleStatus {
         guard controllable else { return .unavailable }
-        // 临时暂停与总开关、规则无关，只在后台生效且不等待；切回前台照常使用，再次离开立即暂停，直到期限。
+        // 总开关关闭即完全不控制，临时暂停也不执行。
+        // 临时暂停与规则无关，只在后台生效且不等待；切回前台照常使用，再次离开立即暂停，直到期限。
         switch temporary {
-        case .pause:
+        case .pause where enabled:
             return isForeground && !isHidden ? .foreground : .held
         case .release where rule.isActive && enabled:
             return .released

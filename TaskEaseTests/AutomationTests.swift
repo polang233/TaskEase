@@ -3,15 +3,17 @@ import Testing
 @testable import TaskEase
 
 struct AutomationTests {
-    @Test func temporaryPauseAppliesOnlyInBackgroundAndIgnoresMasterSwitch() {
+    @Test func temporaryPauseAppliesOnlyInBackgroundWhileEnabled() {
         let pause = TemporaryAction.pause(until: Date().addingTimeInterval(60))
-        func status(_ rule: AppRule = AppRule(), enabled: Bool = false, foreground: Bool = false, hidden: Bool = false,
+        func status(_ rule: AppRule = AppRule(), enabled: Bool = true, foreground: Bool = false, hidden: Bool = false,
                     controllable: Bool = true, temporary: TemporaryAction?) -> RuleStatus {
             Policy.status(rule: rule, enabled: enabled, controllable: controllable, isForeground: foreground,
                           isHidden: hidden, backgroundSeconds: 0, temporary: temporary)
         }
-        // 没有规则、总开关关闭时也能临时暂停，且不等待。
+        // 没有规则也能临时暂停，且不等待；总开关关闭时完全不控制。
         #expect(status(temporary: pause) == .held)
+        #expect(status(enabled: false, temporary: pause) == .unmanaged)
+        #expect(status(AppRule(mode: .suspend), enabled: false, temporary: pause) == .paused)
         #expect(Policy.shouldControl(.held))
         // 切回前台照常使用，隐藏后再次暂停。
         #expect(status(foreground: true, temporary: pause) == .foreground)
@@ -24,6 +26,24 @@ struct AutomationTests {
         #expect(!Policy.shouldControl(.released))
         #expect(status(AppRule(mode: .suspend), enabled: false, temporary: release) == .paused)
         #expect(status(temporary: release) == .unmanaged)
+    }
+
+    @MainActor @Test func masterSwitchFullyStopsTemporaryActions() {
+        let model = AppModel(preview: true)
+        defer { model.shutdown() }
+        #expect(!model.enabled)
+        // 总开关关闭时临时暂停会一并打开它。
+        #expect(model.pauseTemporarily("example.browser"))
+        #expect(model.enabled)
+        #expect(model.apps.first { $0.id == "example.browser" }?.status == .held)
+        // 关闭总开关：临时暂停全部结束，应用恢复。
+        model.setEnabled(false)
+        #expect(model.temporaryActions.isEmpty)
+        #expect(model.apps.first { $0.id == "example.browser" }?.status == .unmanaged)
+        // 只为临时暂停打开的总开关，在暂停结束且没有规则时自动关闭。
+        #expect(model.pauseTemporarily("example.browser"))
+        #expect(model.resumeNow("example.browser"))
+        #expect(!model.enabled)
     }
 
     @Test func temporaryMinutesAreClamped() {

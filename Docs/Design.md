@@ -90,7 +90,7 @@ SuggestionEngine 是纯函数：输入节省记录中的后台基线、可控制
 
 ## 临时操作与自动化
 
-AppModel 以 `temporaryActions` 在内存中保存临时暂停与“立即恢复”的期限。`Policy.status` 增加可选的临时操作参数：临时暂停在后台时返回 `held`，与规则和总开关无关；“立即恢复”在规则会执行时返回 `released`。reconcile 为 `held` 的应用生成 suspend 控制组，仍由 NativeWorker 唯一执行并写入恢复记录，因此退出、睡眠、失联和崩溃沿用原有恢复路径；睡眠与 shutdown 清空临时操作，`apply` 发现应用退出时移除其临时操作。存在临时暂停时控制采样只扫描启用规则与临时暂停的应用；期限加入 SamplingPolicy 的等待期限，到期即时恢复。切回前台时结束该应用的“立即恢复”。
+AppModel 以 `temporaryActions` 在内存中保存临时暂停与“立即恢复”的期限。`Policy.status` 增加可选的临时操作参数：临时暂停在总开关开启且应用位于后台时返回 `held`，与规则无关；总开关关闭即完全不控制，setEnabled(false) 清空全部临时操作；总开关关闭时发起临时暂停会先打开总开关，临时暂停全部结束且没有有效规则时 reconcile 自动关闭总开关；“立即恢复”在规则会执行时返回 `released`。reconcile 为 `held` 的应用生成 suspend 控制组，仍由 NativeWorker 唯一执行并写入恢复记录，因此退出、睡眠、失联和崩溃沿用原有恢复路径；睡眠与 shutdown 清空临时操作，`apply` 发现应用退出时移除其临时操作。存在临时暂停时控制采样只扫描启用规则与临时暂停的应用；期限加入 SamplingPolicy 的等待期限，到期即时恢复。切回前台时结束该应用的“立即恢复”。
 
 RuleTemplate 复用 StoredRules 的编解码，导出排序缩进，导入校验数值与标识。AutomationCommand 解析 `taskease://` 链接，AppModel.perform 执行并返回结果；AppDelegate 在启动前注册 kAEGetURL 处理程序。App Intents（SetLimitsIntent、PauseApplicationIntent、ResumeApplicationIntent 与运行中应用的 ApplicationEntity）在应用进程内运行，通过 AutomationCenter 取得模型，与链接共用同一命令。
 

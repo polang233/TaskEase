@@ -102,7 +102,7 @@ final class AppModel {
             self.errorMessage = message
             self.enabled = false
             self.defaults.set(false, forKey: "managementEnabled")
-            // 临时暂停不依赖总开关，不清掉会让 reconcile 立刻重启出错的工作进程。
+            // 总开关关闭时临时操作一并结束，避免 reconcile 重启出错的工作进程。
             self.temporaryActions.removeAll()
             self.controller.stop()
             self.reconcile()
@@ -134,7 +134,8 @@ final class AppModel {
     var configuredCount: Int { rules.values.filter(\.isActive).count }
     var managedCount: Int { apps.filter { Policy.shouldControl($0.status) }.count }
     var helperPID: Int32? { controller.helperPID }
-    var canEnable: Bool { configuredCount > 0 && !isShutdown }
+    /// 有有效规则或正在进行的临时暂停时才能打开总开关。
+    var canEnable: Bool { (configuredCount > 0 || temporaryActions.values.contains(where: \.isPause)) && !isShutdown }
     var hasScheduledRefresh: Bool { timer != nil }
 
     private var visibleRuleIDs: Set<String> {
@@ -221,15 +222,20 @@ final class AppModel {
         return !RunningApplication.capture(showSystemApps: false, only: [id]).isEmpty
     }
 
-    /// 临时暂停：应用在后台时暂停，直到期限；切回前台照常使用。不依赖规则和总开关。
+    /// 临时暂停：应用在后台时暂停，直到期限；切回前台照常使用。不需要规则；总开关关闭时一并打开，
+    /// 因为这是用户主动发起的限制。
     @discardableResult
     func pauseTemporarily(_ id: String, minutes: Double = TemporaryAction.defaultMinutes) -> Bool {
         guard canAct(on: id) else { return false }
         temporaryActions[id] = .pause(until: Date().addingTimeInterval(TemporaryAction.clampedMinutes(minutes) * 60))
         // 面板关闭时前台记录可能过期，先更新，避免暂停正在使用的应用。
         updateFocus()
-        reconcile()
-        refresh(force: true)
+        if !enabled {
+            setEnabled(true)
+        } else {
+            reconcile()
+            refresh(force: true)
+        }
         return true
     }
 
@@ -356,6 +362,8 @@ final class AppModel {
         guard !value || canEnable else { return }
         enabled = value
         errorMessage = nil
+        // 总开关就是完全关闭：临时暂停和“立即恢复”一并结束。
+        if !value { temporaryActions.removeAll() }
         // 总开关开启时重新计时，给已经位于后台的应用完整等待期。
         if value { backgroundSince.removeAll(); volume.retry() }
         if !preview { defaults.set(value, forKey: "managementEnabled") }
@@ -705,6 +713,11 @@ final class AppModel {
         let date = Date()
         if temporaryActions.values.contains(where: { $0.until <= date }) {
             temporaryActions = temporaryActions.filter { $0.value.until > date }
+        }
+        // 只为临时暂停打开的总开关，在暂停全部结束、又没有有效规则时自动关闭，与删除最后一条规则一致。
+        if enabled && !canEnable && !isShutdown {
+            enabled = false
+            if !preview { defaults.set(false, forKey: "managementEnabled") }
         }
         var plan: [ControlGroup] = []
         var volumes: [String: (pids: Set<Int32>, percent: Double)] = [:]
